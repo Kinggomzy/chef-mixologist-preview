@@ -860,7 +860,7 @@ label{align-self:stretch}
 /* Recipe and supplier photos */
 .dish.has-photo{padding-top:0;overflow:hidden}
 .dish-photo{display:block;width:calc(100% + 36px);margin:0 -18px 4px;height:140px;object-fit:cover;background:var(--surface-2)}
-.dish.has-photo .leaf{top:12px}
+.dish.has-photo .leaf,.dish.has-photo .jain-tip{top:12px}
 .biz-h img.mono.photo{object-fit:cover;padding:0;background:var(--surface-2)}
 .photo-edit{display:flex;gap:14px;align-items:center}
 .photo-prev{width:88px;height:88px;border-radius:var(--r-md);object-fit:cover;background:var(--surface-2);flex:none;display:block}
@@ -871,3 +871,18 @@ label{align-self:stretch}
 .pl-bar{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.pl-bar .field{min-width:220px}
 /* unit pickers never shrink below what "kg" plus its arrow needs */
 .qty-unit .unit-sel,#mform .qty-unit .unit-sel,#mform select[name$="Unit"],#mform select[name=ru],#mform select[name=lu],.modal-box .qty-unit .unit-sel{min-width:66px}
+
+/* Jain-friendly dishes: green strip on the left edge and an info icon with the note */
+.dish.jain{box-shadow:var(--lift-sm)}
+.dish.jain:hover,.dish.jain:focus-visible{box-shadow:var(--lift)}
+.dish .jain-tip{position:absolute;right:12px;top:12px;margin:0;color:var(--jade-ink);z-index:2}
+.dish.jain h3{padding-right:20px}
+
+/* Prep cards reuse the "jar" class; it must not inherit the 86x110 jar-icon sizing */
+.dish.jar{width:auto;height:100%;position:relative;border-radius:var(--r-lg)}
+.dish.jar::before{content:none}
+.dish.jar.jain{box-shadow:inset 5px 0 0 var(--jade-ink),var(--lift-sm)}
+
+.dish.jar.jain:hover,.dish.jar.jain:focus-visible{box-shadow:inset 5px 0 0 var(--jade-ink),var(--lift)}
+.dish.jain:not(.jar){box-shadow:inset 5px 0 0 var(--jade-ink),var(--lift-sm)}
+.dish.jain:not(.jar):hover,.dish.jain:not(.jar):focus-visible{box-shadow:inset 5px 0 0 var(--jade-ink),var(--lift)}

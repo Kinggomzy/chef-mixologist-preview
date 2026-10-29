@@ -118,7 +118,7 @@ VIEWS.recipes=async function(){
   const card=(r,style)=>{const fc=r.foodCostPct,over=fc!=null&&fc>r.target;
     const donut=r.kind==='prep'?`<div class="donut prep" style="--p:100"><span>${r.batchYield}<small>${esc(r.unit)}</small></span></div>`:
       `<div class="donut ${over?'bad':''}" style="--p:${money&&fc!=null?Math.min(fc,100):0}"><span>${money&&fc!=null?fc+'%':'—'}<small>food cost</small></span></div>`;
-    return `<button class="dish ${style}${r.image?' has-photo':''}" data-rid="${r.id}">${r.image?`<img class="dish-photo" data-auth-src="${esc(r.image)}" alt="">`:''}${r.jain===true?'<span class="sticker lime leaf">Jain</span>':''}
+    return `<button class="dish ${style}${r.jain===true?' jain':''}${r.image?' has-photo':''}" data-rid="${r.id}">${r.image?`<img class="dish-photo" data-auth-src="${esc(r.image)}" alt="">`:''}${r.jain===true?`<span class="info-tip jain-tip" role="img" tabindex="0" data-tip="Jain-friendly: every ingredient is free of root vegetables, onion and garlic" aria-label="Jain-friendly">${INFO_ICON}</span>`:''}
       <div class="dish-top">${donut}<div><h3>${esc(r.name)}</h3><div class="price num">${r.kind==='prep'?(money&&r.cost!=null?`${inr(r.cost)}<small class="muted" style="font-size:13px"> / ${esc(r.unit)}</small>`:'Prep'):inr(r.price)}</div>${money&&r.cost!=null&&r.kind!=='prep'?`<small class="muted">costs ${inr(r.cost)} to plate</small>`:''}</div></div>
       <div class="row">${r.allergens.map(a=>`<span class="sticker soft">${esc(ALLERGEN(a))}</span>`).join('')||'<span class="muted" style="font-size:12.5px">No listed allergens</span>'}</div>
       ${money&&r.missingCosts.length?`<div class="warn">No price yet for ${r.missingCosts.map(esc).join(', ')}</div>`:''}</button>`};
