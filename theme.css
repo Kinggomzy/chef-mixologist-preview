@@ -891,3 +891,5 @@ label{align-self:stretch}
 .biz{display:flex;flex-direction:column;gap:14px;grid-template-rows:none}
 .biz > details{margin-top:auto}
 .biz > *{flex:none}
+
+.biz > .biz-pl{margin-top:auto;align-self:flex-start}
