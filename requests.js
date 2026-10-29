@@ -16,7 +16,7 @@ VIEWS.requests=async function(){
   if($('#reqNew'))$('#reqNew').onclick=()=>newRequest(d);
   const card=r=>{const late=r.neededBy&&new Date(r.neededBy)<new Date()&&['open','partial'].includes(r.status);
     const done=r.lines.filter(l=>l.status!=='open').length;
-    return `<button class="req" data-req="${r.id}"><span class="req-top"><span class="sticker ${REQ_TONE[r.status]}">${esc(r.statusLabel)}</span><small>${esc(r.ref)}</small></span>
+    return `<button class="req edge edge-${late?'bad':EDGE_OF[REQ_TONE[r.status]]}" data-req="${r.id}"><span class="req-top">${edgeTip(late?r.statusLabel+' · late':r.statusLabel)}<small>${esc(r.ref)}</small></span>
       <h3>${esc(r.stationLabel)}</h3><small class="${late?'late':''}">Needed ${esc(whenTxt(r.neededBy))}${late?' · late':''}</small>
       <ul>${r.lines.slice(0,3).map(l=>`<li><span>${esc(l.name)}</span><b class="num">${reqQty(l.requested,l.unit)}</b></li>`).join('')}</ul>
       <small class="req-more">${r.lines.length>3?`+${r.lines.length-3} more · `:''}asked by ${esc(r.requestedBy)}</small>

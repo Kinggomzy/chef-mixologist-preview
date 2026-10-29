@@ -8,7 +8,7 @@ VIEWS.closing=async function(){
   const body=view('closing','Month-end close','Freeze each month\'s closing stock at its value. Opening + purchases − closing shows what the month used.');
   const d=await load(body,'/plugin/cm/closing/');if(!d)return;
   const card=m=>{const c=m.close;
-    return `<button class="mclose ${c?'closed':''}" data-m="${m.month}"><span class="sticker ${c?'lime':m.current?'soft':m.canClose?'turmeric':'soft'}">${c?'Closed':m.current?'Running':m.canClose?'Ready to close':/records/.test(m.why||'')?'No records':'Open'}</span>
+    return `<button class="mclose edge edge-${c?'ok':m.current?'info':m.canClose?'warn':'mute'} ${c?'closed':''}" data-m="${m.month}">${edgeTip(c?'Closed':m.current?'Running':m.canClose?'Ready to close':/records/.test(m.why||'')?'No records':'Open')}
       <h3>${esc(m.label)}</h3>
       <dl class="num"><dt>Closing stock</dt><dd>${c?inr(c.closing):'—'}</dd><dt>Used</dt><dd>${c?inr(c.usage):'—'}</dd></dl>
       <small>${c?`Closed by ${esc(c.closedBy)} · ${new Date(c.closedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}`:m.current?'Closes after the month ends':esc(m.why||'Not closed yet')}</small></button>`};

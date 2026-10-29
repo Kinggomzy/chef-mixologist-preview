@@ -12,7 +12,7 @@ function renderInwardDockets(){
   if(!list.length){box.innerHTML=`<p class="muted">${S.focus?'No open purchase orders for this.':'No open purchase orders. Raise one from Replenishment.'}</p>`;return}
   box.innerHTML=list.map(p=>{
     const lines=Object.entries(p.lines),tot=lines.reduce((a,[s,q])=>a+q*(bySku[s]?bySku[s].cost:0),0);
-    return `<article class="docket" style="--hole:var(--surface)" aria-label="Purchase order ${esc(p.po)}">
+    return `<article class="docket edge edge-${p.late?'bad':p.day===0?'warn':'info'}" style="--hole:var(--surface)" aria-label="Purchase order ${esc(p.po)}">
       <div class="docket-h"><div><h3>${esc(p.po)}</h3><small>${xl('supplier',p.sup)}</small></div><span class="docket-eta ${p.late?'late':p.day===0?'today':''}">${esc(p.eta)}</span></div>
       <ol>${lines.map(([s,q])=>{const x=bySku[s];return x?`<li>${img(x)}<span>${xl('item',x.sku,x.name)}</span><b>${fq(q)} ${esc(x.unit)}</b></li>`:''}).join('')}</ol>
       <div class="docket-f"><span class="total">${inr(tot)}</span>

@@ -19,7 +19,7 @@ VIEWS.approvals=async function(){
   const L=d.limits,none=Object.values(L).every(v=>v==null);
   const limitTxt=[L.wastage!=null?`wastage over ${inr(L.wastage)}`:'',L.po!=null?`orders over ${inr(L.po)}`:'',
     L.countPct!=null||L.countValue!=null?`counts off by more than ${[L.countPct!=null?L.countPct+'%':'',L.countValue!=null?inr(L.countValue):''].filter(Boolean).join(' or ')}`:''].filter(Boolean).join(', ');
-  const card=a=>`<article class="appr"><div class="appr-top"><span class="sticker ${a.status==='pending'?'turmeric':a.status==='approved'?'lime':'melon'}">${esc(a.statusLabel)}</span><small>${esc(a.kindLabel)}</small></div>
+  const card=a=>`<article class="appr edge edge-${a.status==='pending'?'warn':a.status==='approved'?'ok':'bad'}"><div class="appr-top">${edgeTip(a.statusLabel)}<small>${esc(a.kindLabel)}</small></div>
     <h3 title="${esc(a.summary)}">${esc(a.summary)}</h3><div class="val num">${a.value==null?'':inr(a.value)}</div>
     <small>Asked by ${esc(a.requestedBy)} · ${new Date(a.createdAt).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}${a.decidedBy?` · ${a.status==='approved'?'approved':'turned down'} by ${esc(a.decidedBy)}`:''}${a.reason?` · ${esc(a.reason)}`:''}${a.result?` · ${esc(a.result)}`:''}</small>
     ${a.status==='pending'&&d.canApprove&&a.requestedById!==PROFILE?.id?`<div class="appr-act"><button class="btn btn-sm btn-primary" data-ok="${a.id}">Approve</button><button class="btn btn-sm btn-line" data-no="${a.id}">Reject</button></div>`:'<span></span>'}</article>`;

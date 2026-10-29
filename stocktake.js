@@ -23,7 +23,7 @@ VIEWS.stocktake=async function(){
       const t=await api('/plugin/cm/stocktakes/',{method:'POST',json:{location:+f.get('loc'),blind:!!f.get('blind'),note:f.get('note')}});
       close();toast(`${esc(t.ref)} started`);TAKE=t.id;VIEWS.stocktake()});
   const money=API.can.pricing;
-  const card=t=>`<button class="take" data-take="${t.id}"><span class="sticker ${TAKE_TONE[t.status]}">${esc(t.statusLabel)}</span>
+  const card=t=>`<button class="take edge edge-${t.status==='review'?'info':EDGE_OF[TAKE_TONE[t.status]]}" data-take="${t.id}">${edgeTip(t.statusLabel)}
     <h3>${esc(t.location)}</h3><small>${esc(t.ref)} · started ${new Date(t.startedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'})} by ${esc(t.startedBy)}</small>
     <div class="take-bar"><i style="width:${t.total?t.counted/t.total*100:0}%"></i></div>
     <small class="num">${t.counted} of ${t.total} counted${t.blind?' · blind':''}</small>

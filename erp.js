@@ -214,7 +214,7 @@ async function renderEvents(){
   const stock=table(['Liquor','>In store'],d.stock.map(s=>`<tr><td>${esc(s.name)}</td><td class="r num"><b>${num(s.onHand)}</b> ${esc(s.unit)}${s.bottles!=null?` <small class="muted">(${s.bottles} btl)</small>`:''}</td></tr>`));
   const stTag={planned:'s-onorder',open:'s-ok',closed:'s-over'};
   const ev=e=>`<div class="ev-row">
-    <article class="pass st-${e.status}" aria-label="Event pass for ${esc(e.name)}">
+    <article class="pass st-${e.status} edge edge-${{planned:'info',open:'ok',closed:'mute'}[e.status]||'mute'}" aria-label="Event pass for ${esc(e.name)}">
       <div class="pass-band"></div>
       <h2>${esc(e.name)}</h2>
       <span class="status">${esc(e.statusLabel)}${e.inWindow&&e.status!=='closed'?', licence valid now':''}</span>

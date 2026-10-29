@@ -187,9 +187,9 @@ async function renderTeam(){
     const pg=paginate('team',L,12,TEAM_Q+TEAM_STATUS);
     body.innerHTML=`<div class="toolbar"><label class="field" style="flex:1;max-width:360px">Find<input id="tq" value="${esc(TEAM_Q)}" placeholder="Name, username or role" style="border:0;background:none;height:100%;flex:1"></label>
       <label class="field">Status<select id="ts">${[['all','Everyone'],['active','Active'],['invited','Invited'],['deactivated','Deactivated']].map(([k,l])=>`<option value="${k}" ${TEAM_STATUS===k?'selected':''}>${l}</option>`).join('')}</select></label><span class="result-count">${L.length} of ${d.staff.length}</span></div>
-      <div class="people">${pg.rows.map(s=>`<button class="person" data-u="${s.id}"><span class="avatar">${esc(s.name.split(/[\s.]+/).slice(0,2).map(w=>w[0]?.toUpperCase()||'').join(''))}</span>
+      <div class="people">${pg.rows.map(s=>`<button class="person edge edge-${s.status==='active'?'ok':s.status==='invited'?'warn':'mute'}" data-u="${s.id}"><span class="avatar">${esc(s.name.split(/[\s.]+/).slice(0,2).map(w=>w[0]?.toUpperCase()||'').join(''))}</span>
         <span class="person-t"><b>${esc(s.name)}</b><small>${esc(s.username)}${s.jobTitle?' · '+esc(s.jobTitle):''}</small><span class="person-roles">${s.roles.map(r=>`<span class="sticker soft">${esc(r)}</span>`).join('')}</span></span>
-        <span class="person-s"><span class="sticker ${s.status==='active'?'lime':s.status==='invited'?'turmeric':'soft'}">${s.status==='active'?'Active':s.status==='invited'?'Invited':'Deactivated'}</span><small>${s.mfa?'2-step on':'2-step off'} · ${ago(s.lastSignIn)}</small></span></button>`).join('')||'<p class="muted">No one matches.</p>'}</div>${pg.html}`;
+        <span class="person-s">${edgeTip(s.status==='active'?'Active':s.status==='invited'?'Invited':'Deactivated')}<small>${s.mfa?'2-step on':'2-step off'} · ${ago(s.lastSignIn)}</small></span></button>`).join('')||'<p class="muted">No one matches.</p>'}</div>${pg.html}`;
     const tq=$('#tq');tq.oninput=()=>{TEAM_Q=tq.value;draw();const n=$('#tq');n.focus();n.setSelectionRange(n.value.length,n.value.length)};
     $('#ts').onchange=e=>{TEAM_STATUS=e.target.value;draw()};
     body.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>memberForm(d.staff.find(s=>s.id===+b.dataset.u)));

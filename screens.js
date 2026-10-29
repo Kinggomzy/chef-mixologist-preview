@@ -45,7 +45,7 @@ VIEWS.inward=function(){
   const G=GRNS.filter(g=>!S.focus||(S.focus.kind==='supplier'?g.sup===S.focus.key:S.focus.kind==='po'?g.po===S.focus.key:true));
   const drawStubs=()=>{const pg=paginate('grn',G,8,JSON.stringify([G.length,S.focus]));
   box.innerHTML=`<div class="stubs">${pg.rows.map(g=>{const o=g.lines.reduce((a,l)=>a+l[1],0),r=g.lines.reduce((a,l)=>a+l[2],0);
-    return `<article class="stub"><span class="stamp ${stampCls[g.qc]||''}">${esc(g.qc)}</span><h4>${esc(g.grn)}</h4><small>${xl('supplier',g.sup)}</small><small>${dayLabel(g.d)} · against ${xl('po',g.po)}</small>
+    return `<article class="stub edge edge-${{Accepted:'ok','Short delivery':'warn','Partly rejected':'bad'}[g.qc]||'mute'}">${edgeTip(g.qc)}<h4>${esc(g.grn)}</h4><small>${xl('supplier',g.sup)}</small><small>${dayLabel(g.d)} · against ${xl('po',g.po)}</small>
       <div class="pct num ${r<o?'bad':''}">${o?Math.round(r/o*100):0}% <small>received</small></div>${g.note?`<small>${esc(g.note)}</small>`:''}</article>`}).join('')||'<p class="muted">No goods received yet.</p>'}</div>${pg.html?`<div style="padding:0 18px 16px">${pg.html}</div>`:''}`;wirePager(box,drawStubs)};drawStubs();
 };
 
@@ -57,7 +57,7 @@ VIEWS.replenish=function(){
   const out=$('#repl');
   if(!L.length){out.innerHTML='<div class="panel empty"><b>Nothing to reorder</b>Every item is above its reorder point.</div>';return}
   out.innerHTML=`<div class="baskets">${Object.entries(groups).map(([sup,list])=>{const lead=Math.max(...list.map(o=>o.x.lead));
-    return `<article class="basket" data-sup="${esc(sup)}"><div class="basket-h"><span class="mono">${esc(initials(sup))}</span><div><h3>${xl('supplier',sup)}</h3><small>${list.length} item${list.length>1?'s':''} · arrives by ${new Date(TODAY.getTime()+lead*864e5).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}</small></div></div>
+    return `<article class="basket edge edge-${list.some(o=>['out','crit'].includes(o.c.st))?'bad':list.some(o=>o.c.st==='reorder')?'warn':'info'}" data-sup="${esc(sup)}"><div class="basket-h"><span class="mono">${esc(initials(sup))}</span><div><h3>${xl('supplier',sup)}</h3><small>${list.length} item${list.length>1?'s':''} · arrives by ${new Date(TODAY.getTime()+lead*864e5).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}</small></div></div>
     <ul>${list.sort((a,b)=>ST[a.c.st][2]-ST[b.c.st][2]).map(({x,c})=>`<li data-sku="${x.sku}" data-cost="${x.listPrice??x.cost}" data-pack="${x.pack}"><input type="checkbox" class="check" checked aria-label="Include ${esc(x.name)}">${img(x)}
       <div><b>${xl('item',x.sku,x.name)}</b><small>${fq(x.onHand)} on hand${c.inc.q?`, ${fq(c.inc.q)} on order`:''} · pack ${x.pack} ${esc(x.unit)}</small><div style="margin-top:4px">${sticker(c.st)}</div>
         ${API.can.pricing?`<label class="price-q">₹<input class="price-in" type="number" min="0" step="0.01" value="${x.listPrice??''}" placeholder="price" aria-label="Price per ${esc(x.unit)} for ${esc(x.name)}"><span>/ ${esc(x.unit)}</span></label>`:''}</div>
@@ -135,7 +135,7 @@ VIEWS.prep=async function(){
   const [p,w]=await Promise.all([load(body,'/plugin/cm/prep/'),API.live?api(`/plugin/cm/wastage/?days=${WASTE_DAYS}`).catch(()=>null):null]);if(!p)return;
   const money=API.can.pricing;
   const jars=p.preps.map(x=>{const lvl=Math.max(4,Math.min(100,x.onHand/(x.batchYield||1)*100)),soon=x.lots.some(l=>l.exp!=null&&l.exp<=0),next=x.lots.filter(l=>l.exp!=null).sort((a,b)=>a.exp-b.exp)[0];
-    return `<article class="jar-card"><div class="jar ${x.station==='beverage'?'lime':''}" style="--lvl:${x.onHand?lvl:0}">${x.onHand?'<div class="fill"></div>':''}</div>
+    return `<article class="jar-card edge edge-${soon?'bad':x.onHand?'ok':'mute'}"><div class="jar ${x.station==='beverage'?'lime':''}" style="--lvl:${x.onHand?lvl:0}">${x.onHand?'<div class="fill"></div>':''}</div>
       <div><h3>${xl('recipe',x.id,x.name)}</h3><div class="big num">${num(x.onHand)} <small style="font-size:14px">${esc(x.unit)}</small></div>
       <span class="timer ${soon?'soon':''}">${next?(next.exp<=0?'Use today':`Use within ${next.exp} day${next.exp>1?'s':''}`):x.onHand?'No use-by':'None made'}</span>
       <p class="muted" style="font-size:12.5px;margin:8px 0">${x.station==='beverage'?'Beverage station':'Kitchen'} · batch ${num(x.batchYield)} ${esc(x.unit)}${money&&x.unitCost!=null?` · ${inr(x.unitCost)}/${esc(x.unit)}`:''}</p>
@@ -164,10 +164,11 @@ VIEWS.suppliers=async function(){
   const ring=(v,label,good)=>`<div><div class="ring ${v==null?'none':good(v)?'':'bad'}" style="--p:${v??0}"><b>${v==null?'—':v+'%'}</b></div><small>${label}</small></div>`;
   const SUPS=focusIs('supplier')?d.suppliers.filter(s=>s.name===S.focus.key):d.suppliers,RETS=focusIs('supplier')?d.returns.filter(r=>r.supplier===S.focus.key):d.returns;
   const draw=()=>{const pg=paginate('sup',SUPS,9,JSON.stringify([SUPS.length,S.focus]));
-  body.innerHTML=`<div class="bizcards">${pg.rows.map(s=>`<article class="biz"><div class="biz-h">${s.image?`<img class="mono photo" data-auth-src="${esc(s.image)}" alt="">`:`<span class="mono">${esc(initials(s.name))}</span>`}<div><h3>${esc(s.name)}</h3><small>${s.items.length} item${s.items.length===1?'':'s'} · ${s.openOrders} open order${s.openOrders===1?'':'s'} · ${s.receipts} deliver${s.receipts===1?'y':'ies'}</small></div></div>
+  body.innerHTML=`<div class="bizcards">${pg.rows.map(s=>{const miss=[s.onTimePct!=null&&s.onTimePct<90,s.fillPct!=null&&s.fillPct<95,s.rejectPct!=null&&100-s.rejectPct*10<80].filter(Boolean).length;
+    return `<article class="biz edge edge-${miss>=2?'bad':miss===1?'warn':'ok'}"><div class="biz-h">${s.image?`<img class="mono photo" data-auth-src="${esc(s.image)}" alt="">`:`<span class="mono">${esc(initials(s.name))}</span>`}<div><h3>${esc(s.name)}</h3><small>${s.items.length} item${s.items.length===1?'':'s'} · ${s.openOrders} open order${s.openOrders===1?'':'s'} · ${s.receipts} deliver${s.receipts===1?'y':'ies'}</small></div></div>
     <div class="rings">${ring(s.onTimePct,'On time',v=>v>=90)}${ring(s.fillPct,'In full',v=>v>=95)}${ring(s.rejectPct==null?null:Math.max(0,100-s.rejectPct*10),'Quality',v=>v>=80)}</div>
     ${s.priceAlerts.length?`<div class="row" style="display:flex;flex-wrap:wrap;gap:6px">${s.priceAlerts.map(a=>`<span class="sticker ${a.change>0?'melon':'lime'}">${xlItemName(a.name)} ${a.change>0?'+':''}${a.change}%</span>`).join('')}</div>`:''}
-    <button type="button" class="btn btn-sm btn-line biz-pl" data-pl="${esc(s.name)}">Price list (${s.items.length})</button></article>`).join('')}</div>${pg.html}`+
+    <button type="button" class="btn btn-sm btn-line biz-pl" data-pl="${esc(s.name)}">Price list (${s.items.length})</button></article>`}).join('')}</div>${pg.html}`+
     (RETS.length?`<div class="menu-h" style="margin-top:22px"><h2>Returns</h2></div><div class="feed">${RETS.map(r=>`<div class="feed-row" style="cursor:default"><span class="bubble bad">${esc(initials(r.supplier))}</span><div><b>${xlItemName(r.item)} · ${num(r.qty)} ${esc(r.unit)}</b><small>${esc(r.ref)} · ${xl('supplier',r.supplier)} · ${esc(r.reason)} · ${esc(r.at)}</small></div><span class="qty-pill num">${inr(r.value)}</span></div>`).join('')}</div>`:'');wirePager(body,draw);
   body.querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>{const s=d.suppliers.find(x=>x.name===b.dataset.pl);if(!s)return;
     peek(esc(s.name),['Price list',`${s.items.length} item${s.items.length===1?'':'s'}${s.priceAlerts.length?` · ${s.priceAlerts.length} price move${s.priceAlerts.length===1?'':'s'} of 5% or more`:''}`],
@@ -189,7 +190,7 @@ VIEWS.sales=async function(){
   const max=Math.max(...d.top.map(t=>t.revenue),1);
   const draw=()=>{const pg=paginate('sales',d.batches,9,String(d.batches.length));
   body.innerHTML=`<div class="waste-grid" style="grid-template-columns:minmax(0,1fr) minmax(0,340px)"><div><div class="zreports">${pg.rows.map(b=>{const v=b.source.startsWith('void:');
-    return `<article class="zr ${v?'void':''}">${v?'<span class="stamp bad">Void</span>':b.shortfalls.length?'<span class="stamp warn">Check stock</span>':''}
+    return `<article class="zr edge edge-${v?'mute':b.shortfalls.length?'warn':'ok'} ${v?'void':''}">${v?edgeTip('Void'):b.shortfalls.length?edgeTip('Check stock: an ingredient ran short'):''}
       <small class="muted">${esc(b.date)} · ${esc(b.source.replace(/^void:/,''))}</small><b style="font-size:15px">${esc(b.reference)}</b><div class="amt num">${inr(b.revenue)}</div>
       <dl><dt>Portions</dt><dd class="num">${num(b.items)}</dd><dt>Guests</dt><dd class="num">${num(b.covers)}</dd>${API.can.pricing?`<dt>Recipe cost</dt><dd class="num">${inr(b.cost)}</dd>`:''}</dl>
       ${b.shortfalls.length?`<div style="display:flex;flex-wrap:wrap;gap:5px">${b.shortfalls.map(s=>`<span class="sticker soft">${xlItemName(s.item)} short ${num(s.qty)} ${esc(s.unit)}</span>`).join('')}</div>`:''}

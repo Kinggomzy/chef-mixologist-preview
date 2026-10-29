@@ -49,7 +49,7 @@ function stockCard(x,c,n){
     :c.sugg?['warn',`Order ${fq(c.sugg)} ${esc(x.unit)}${API.can.pricing!==false?`, ${inr(c.sugg*x.cost)}`:''}`]
     :['',API.live?(x.lastRecv==null?'Not received yet':x.lastRecv===0?'Received today':`Last received ${x.lastRecv} day${x.lastRecv>1?'s':''} ago`):'Stock is healthy'];
   const tip=[x.name,`${x.sku} · ${x.loc}`,x.cat,x.sup?`Supplier: ${x.sup}`:'',`${fq(x.onHand)} ${x.unit} on hand · ${STICK[c.st][1]}`].filter(Boolean).join('\n');
-  return `<article class="sc st-${c.st}" tabindex="0" data-sku="${x.sku}" style="--i:${Math.min(n,14)}" title="${esc(tip)}" aria-label="${esc(x.name)}, ${STICK[c.st][1]}">
+  return `<article class="sc sc-st-${c.st}" tabindex="0" data-sku="${x.sku}" style="--i:${Math.min(n,14)}" title="${esc(tip)}" aria-label="${esc(x.name)}, ${STICK[c.st][1]}">
     <div class="sc-h">${x.img?img(x,'sc-img'):'<div class="noimg sc-img" title="No photo yet"></div>'}<div class="sc-t"><h3>${esc(x.name)}</h3></div><span class="info-tip sc-tip" role="img" tabindex="0" data-tip="${esc(STICK[c.st][1])}" aria-label="${esc(STICK[c.st][1])}">${INFO_ICON}</span></div>
     <small class="sc-code">${esc(x.sku)} · ${xl('location',x.loc)}</small>
     <div class="sc-m"><div><b class="num">${fq(x.onHand)}</b><span>${esc(x.unit)}</span><small>on hand${lots>1?` in ${lots} lots`:''}</small></div>

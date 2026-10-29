@@ -897,12 +897,27 @@ label{align-self:stretch}
 /* Stock cards: status shown as a coloured edge strip plus an info icon (the words appear on hover or tap) */
 .sc{--edge:var(--line-2);box-shadow:inset 5px 0 0 var(--edge),var(--lift-sm)}
 .sc:hover{box-shadow:inset 5px 0 0 var(--edge),var(--lift)}
-.sc.st-out,.sc.st-crit{--edge:var(--rust)}
-.sc.st-reorder{--edge:var(--gold)}
-.sc.st-onorder{--edge:var(--espresso-3)}
-.sc.st-ok{--edge:var(--jade-ink)}
-.sc.st-over{--edge:var(--line-2)}
+.sc.sc-st-out,.sc.sc-st-crit{--edge:var(--rust)}
+.sc.sc-st-reorder{--edge:var(--gold)}
+.sc.sc-st-onorder{--edge:var(--espresso-3)}
+.sc.sc-st-ok{--edge:var(--jade-ink)}
+.sc.sc-st-over{--edge:var(--line-2)}
 .sc-h .sc-tip{margin:0;width:22px;height:22px;color:var(--text-3)}
-.sc.st-out .sc-tip,.sc.st-crit .sc-tip{color:var(--rust-ink)}
-.sc.st-reorder .sc-tip{color:var(--gold-ink)}
-.sc.st-ok .sc-tip{color:var(--jade-ink)}
+.sc.sc-st-out .sc-tip,.sc.sc-st-crit .sc-tip{color:var(--rust-ink)}
+.sc.sc-st-reorder .sc-tip{color:var(--gold-ink)}
+.sc.sc-st-ok .sc-tip{color:var(--jade-ink)}
+
+/* One colour code for every card: strip on the left edge, words behind an info icon */
+.edge{--edge:var(--line-2);border-left:5px solid var(--edge)!important}
+.edge-ok{--edge:var(--jade-ink)}.edge-warn{--edge:var(--gold)}.edge-bad{--edge:var(--rust)}.edge-info{--edge:var(--espresso-3)}.edge-mute{--edge:var(--line-2)}
+.edge-tip{margin:0;flex:none;color:var(--text-3)}
+.edge.edge-ok .edge-tip{color:var(--jade-ink)}.edge.edge-warn .edge-tip{color:var(--gold-ink)}.edge.edge-bad .edge-tip{color:var(--rust-ink)}
+.appr-top,.req-top{display:flex;align-items:center;gap:8px}
+.stub .edge-tip,.zr .edge-tip{position:absolute;right:12px;top:12px}
+.person-s{display:flex;align-items:center;gap:8px}
+.mclose .edge-tip,.take .edge-tip{display:inline-grid}
+.colour-guide{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin:26px 0 8px;padding:14px 18px;border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--lift-sm);font-size:var(--fs-sm);color:var(--text-2)}
+.colour-guide > b{color:var(--text);margin-right:4px}
+.colour-guide span{display:inline-flex;align-items:center;gap:8px}
+.colour-guide u{text-decoration:none;font-weight:var(--fw-bold);color:var(--text)}
+.colour-guide .sw{width:5px;height:18px;border-radius:3px;background:var(--edge);flex:none}
