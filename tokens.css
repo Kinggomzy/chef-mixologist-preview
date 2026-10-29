@@ -1,0 +1,71 @@
+/* ==========================================================================
+   Chef & Mixologist design tokens — royal theme. The only place colours,
+   fonts and sizes are defined. See styleguide.html for the visual guide.
+
+   Palette, taken from the Chef & Mixologist logo (design/brand/logo.png):
+   - copper   : the logo ink (#B4420E). Brand accent: buttons, active nav, line-work.
+   - espresso : the deep brown of "Resto & Cafe", darkened. Sidebar, heroes, dark tiles.
+   - gold     : luxury highlight; also "needs attention".
+   - jade     : good / fresh / done.
+   - ruby     : problems: out of stock, wastage, delete (kept apart from copper).
+   - ivory    : canvas and surfaces.
+   Each meaning colour has three steps: fill (bars, badges), soft (tinted
+   backgrounds), ink (text and icons on light backgrounds, AA contrast).
+   ========================================================================== */
+:root{
+  /* brand */
+  --espresso:#2B1710; --espresso-2:#3D2218; --espresso-3:#6B3A26; --espresso-soft:#F3E8E1; --espresso-deep:#1E0F0A;
+  --copper:#B4420E;   --copper-light:#E08A5C; --copper-soft:#F8E5D9; --copper-ink:#8F320A;
+  --gold:#C9A24A;    --gold-light:#E6CF8F;--gold-soft:#F6EDD6;   --gold-ink:#7A5A12;
+  --jade:#8CCBA8;    --jade-soft:#E3F2EA; --jade-ink:#1E5E47;
+  --rust:#E2788A;    --rust-soft:#F9E1E5; --rust-ink:#9B1C31;   /* ruby */
+  /* neutrals */
+  --ivory:#F6EFE7;   --surface:#FFFCF8;   --surface-2:#F9F2EA;
+  --line:#ECDFD2;    --line-2:#DCC8B6;
+  --text:#24160F;    --text-2:#5A463B;    --text-3:#86766B;
+  --on-dark:#FFF8F0; --on-dark-2:#D9C3B1;
+
+  /* meanings (use these in components) */
+  --good:var(--jade);  --good-soft:var(--jade-soft);  --good-ink:var(--jade-ink);
+  --warn:var(--gold);  --warn-soft:var(--gold-soft);  --warn-ink:var(--gold-ink);
+  --bad:var(--rust);   --bad-soft:var(--rust-soft);   --bad-ink:var(--rust-ink);
+  --info-soft:var(--espresso-soft);
+
+  /* type */
+  --font-display:"Cormorant Garamond",Georgia,serif;          /* headings, big numbers */
+  --font-ui:"Hanken Grotesk",system-ui,sans-serif;            /* everything else */
+  --fs-xs:12px;  --fs-sm:13px;  --fs-base:14.5px; --fs-md:16px;
+  --fs-lg:21px;  --fs-xl:30px;  --fs-2xl:42px;    --fs-3xl:60px;
+  --fw-regular:500; --fw-medium:600; --fw-bold:700; --fw-heavy:700;
+  --lh-tight:1.05; --lh-body:1.45;
+
+  /* shape and depth */
+  --r-xl:26px; --r-lg:20px; --r-md:14px; --r-sm:10px; --r-pill:999px;
+  --lift:0 1px 0 color-mix(in srgb,var(--espresso) 5%,transparent),0 20px 44px -24px color-mix(in srgb,var(--espresso) 50%,transparent);
+  --lift-sm:0 1px 0 color-mix(in srgb,var(--espresso) 5%,transparent),0 12px 24px -18px color-mix(in srgb,var(--espresso) 42%,transparent);
+  --hairline:inset 0 0 0 1px color-mix(in srgb,var(--copper-light) 35%,transparent);   /* thin copper edge on dark surfaces */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
+
+  /* names used by older stylesheets and scripts — mapped onto the royal palette */
+  --night:var(--espresso); --night-2:var(--espresso-2); --night-3:var(--espresso-3); --night-soft:var(--espresso-soft);
+  --lime:var(--jade); --lime-soft:var(--jade-soft); --lime-ink:var(--jade-ink);
+  --turmeric:var(--gold); --turmeric-soft:var(--gold-soft); --turmeric-ink:var(--gold-ink);
+  --melon:var(--rust); --melon-soft:var(--rust-soft); --melon-ink:var(--rust-ink);
+  --canvas:var(--ivory); --on-night:var(--on-dark); --on-night-2:var(--on-dark-2);
+  --bg:var(--ivory); --ink:var(--text); --ink-2:var(--text-2); --ink-3:var(--text-3);
+  --brand:var(--espresso); --brand-soft:var(--espresso-soft); --grey-soft:var(--surface-2);
+  --red:var(--rust-ink); --red-soft:var(--rust-soft);
+  --amber:var(--gold-ink); --amber-soft:var(--gold-soft);
+  --green:var(--jade-ink); --green-soft:var(--jade-soft);
+  --blue:var(--espresso-3); --blue-soft:var(--espresso-soft);
+  --head:var(--font-display); --ui:var(--font-ui);
+  --shadow:var(--lift-sm);
+}
+
+/* status chips, one meaning each */
+.s-out{background:var(--rust-ink);color:#fff}
+.s-crit{background:var(--rust-soft);color:var(--rust-ink)}
+.s-reorder{background:var(--gold-soft);color:var(--gold-ink)}
+.s-onorder{background:var(--espresso-soft);color:var(--espresso-3)}
+.s-ok{background:var(--jade-soft);color:var(--jade-ink)}
+.s-over{background:var(--surface-2);color:var(--text-2)}

@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="boot.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chef &amp; Mixologist · preview</title>
+<link rel="icon" type="image/png" href="brand/favicon-64.png">
+<link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2B1710">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://images.unsplash.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ECEFEA; --surface:#FFFFFF; --surface-2:#F6F7F4; --line:#DDE2DA; --line-2:#C9D0C5;
+  --ink:#16203D; --ink-2:#424B68; --ink-3:#7A8199;
+  --brand:#24357F; --brand-soft:#E6E9F6;
+  --red:#C2362F; --red-soft:#FBE7E5;
+  --amber:#C27A06; --amber-soft:#FCF0D6;
+  --green:#2C7A4B; --green-soft:#DFF0E5;
+  --blue:#2D6BB0; --blue-soft:#E1ECF8;
+  --grey-soft:#E9ECE7;
+  --head:"Bricolage Grotesque",system-ui,sans-serif; --ui:"Hanken Grotesk",system-ui,sans-serif;
+  --shadow:0 1px 0 rgba(22,32,61,.04),0 8px 24px -12px rgba(22,32,61,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg)}
+body{font-family:var(--ui);color:var(--ink);font-size:14.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-3)}
+h1,h2,h3{font-family:var(--head);font-weight:700;letter-spacing:-.015em;line-height:1.1}
+
+/* ---------- app frame ---------- */
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+.side{background:var(--ink);color:#DCE0F0;padding:20px 14px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh}
+.logo{display:flex;gap:10px;align-items:center;padding:0 6px}
+.logo-mark{width:36px;height:36px;border-radius:10px;background:#F1B53B;color:var(--ink);display:grid;place-items:center;font-family:var(--head);font-weight:700;font-size:15px}
+.logo b{font-family:var(--head);font-size:16px;color:#fff;display:block;line-height:1.1}
+.logo small{font-size:12px;color:#99A0C2}
+.menu{display:grid;gap:2px}
+.menu button{display:flex;align-items:center;gap:11px;padding:9px 10px;border:0;background:none;border-radius:9px;color:#C4C9E2;text-align:left;font-weight:500}
+.menu button svg{flex:none;opacity:.8}
+.menu button:hover{background:#222D52;color:#fff}
+.menu button[aria-current="page"]{background:#fff;color:var(--ink)}
+.menu button[aria-current="page"] svg{opacity:1}
+.menu .badge{margin-left:auto;font-size:11.5px;font-weight:700;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px}
+.menu button[aria-current="page"] .badge{background:var(--red)}
+.side-sec{font-size:12px;color:#7D84A8;padding:0 10px;margin-bottom:-14px}
+.side-foot{margin-top:auto;display:flex;gap:10px;align-items:center;padding:10px;border-radius:10px;background:#1F2A4D}
+.avatar{width:34px;height:34px;border-radius:50%;background:#F1B53B;color:var(--ink);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.side-foot b{display:block;color:#fff;font-size:13.5px}
+.side-foot small{font-size:12px;color:#99A0C2}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:14px;padding:14px 28px;background:rgba(236,239,234,.85);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line)}
+.search{position:relative;flex:1;max-width:460px}
+.search input{width:100%;height:40px;padding:0 44px 0 38px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface)}
+.search input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.search > svg{position:absolute;left:12px;top:12px;color:var(--ink-3)}
+.search kbd{position:absolute;right:10px;top:10px;font:600 11px var(--ui);color:var(--ink-3);border:1px solid var(--line-2);border-radius:5px;padding:1px 6px;background:var(--surface-2)}
+.site{display:flex;align-items:center;gap:8px;color:var(--ink-2);font-weight:500;margin-left:auto}
+.site .live{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
+.btn{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 15px;border-radius:10px;border:1px solid transparent;font-weight:600;font-size:14px;white-space:nowrap}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:#1C2A6A}
+.btn-line{background:var(--surface);border-color:var(--line-2);color:var(--ink)}
+.btn-line:hover{border-color:var(--ink-3)}
+.btn-sm{height:32px;padding:0 12px;font-size:13px;border-radius:8px}
+
+.page{padding:26px 28px 60px;max-width:1520px;width:100%}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.page-head h1{font-size:30px}
+.page-head p{color:var(--ink-3);margin-top:5px}
+.view{display:none}.view.on{display:block}
+
+/* ---------- panels ---------- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.panel-h{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px 0}
+.panel-h h2{font-size:17px}
+.panel-h p{font-size:13px;color:var(--ink-3)}
+.panel-b{padding:16px 18px 18px}
+
+/* ---------- kpis ---------- */
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;text-align:left;border-top:3px solid var(--k,var(--line))}
+button.kpi:hover{border-color:var(--line-2);border-top-color:var(--k)}
+.kpi .lbl{font-size:13px;color:var(--ink-2);font-weight:500}
+.kpi .val{font-family:var(--head);font-size:30px;font-weight:700;margin-top:6px;letter-spacing:-.02em}
+.kpi .sub{font-size:12.5px;color:var(--ink-3);margin-top:2px}
+
+.grid-ov{display:grid;grid-template-columns:1.55fr 1fr;gap:16px}
+.stack{display:grid;gap:16px;align-content:start}
+
+/* health bar */
+.health{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px}
+.health span{display:block;height:100%}
+.health-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-size:13px}
+.health-legend button{border:0;background:none;display:flex;align-items:center;gap:7px;color:var(--ink-2);padding:2px 0}
+.health-legend button:hover{color:var(--ink)}
+.health-legend i{width:10px;height:10px;border-radius:3px;display:block}
+.health-legend b{font-weight:700;color:var(--ink)}
+
+/* attention list */
+.att{display:grid}
+.att-row{display:grid;grid-template-columns:44px 1fr auto auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+.att-row:first-child{border-top:0}
+.att-row:hover .att-name{color:var(--brand)}
+.att-row img,.att-row .noimg{width:44px;height:44px;border-radius:9px;object-fit:cover;background:var(--grey-soft)}
+.att-name{font-weight:600}
+.att-row small{display:block;color:var(--ink-3);font-size:12.5px}
+.att-act{font-size:13px;text-align:right}
+
+/* inbound timeline */
+.tl{display:grid;gap:10px}
+.tl-day{display:grid;grid-template-columns:62px 1fr;gap:12px}
+.tl-date{font-size:12.5px;color:var(--ink-3);padding-top:9px}
+.tl-date b{display:block;font-family:var(--head);font-size:20px;color:var(--ink)}
+.tl-cards{display:grid;gap:8px}
+.po{border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:10px;padding:10px 12px;background:var(--surface-2)}
+.po-top{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.po-top b{font-size:14px}
+.po-items{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.po-items span{font-size:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+
+/* chart */
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);margin-top:8px}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:14px;height:3px;border-radius:2px;display:block}
+
+/* ---------- toolbar ---------- */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{height:34px;padding:0 13px;border-radius:17px;border:1px solid var(--line-2);background:var(--surface);font-weight:500;font-size:13.5px;display:inline-flex;align-items:center;gap:6px}
+.chip:hover{border-color:var(--ink-3)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip em{font-style:normal;font-size:12px;opacity:.65}
+.field{display:flex;align-items:center;gap:6px;height:34px;padding:0 4px 0 11px;border:1px solid var(--line-2);border-radius:9px;background:var(--surface);font-size:13px;color:var(--ink-3)}
+.field select{border:0;background:none;height:100%;font-weight:600;color:var(--ink);font-size:13.5px;padding-right:4px}
+.field select:focus{outline:none}
+.seg{display:inline-flex;background:var(--grey-soft);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;height:30px;padding:0 12px;border-radius:7px;font-weight:600;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(22,32,61,.15)}
+.grow{flex:1}
+.result-count{font-size:13px;color:var(--ink-3)}
+
+/* ---------- item cards ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;cursor:pointer;transition:transform .18s, box-shadow .18s}
+.card:hover{transform:translateY(-2px);box-shadow:0 1px 0 rgba(22,32,61,.04),0 16px 32px -14px rgba(22,32,61,.28)}
+.card-img{position:relative;aspect-ratio:16/10;background:var(--grey-soft);overflow:hidden}
+.card-img img{width:100%;height:100%;object-fit:cover;display:block}
+.card-img .noimg{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:13px;text-align:center;gap:4px}
+.pill{position:absolute;left:10px;top:10px;font-size:12px;font-weight:700;padding:4px 9px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;backdrop-filter:blur(6px)}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.cover{position:absolute;right:10px;top:10px;font-size:12px;font-weight:700;padding:4px 9px;border-radius:20px;background:rgba(22,32,61,.78);color:#fff}
+.s-out{background:var(--red);color:#fff}.s-out::before{background:#fff}
+.s-crit{background:var(--red-soft);color:var(--red)}
+.s-reorder{background:var(--amber-soft);color:var(--amber)}
+.s-onorder{background:var(--blue-soft);color:var(--blue)}
+.s-ok{background:var(--green-soft);color:var(--green)}
+.s-over{background:#ECE8F5;color:#5E4B99}
+.card-b{padding:13px 14px 14px;display:flex;flex-direction:column;gap:10px;flex:1}
+.card-t{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.card-t h3{font-size:16px;line-height:1.2}
+.card-t small{display:block;font-size:12px;color:var(--ink-3);margin-top:2px}
+.onhand{text-align:right;white-space:nowrap}
+.onhand b{font-family:var(--head);font-size:24px;line-height:1;letter-spacing:-.02em}
+.onhand span{font-size:12.5px;color:var(--ink-3);margin-left:2px}
+
+/* zone gauge */
+.gauge{position:relative;height:10px;border-radius:5px;display:flex;overflow:visible}
+.gauge .z{height:100%}
+.gauge .z:first-child{border-radius:5px 0 0 5px}.gauge .z:last-child{border-radius:0 5px 5px 0}
+.gauge .mk{position:absolute;top:-4px;width:4px;height:18px;border-radius:2px;background:var(--ink);transform:translateX(-50%);box-shadow:0 0 0 2px #fff}
+.gauge .inc{position:absolute;top:-3px;width:0;height:16px;border-left:2px dashed var(--blue);transform:translateX(-50%)}
+.gauge .inc-bar{position:absolute;top:3px;height:4px;background:repeating-linear-gradient(90deg,var(--blue) 0 4px,transparent 4px 7px)}
+.params{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.params div{padding:6px 8px;border-left:1px solid var(--line)}
+.params div:first-child{border-left:0}
+.params small{display:block;font-size:11.5px;color:var(--ink-3)}
+.params b{font-size:13.5px}
+.incoming{font-size:12.5px;color:var(--blue);display:flex;gap:6px;align-items:center;font-weight:600;margin-top:auto}
+.incoming.none{color:var(--ink-3);font-weight:500}
+
+/* ---------- table ---------- */
+.tablewrap{overflow:auto;border-radius:14px}
+table.t{width:100%;border-collapse:collapse;background:var(--surface);font-size:13.5px}
+.t th{position:sticky;top:0;background:var(--surface-2);font-weight:600;font-size:12.5px;color:var(--ink-2);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.t th.r,.t td.r{text-align:right}
+.t th button{border:0;background:none;font-weight:600;color:inherit;display:inline-flex;gap:4px;align-items:center}
+.t th button[data-dir]::after{content:"↓";font-size:11px;color:var(--brand)}
+.t th button[data-dir="asc"]::after{content:"↑"}
+.t td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.t tbody tr:hover td{background:#FAFBF8}
+.t tbody tr.click{cursor:pointer}
+.t .itm{display:flex;gap:10px;align-items:center;min-width:200px}
+.t .itm img,.t .itm .noimg{width:36px;height:36px;border-radius:8px;object-fit:cover;background:var(--grey-soft);flex:none}
+.t .itm b{display:block;font-weight:600}
+.t .itm small{color:var(--ink-3);font-size:12px}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 8px;border-radius:12px;white-space:nowrap}
+.tag::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.tag.s-out::before{background:#fff}
+.mini-gauge{width:110px}
+
+/* ---------- replenishment ---------- */
+.supp{margin-bottom:16px}
+.supp-h{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.supp-h h2{font-size:17px}
+.supp-h .meta{font-size:13px;color:var(--ink-3)}
+.supp-h .tot{margin-left:auto;text-align:right}
+.supp-h .tot b{font-family:var(--head);font-size:20px;display:block}
+.supp table.t{border-radius:0}
+.qty-in{width:84px;height:32px;border:1px solid var(--line-2);border-radius:8px;padding:0 8px;text-align:right;font-variant-numeric:tabular-nums}
+.qty-in:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.check{width:18px;height:18px;accent-color:var(--brand)}
+.formula{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.formula > div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--ink-2)}
+.formula b{display:block;color:var(--ink);font-size:14px;margin-bottom:3px}
+.formula code{font-family:var(--ui);font-weight:600;color:var(--brand);background:var(--brand-soft);padding:1px 6px;border-radius:5px}
+
+/* ---------- drawer ---------- */
+.scrim{position:fixed;inset:0;background:rgba(22,32,61,.42);opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(640px,100%);background:var(--bg);z-index:41;transform:translateX(102%);transition:transform .28s cubic-bezier(.2,.8,.2,1);overflow:auto;display:flex;flex-direction:column}
+body.d-open .scrim{opacity:1;pointer-events:auto}
+body.d-open .drawer{transform:none}
+.d-hero{position:relative;height:260px;background:var(--grey-soft);flex:none}
+.d-hero img{width:100%;height:100%;object-fit:cover;display:block}
+.d-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(22,32,61,.25),transparent 30%,transparent 50%,rgba(22,32,61,.85))}
+.d-hero .tools{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;z-index:2}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.92);display:grid;place-items:center}
+.d-hero .cap{position:absolute;left:22px;right:22px;bottom:18px;z-index:2;color:#fff}
+.d-hero .cap h2{font-size:30px}
+.d-hero .cap p{opacity:.85;font-size:13.5px;margin-top:4px}
+.photo-btn{background:rgba(255,255,255,.92);border:0;border-radius:18px;height:34px;padding:0 13px;font-weight:600;font-size:13px;display:flex;gap:6px;align-items:center}
+.d-body{padding:18px 22px 40px;display:grid;gap:16px}
+.d-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.d-stats div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+.d-stats small{display:block;font-size:12px;color:var(--ink-3)}
+.d-stats b{font-family:var(--head);font-size:21px;letter-spacing:-.01em}
+.d-stats b span{font-family:var(--ui);font-size:12px;color:var(--ink-3);font-weight:500;margin-left:2px}
+.d-sec h3{font-size:15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.d-sec h3 span{font-family:var(--ui);font-size:12.5px;font-weight:500;color:var(--ink-3)}
+.calc{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.calc label{display:grid;gap:4px;font-size:12.5px;color:var(--ink-3);font-weight:500}
+.calc input,.calc select{height:36px;border:1px solid var(--line-2);border-radius:8px;padding:0 10px;background:var(--surface);font-weight:600;color:var(--ink);font-size:14px}
+.calc input:focus,.calc select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.calc-out{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.calc-out div{border-radius:10px;padding:10px 12px}
+.calc-out small{display:block;font-size:12px;font-weight:600}
+.calc-out b{font-family:var(--head);font-size:22px}
+.calc-out p{font-size:11.5px;opacity:.8;margin-top:2px}
+.d-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- modal ---------- */
+.modal{position:fixed;inset:0;display:none;place-items:center;z-index:50;background:rgba(22,32,61,.45);padding:16px}
+.modal.on{display:grid}
+.modal-box{background:var(--surface);border-radius:16px;width:min(720px,100%);max-height:90vh;overflow:auto;box-shadow:0 30px 80px -20px rgba(22,32,61,.5)}
+.modal-h{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line)}
+.modal-h h2{font-size:20px}
+.modal-f{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--line);background:var(--surface-2)}
+.qc{display:flex;gap:6px}
+.qc button{height:30px;padding:0 10px;border-radius:7px;border:1px solid var(--line-2);background:var(--surface);font-size:12.5px;font-weight:600}
+.qc button[aria-pressed="true"][data-v="ok"]{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+.qc button[aria-pressed="true"][data-v="no"]{background:var(--red-soft);border-color:var(--red);color:var(--red)}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-weight:600;opacity:0;transition:.25s;z-index:60;pointer-events:none;display:flex;gap:8px;align-items:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.empty{padding:48px 20px;text-align:center;color:var(--ink-3)}
+.empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+.empty .btn{margin-top:12px}
+
+@media (max-width:1280px){.kpis{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:1050px){.grid-ov{grid-template-columns:1fr}.formula{grid-template-columns:1fr}}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;align-items:center;padding:10px 12px;gap:10px;overflow:auto}
+  .side-sec,.side-foot,.logo div{display:none}
+  .menu{display:flex;gap:4px}
+  .menu button{white-space:nowrap}
+  .topbar{padding:10px 16px;flex-wrap:wrap}.site{display:none}
+  .page{padding:18px 16px 50px}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .d-stats{grid-template-columns:repeat(2,1fr)}
+  .calc-out{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+</style>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="cards.css">
+<link rel="stylesheet" href="theme.css">
+<script src="palette.js"></script>
+<meta name="robots" content="noindex">
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side">
+    <div class="logo"><img class="logo-img" src="brand/mark-light.png" alt="Chef &amp; Mixologist"><div><b>Chef &amp; Mixologist</b><small>RESTO &amp; CAFE</small></div>
+      <button type="button" class="nav-toggle" id="navToggle" aria-controls="side" aria-expanded="false" aria-label="Open menu"><svg class="bars" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><svg class="x" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <label class="menu-q"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="menuQ" type="search" placeholder="Search the menu" aria-label="Search the menu"></label>
+    <nav class="menu" id="menu" aria-label="Sections"></nav>
+    <button type="button" class="side-foot" id="sideFoot" data-signin><span class="avatar">?</span><div><b>Sign in</b><small>You are seeing sample data</small></div></button>
+  </aside>
+
+  <div class="nav-scrim" id="navScrim" hidden></div>
+  <div class="main">
+    <header class="topbar">
+      <label class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search items, SKUs, suppliers, POs" aria-label="Search inventory">
+        <kbd>/</kbd>
+      </label>
+      <div class="site" id="site"><span class="live" style="background:var(--turmeric-ink)"></span>Sample data · <button class="btn btn-sm btn-primary" type="button" data-signin style="margin-left:6px">Sign in</button></div>
+      <button class="btn btn-line" data-goto="replenish">Reorder</button>
+      <button class="btn btn-primary" id="receiveBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Receive<span class="wide-only"> goods</span></button>
+    </header>
+
+    <div class="page">
+      <!-- OVERVIEW -->
+      <section class="view" id="v-overview">
+        <div class="page-head"><div><h1>Stock overview</h1><p>Live position of every raw material across the walk-in, dry store and beverage station.</p></div></div>
+        <div class="kpis bento b6" id="kpis"></div>
+        <div class="grid-ov">
+          <div class="stack">
+            <div class="panel"><div class="panel-h"><h2>Stock health</h2><p id="health-note"></p></div><div class="panel-b"><div class="health" id="health"></div><div class="health-legend" id="health-legend"></div></div></div>
+            <div class="panel"><div class="panel-h"><h2>Needs action</h2><button class="btn btn-sm btn-line" data-goto="replenish">Open reorder list</button></div><div class="panel-b att" id="att"></div></div>
+          </div>
+          <div class="stack">
+            <div class="panel"><div class="panel-h"><h2>Inbound this week</h2><p>Open purchase orders</p></div><div class="panel-b tl" id="tl"></div></div>
+            <div class="panel chart"><div class="panel-h"><h2>Receipts vs usage</h2><p>Last 14 days, ₹ thousand</p></div><div class="panel-b" id="flow"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ITEMS -->
+      <section class="view" id="v-items">
+        <div class="page-head"><div><h1>Raw materials</h1><p>Each card shows stock on hand against its safety stock, reorder point and maximum level.</p></div>
+          <button class="btn btn-line" id="newItem">+ New item</button></div>
+        <div class="toolbar">
+          <div class="chips" id="cats"></div>
+        </div>
+        <div class="toolbar">
+          <label class="field">Status<select id="f-status"></select></label>
+          <label class="field">Location<select id="f-loc"></select></label>
+          <label class="field">Sort<select id="f-sort">
+            <option value="urgency">Most urgent first</option><option value="cover">Days of cover</option><option value="name">Name A–Z</option><option value="value">Stock value</option><option value="expiry">Nearest expiry</option></select></label>
+          <span class="result-count" id="count"></span>
+          <span class="grow"></span>
+          <div class="seg" role="group" aria-label="Layout">
+            <button data-layout="cards" aria-pressed="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>Cards</button>
+            <button data-layout="table"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Table</button>
+          </div>
+        </div>
+        <div id="items-out"></div>
+      </section>
+
+      <!-- INWARD -->
+      <section class="view" id="v-inward">
+        <div class="page-head"><div><h1>Goods inward</h1><p>Expected deliveries and goods received notes (GRN), with quantity and quality checks.</p></div></div>
+        <div class="panel" style="margin-bottom:16px"><div class="panel-h"><h2>Expected deliveries</h2><p>Receive against the purchase order</p></div><div class="panel-b" style="padding:12px 0 0"><div class="tablewrap"><table class="t" id="expected"></table></div></div></div>
+        <div class="panel"><div class="panel-h"><h2>Recent receipts</h2><p>Last 7 days</p></div><div class="panel-b" style="padding:12px 0 0"><div class="tablewrap"><table class="t" id="grns"></table></div></div></div>
+      </section>
+
+      <!-- REPLENISH -->
+      <section class="view" id="v-replenish">
+        <div class="page-head"><div><h1>Replenishment</h1><p>Items at or below their reorder point, grouped by supplier. Quantities top stock back up to the maximum level.</p></div>
+          <div class="seg" role="group" aria-label="Service level"><button data-sl="1.28">90% service</button><button data-sl="1.65" aria-pressed="true">95% service</button><button data-sl="2.33">99% service</button></div></div>
+        <details class="formula-wrap" open><summary>How the quantities are worked out</summary>
+        <div class="formula">
+          <div><b>Safety stock</b><code>z × σ daily use × √lead time</code><br>Buffer against busy days and late deliveries.</div>
+          <div><b>Reorder point</b><code>avg daily use × lead time + safety stock</code><br>Order when on hand plus on order falls to this.</div>
+          <div><b>Order quantity</b><code>max level − (on hand + on order)</code><br>Max level covers lead time plus a 7-day review cycle, rounded up to the supplier's pack size.</div>
+        </div></details>
+        <div id="repl"></div>
+      </section>
+
+      <!-- MOVEMENTS -->
+      <section class="view" id="v-moves">
+        <div class="page-head"><div><h1>Stock movements</h1><p>Every receipt, issue, transfer, wastage and adjustment, with who did it.</p></div><button class="btn btn-line" id="exportCsv">Export CSV</button></div>
+        <div class="toolbar"><div class="chips" id="mv-types"></div></div>
+        <div class="panel"><div class="tablewrap"><table class="t" id="moves"></table></div></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Item details"></aside>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="m-title"><div class="modal-box" id="modal-box"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ================= data ================= */
+const U=id=>/^(https?|blob):/.test(id)?id:id.startsWith('/')?API.base+id:`https://images.unsplash.com/${id}?auto=format&fit=crop&w=640&h=400&q=70`;
+const RAW=[
+ // sku, name, cat, loc, unit, onHand, avgDaily, leadDays, cost, supplier, shelfDays, pack, img
+ ['DA-101','Paneer, fresh block','Dairy','Walk-in chiller','kg',6.5,4.2,1,380,'Lake Town Dairy',4,1,'photo-1632200729570-1043effd1b77'],
+ ['DA-102','Full cream milk','Dairy','Walk-in chiller','L',22,14,1,68,'Lake Town Dairy',2,10,'photo-1550583724-b2692b85b150'],
+ ['DA-103','Dahi (set curd)','Dairy','Walk-in chiller','kg',2.5,3.5,1,120,'Lake Town Dairy',4,1,'photo-1581868164904-77b124b80242'],
+ ['DA-104','Cow ghee','Dairy','Dry store','kg',7,0.6,3,640,'Amul Distributor, Salt Lake',120,1,'photo-1573812461383-e5f8b759d12e'],
+ ['PR-201','Gondhoraj lime','Produce','Walk-in chiller','pc',18,45,2,6,'Koley Market Wholesale',7,50,'photo-1582287104445-6754664dbdb2'],
+ ['PR-202','Raw mango','Produce','Walk-in chiller','kg',9,2.8,2,90,'Koley Market Wholesale',6,5,'photo-1553279768-865429fa0078'],
+ ['PR-203','Watermelon','Produce','Walk-in chiller','kg',58,6,2,28,'Koley Market Wholesale',6,10,'photo-1587049352846-4a222e784d38'],
+ ['PR-204','Fresh mint','Produce','Beverage station','bunch',4,9,1,15,'Koley Market Wholesale',3,10,'photo-1618130070080-91f4d55a2383'],
+ ['PR-205','Banana flower (mocha)','Produce','Walk-in chiller','pc',0,3,2,35,'Koley Market Wholesale',4,1,'photo-1566206681477-7bf7107e753c'],
+ ['PR-206','Tender jackfruit','Produce','Walk-in chiller','kg',8,2,3,70,'Baruipur Farms',5,5,'photo-1624711078028-19ed36a91f02'],
+ ['PR-207','Tomato','Produce','Walk-in chiller','kg',6,5,1,40,'Koley Market Wholesale',6,5,'photo-1607305387299-a3d9611cd469'],
+ ['PR-208','Onion','Produce','Dry store','kg',40,8,2,35,'Koley Market Wholesale',30,10,'photo-1618512496248-a07fe83aa8cb'],
+ ['PR-209','Potato','Produce','Dry store','kg',26,7,2,30,'Koley Market Wholesale',30,10,'photo-1518977676601-b53f82aba655'],
+ ['PR-210','Cauliflower','Produce','Walk-in chiller','kg',3,3,1,45,'Baruipur Farms',5,5,'photo-1566842600175-97dca489844f'],
+ ['PR-211','Green chilli','Produce','Walk-in chiller','kg',0.5,0.5,1,80,'Koley Market Wholesale',7,1,'photo-1599987141071-f5810d32e21a'],
+ ['PR-212','Ginger','Produce','Dry store','kg',2.1,0.6,2,160,'Koley Market Wholesale',20,1,'photo-1630623093145-f606591c2546'],
+ ['PR-213','Coriander leaves','Produce','Walk-in chiller','bunch',10,6,1,10,'Koley Market Wholesale',3,10,'photo-1588879460618-9249e7d947d1'],
+ ['DS-301','Gobindobhog rice','Dry goods','Dry store','kg',48,4,5,110,'Bardhaman Rice Mills',240,25,'photo-1589302168068-964664d93dc0'],
+ ['DS-302','Nolen gur','Dry goods','Dry store','kg',2.4,0.5,7,420,'Joynagar Gur House',45,2,'photo-1788238025855-55581a2ed354'],
+ ['DS-303','Sugar','Dry goods','Dry store','kg',9,2.5,3,46,'Burra Bazar Traders',365,25,'photo-1709651808265-977ed7ef78c6'],
+ ['DS-304','Posto (poppy seed)','Dry goods','Dry store','kg',0.7,0.25,4,1600,'Burdwan Spice Traders',180,1,'photo-1612708015264-5f13c037c9cd'],
+ ['DS-305','Cashew W240','Dry goods','Dry store','kg',3.5,0.4,4,980,'Burra Bazar Traders',180,1,'photo-1726771517475-e7acdd34cd8a'],
+ ['DS-306','Mustard oil','Dry goods','Dry store','L',5,2.2,3,175,'Burra Bazar Traders',270,5,'photo-1474979266404-7eaacbcd87c5'],
+ ['BV-401','Tender coconut water','Beverage bases','Beverage station','L',9,7,2,85,'Coastal Beverages',3,5,'photo-1537191072641-5e19cc173c6a'],
+ ['BV-402','Tonic water, 300 ml','Beverage bases','Beverage station','btl',18,6,3,45,'Coastal Beverages',270,24,'photo-1716497046162-1326a7703f8e'],
+ ['BV-403','Soda water, 750 ml','Beverage bases','Beverage station','btl',96,14,2,22,'Coastal Beverages',270,24,'photo-1617404962988-b0d6a45b2d20'],
+ ['BV-404','Kokum syrup','Beverage bases','Beverage station','L',3,0.4,6,310,'Konkan Naturals',180,2,null],
+ ['PK-501','Takeaway cup, 400 ml','Packaging','Dry store','pc',150,60,5,7,'EcoPack Kolkata',999,100,'photo-1615485736894-a2d2e6d4cd9a'],
+];
+const POS=[
+ {po:'PO-2041',sup:'Koley Market Wholesale',day:0,eta:'Today, 5:00 pm',lines:{'PR-205':12,'PR-204':30,'PR-213':20,'PR-201':150}},
+ {po:'PO-2042',sup:'Lake Town Dairy',day:1,eta:'Thu 29 Oct, 7:00 am',lines:{'DA-101':10,'DA-103':6,'DA-102':40}},
+ {po:'PO-2043',sup:'Burdwan Spice Traders',day:2,eta:'Fri 30 Oct',lines:{'DS-304':2}},
+ {po:'PO-2044',sup:'Coastal Beverages',day:3,eta:'Sat 31 Oct',lines:{'BV-402':48}},
+];
+let SL=1.65; // z for service level
+const TODAY=new Date(2026,9,28);
+
+function rnd(seed){let s=seed%2147483647;if(s<=0)s+=2147483646;return()=>(s=s*16807%2147483647)/2147483647}
+const items=RAW.map((r,i)=>{const [sku,name,cat,loc,unit,onHand,avg,lead,cost,sup,shelf,pack,img]=r;
+  const R=rnd(i*97+13);const lots=[];let left=onHand;let k=0;
+  while(left>0&&k<3){const q=k===2||R()<.45?left:+(left*(.4+R()*.3)).toFixed(1);const age=k*2+Math.floor(R()*2);lots.push({lot:`L${2610-k*3+i%3}-${sku.slice(-3)}`,qty:+q.toFixed(1),recv:age,exp:Math.max(0,shelf-age)});left=+(left-q).toFixed(1);k++}
+  return {i,sku,name,cat,loc,unit,onHand,avg,sd:avg*.28,lead,cost,sup,shelf,pack,img,lots}});
+const bySku=Object.fromEntries(items.map(x=>[x.sku,x]));
+function incomingOf(x){let q=0,po=null;POS.forEach(p=>{if(p.lines[x.sku]){q+=p.lines[x.sku];po=po||p}});return{q,po}}
+function calc(x,z=SL){
+  // Live data carries the levels worked out on the server (suggested or set by hand)
+  const P=x.plan&&z===SL?x.plan:null;
+  const ss=P?P.ss.value:z*x.sd*Math.sqrt(x.lead), rop=P?P.rop.value:x.avg*x.lead+ss, max=P?P.max.value:x.avg*(x.lead+7)+ss;
+  const inc=incomingOf(x), pos=x.onHand+inc.q;
+  const sugg=pos<=rop?Math.max(x.pack,Math.ceil((max-pos)/x.pack)*x.pack):0;
+  const cover=x.avg?x.onHand/x.avg:99, expiry=x.lots.length?Math.min(...x.lots.map(l=>l.exp)):999;
+  let st;
+  if(x.onHand<=0)st='out';else if(x.onHand<ss)st=inc.q?'onorder':'crit';else if(x.onHand<=rop)st=inc.q&&pos>rop?'onorder':'reorder';else if(x.onHand>max*1.15)st='over';else st='ok';
+  if(x.onHand<=0&&inc.q)st='out';
+  return{ss,rop,max,inc,pos,sugg,cover,expiry,value:x.value!=null?x.value:x.onHand*x.cost,st};
+}
+const ST={out:['Stock-out','s-out',0],crit:['Below safety stock','s-crit',1],reorder:['Reorder now','s-reorder',2],onorder:['On order','s-onorder',3],ok:['Healthy','s-ok',4],over:['Overstocked','s-over',5]};
+const ST_COL={out:'var(--melon-ink)',crit:'var(--melon)',reorder:'var(--turmeric)',onorder:'var(--night-3)',ok:'var(--lime)',over:'var(--line-2)'};
+
+/* movements */
+const USERS=['Subhajit D.','Chef Arnab','Priya (bar)','Rakesh (store)'];
+const moves=[];(()=>{const R=rnd(7);const types=['Issue to kitchen','Issue to kitchen','Issue to kitchen','Receipt','Issue to beverage','Wastage','Transfer','Adjustment'];
+ for(let d=0;d<6;d++){for(let n=0;n<7;n++){const x=items[Math.floor(R()*items.length)];let t=types[Math.floor(R()*types.length)];if(x.cat==='Beverage bases'&&t==='Issue to kitchen')t='Issue to beverage';
+  const base=Math.max(x.pack,x.avg)*(t==='Receipt'?2.5:t==='Wastage'?.15:.6);const q=+(base*(.6+R()*.8)).toFixed(x.unit==='pc'||x.unit==='btl'||x.unit==='bunch'?0:1)||1;
+  const h=9+Math.floor(R()*12),m=Math.floor(R()*60);
+  moves.push({d,time:`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`,x,t,q:(t==='Receipt'||t==='Adjustment'&&R()<.5)?q:-q,user:t==='Receipt'?'Rakesh (store)':USERS[Math.floor(R()*USERS.length)],ref:t==='Receipt'?`GRN-${880-d*2-n%2}`:t==='Wastage'?['Spoiled','Over-ripe','Spilled','Expired'][n%4]:t==='Transfer'?'Dry store → Kitchen':t==='Adjustment'?'Stock count':`Req-${4410-d*7-n}`})}}
+ moves.sort((a,b)=>a.d-b.d||b.time.localeCompare(a.time));})();
+const GRNS=[
+ {grn:'GRN-880',po:'PO-2038',sup:'Koley Market Wholesale',d:0,lines:[['PR-207',15,15],['PR-208',30,30],['PR-210',10,8]],qc:'Partly rejected',note:'2 kg cauliflower bruised, returned'},
+ {grn:'GRN-878',po:'PO-2037',sup:'Lake Town Dairy',d:1,lines:[['DA-101',8,8],['DA-102',40,40]],qc:'Accepted',note:'Milk at 4 °C on arrival'},
+ {grn:'GRN-876',po:'PO-2035',sup:'Coastal Beverages',d:2,lines:[['BV-403',96,96],['BV-401',20,15]],qc:'Short delivery',note:'5 L coconut water short, back-ordered'},
+ {grn:'GRN-873',po:'PO-2033',sup:'Burra Bazar Traders',d:4,lines:[['DS-303',25,25],['DS-306',10,10],['DS-305',2,2]],qc:'Accepted',note:'Invoice matched'},
+ {grn:'GRN-871',po:'PO-2031',sup:'Bardhaman Rice Mills',d:6,lines:[['DS-301',50,50]],qc:'Accepted',note:'Batch BRM-1026'},
+];
+
+/* ================= helpers ================= */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const NOMONEY=()=>API.live&&!API.can.pricing;
+const inr=n=>NOMONEY()?'—':'₹'+Math.round(n).toLocaleString('en-IN');
+const inrK=n=>NOMONEY()?'—':n>=1e5?'₹'+(n/1e5).toFixed(2)+'L':n>=1e3?'₹'+(n/1e3).toFixed(1)+'k':inr(n);
+const fq=(q,u)=>{const a=Math.abs(q);return a>0&&a<1?String(+q.toFixed(3)):a<10&&!Number.isInteger(q)?q.toFixed(1):Math.round(q).toLocaleString('en-IN')};
+const dayLabel=d=>d===0?'Today':d===1?'Yesterday':new Date(TODAY-d*864e5).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+const coverTxt=c=>c>=99?'—':c<1?`${Math.round(c*24)} h cover`:`${c.toFixed(c<10?1:0)} days cover`;
+const img=(x,cls='')=>x.img?`<img src="${U(x.img)}" alt="${x.name}" loading="lazy" class="${cls}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'noimg'}))">`:`<div class="noimg ${cls}"></div>`;
+const tag=st=>`<span class="tag ${ST[st][1]}">${ST[st][0]}</span>`;
+function toast(t){const el=$('#toast');el.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="stroke:var(--lime)" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg>${t}`;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),2400)}
+function gauge(x,c){const scale=Math.max(c.max*1.25,x.onHand*1.05,c.pos*1.05);const p=v=>Math.min(100,v/scale*100);
+  const z=[[c.ss,'var(--melon-soft)'],[c.rop-c.ss,'var(--turmeric-soft)'],[c.max-c.rop,'var(--lime-soft)'],[scale-c.max,'var(--line)']];
+  return `<div class="gauge" title="Safety ${fq(c.ss)} · Reorder ${fq(c.rop)} · Max ${fq(c.max)} ${x.unit}">${z.map(([w,col])=>`<span class="z" style="width:${w/scale*100}%;background:${col}"></span>`).join('')}
+   ${c.inc.q?`<span class="inc-bar" style="left:${p(x.onHand)}%;width:${p(c.pos)-p(x.onHand)}%"></span><span class="inc" style="left:${p(c.pos)}%"></span>`:''}
+   <span class="mk" style="left:${Math.max(1,p(x.onHand))}%"></span></div>`}
+
+/* ================= state ================= */
+const S={view:'overview',cat:'All',status:'all',loc:'all',sort:'urgency',layout:'cards',q:'',tsort:null,tdir:'asc',mv:'All'};
+const NAV=[['overview','Overview','<path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/>'],['items','Raw materials','<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>'],['inward','Goods inward','<path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v3h16v-3"/>'],['replenish','Replenishment','<path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16m0 5v-5h5"/>'],['moves','Movements','<path d="M7 4v16m0 0-3-3m3 3 3-3M17 20V4m0 0-3 3m3-3 3 3"/>']];
+
+function renderMenu(){const n=items.filter(x=>['out','crit','reorder'].includes(calc(x).st)).length;
+  $('#menu').innerHTML=NAV.filter(n=>!n[3]||n[3]()).map(([k,l,ic])=>`<button data-v="${k}" ${S.view===k?'aria-current="page"':''}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic}</svg>${l}${k==='replenish'&&n?`<span class="badge">${n}</span>`:''}${k==='inward'?`<span class="badge" style="background:var(--night-3)">${POS.filter(p=>p.day===0).length}</span>`:''}</button>`).join('');
+  $$('#menu button').forEach(b=>b.onclick=()=>go(b.dataset.v));}
+function go(v,opts={}){closeItem();Object.assign(S,opts);S.view=v;render();window.scrollTo({top:0})}
+$$('[data-goto]').forEach(b=>b.onclick=()=>go(b.dataset.goto));
+
+/* ================= overview ================= */
+function renderOverview(){
+  const C=items.map(x=>({x,c:calc(x)}));const cnt=k=>C.filter(o=>o.c.st===k).length;
+  const val=C.reduce((a,o)=>a+o.c.value,0);const below=C.filter(o=>['crit','reorder','out'].includes(o.c.st)).length;
+  const inbound=POS.filter(p=>p.day===0).reduce((a,p)=>a+Object.keys(p.lines).length,0);
+  const expSoon=C.filter(o=>o.c.expiry<=2&&o.x.onHand>0).length;
+  const medCover=C.map(o=>o.c.cover).filter(c=>c<99).sort((a,b)=>a-b)[Math.floor(C.length/2)];
+  const K=[['Inventory value',inrK(val),`${items.length} active items`,'var(--night)','items',{status:'all'}],
+    ['Below reorder point',below,'Need a purchase order','var(--turmeric-ink)','replenish',{}],
+    ['Below safety stock',cnt('crit')+cnt('out'),`${cnt('out')} completely out`,'var(--melon-ink)','items',{status:'risk'}],
+    ['Arriving today',inbound,`lines on ${POS.filter(p=>p.day===0).length} PO`,'var(--night-3)','inward',{}],
+    ['Use within 48 h',expSoon,'Lots near expiry','var(--melon-ink)','items',{sort:'expiry',status:'all'}],
+    ['Median cover',medCover.toFixed(1)+' d','Across all items','var(--lime-ink)','items',{sort:'cover',status:'all'}]];
+  $('#kpis').innerHTML=K.map(([l,v,s,c,g],i)=>`<button class="kpi" style="--k:${c}" data-k="${i}"><div class="lbl">${l}</div><div class="val num">${v}</div><div class="sub">${s}</div></button>`).join('');
+  $$('#kpis .kpi').forEach(b=>b.onclick=()=>{const k=K[+b.dataset.k];go(k[4],k[5])});
+  const order=['out','crit','reorder','onorder','ok','over'];
+  $('#health').innerHTML=order.map(k=>cnt(k)?`<span style="flex:${cnt(k)};background:${ST_COL[k]}" title="${ST[k][0]}: ${cnt(k)}"></span>`:'').join('');
+  $('#health-legend').innerHTML=order.map(k=>`<button data-st="${k}"><i style="background:${ST_COL[k]}"></i>${ST[k][0]} <b>${cnt(k)}</b></button>`).join('');
+  $$('#health-legend button').forEach(b=>b.onclick=()=>go('items',{status:b.dataset.st}));
+  $('#health-note').textContent=`${cnt('ok')} of ${items.length} items healthy`;
+  const att=C.filter(o=>['out','crit','reorder'].includes(o.c.st)||(o.c.expiry<=1&&o.x.onHand>0)).sort((a,b)=>ST[a.c.st][2]-ST[b.c.st][2]||a.c.cover-b.c.cover).slice(0,7);
+  $('#att').innerHTML=att.map(({x,c})=>`<div class="att-row" data-sku="${x.sku}">${img(x)}<div><div class="att-name">${x.name}</div><small>${fq(x.onHand)} ${x.unit} on hand · reorder at ${fq(c.rop)} · ${coverTxt(c.cover)}</small></div>${tag(c.expiry<=1&&!['out','crit','reorder'].includes(c.st)?'crit':c.st).replace(c.expiry<=1&&!['out','crit','reorder'].includes(c.st)?'Below safety stock':'@@','Use within 24 h')}<div class="att-act">${c.inc.q?`<span style="color:var(--blue);font-weight:600">+${fq(c.inc.q)} ${x.unit}</span><br><small>${c.inc.po.eta}</small>`:c.sugg?`<b>Order ${fq(c.sugg)} ${x.unit}</b><br><small>${x.sup}</small>`:''}</div></div>`).join('');
+  $$('#att .att-row').forEach(r=>r.onclick=()=>openItem(r.dataset.sku));
+  $('#tl').innerHTML=POS.map(p=>{const dt=new Date(TODAY.getTime()+p.day*864e5);const tot=Object.entries(p.lines).reduce((a,[s,q])=>a+q*bySku[s].cost,0);
+    return `<div class="tl-day"><div class="tl-date"><b>${dt.getDate()}</b>${p.day===0?'Today':dt.toLocaleDateString('en-IN',{weekday:'short'})}</div><div class="tl-cards"><div class="po"><div class="po-top"><div><b>${xl('supplier',p.sup)}</b><div class="muted">${xl('po',p.po)} · ${esc(p.eta)}</div></div><b class="num">${inr(tot)}</b></div><div class="po-items">${Object.entries(p.lines).map(([s,q])=>`<span>${xl('item',s,bySku[s].name.split(',')[0])} · ${q} ${bySku[s].unit}</span>`).join('')}</div></div></div></div>`}).join('');
+  // flow chart
+  const R=rnd(3),rec=[],use=[];for(let i=0;i<14;i++){use.push(9+R()*5+(i%7>=4?4:0));rec.push(i%3===0?18+R()*10:i%3===1?6+R()*6:R()*3)}
+  if(API.live){if(!FLOW){$('#flow').innerHTML='<p class="muted">Values are hidden for your role.</p>';return}rec.splice(0,14,...FLOW.in);use.splice(0,14,...FLOW.out)}
+  const top=Math.max(...rec,...use,1),step=top>40?Math.ceil(top/30)*10:top>8?10:top>2?2:0.5;
+  const W=560,H=200,pl=34,pb=24,mx=step*3,x=i=>pl+i*((W-pl-10)/13),y=v=>H-pb-(v/mx)*(H-pb-10),bw=14;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Receipts and usage, last 14 days">`;
+  [0,step,step*2,step*3].forEach(v=>s+=`<line x1="${pl}" x2="${W}" y1="${y(v)}" y2="${y(v)}" style="stroke:var(--line)"/><text x="${pl-8}" y="${y(v)+4}" text-anchor="end" font-size="11" style="fill:var(--text-3)">${v}</text>`);
+  rec.forEach((v,i)=>s+=`<rect x="${x(i)-bw/2}" y="${y(v)}" width="${bw}" height="${y(0)-y(v)}" rx="3" style="fill:var(--night-3)" opacity=".85"><title>Received ₹${v.toFixed(1)}k</title></rect>`);
+  s+=`<path d="${use.map((v,i)=>(i?'L':'M')+x(i)+' '+y(v)).join(' ')}" fill="none" style="stroke:var(--turmeric-ink)" stroke-width="2.5" stroke-linejoin="round"/>`;
+  use.forEach((v,i)=>s+=`<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="#fff" style="stroke:var(--turmeric-ink)" stroke-width="2"><title>Used ₹${v.toFixed(1)}k</title></circle>`);
+  [0,7,13].forEach(i=>s+=`<text x="${x(i)}" y="${H-6}" text-anchor="middle" font-size="11" style="fill:var(--text-3)">${new Date(TODAY-(13-i)*864e5).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</text>`);
+  $('#flow').innerHTML=s+`</svg><div class="legend"><span><i style="background:var(--night-3);height:10px;width:10px"></i>Goods received</span><span><i style="background:var(--turmeric-ink)"></i>Consumed</span></div>`;
+}
+
+/* ================= items ================= */
+/* one item against the current filters; `skip` leaves one filter out (so a chip can count its own category) */
+function itemMatches(x,c,skip=''){
+  const q=S.q.toLowerCase();
+  return (skip==='cat'||S.cat==='All'||x.cat===S.cat)&&(skip==='loc'||S.loc==='all'||x.loc===S.loc)&&
+    (skip==='status'||S.status==='all'||(S.status==='risk'?['out','crit'].includes(c.st):S.status==='attention'?['out','crit','reorder'].includes(c.st):c.st===S.status))&&
+    (!q||`${x.name} ${x.sku} ${x.sup} ${x.cat}`.toLowerCase().includes(q))&&(!S.focus||S.focus.kind!=='supplier'||x.sup===S.focus.key);
+}
+/* items in scope before the page's own filters: everything, or one supplier's items when the page is focused on it */
+const scopeItems=()=>items.filter(x=>!S.focus||S.focus.kind!=='supplier'||x.sup===S.focus.key);
+function filtered(){
+  let L=items.map(x=>({x,c:calc(x)})).filter(({x,c})=>itemMatches(x,c));
+  const f={urgency:(a,b)=>ST[a.c.st][2]-ST[b.c.st][2]||a.c.cover-b.c.cover,cover:(a,b)=>a.c.cover-b.c.cover,name:(a,b)=>a.x.name.localeCompare(b.x.name),value:(a,b)=>b.c.value-a.c.value,expiry:(a,b)=>a.c.expiry-b.c.expiry};
+  if(S.tsort){const k=S.tsort,m=S.tdir==='asc'?1:-1;L.sort((a,b)=>{const va=k in a.c?a.c[k]:a.x[k],vb=k in b.c?b.c[k]:b.x[k];return(typeof va==='string'?va.localeCompare(vb):va-vb)*m})}else L.sort(f[S.sort]);
+  return L;
+}
+function renderItems(){
+  // counts follow every filter except the category chips themselves; categories with nothing in scope are hidden
+  const scope=scopeItems(),inCat=items.map(x=>({x,c:calc(x)})).filter(({x,c})=>itemMatches(x,c,'cat'));
+  const cats=['All',...new Set(scope.map(x=>x.cat))].filter(c=>c==='All'||c===S.cat||inCat.some(o=>o.x.cat===c));
+  $('#cats').innerHTML=cats.map(c=>`<button class="chip" data-c="${esc(c)}" aria-pressed="${S.cat===c}">${esc(c)}<em>${c==='All'?inCat.length:inCat.filter(o=>o.x.cat===c).length}</em></button>`).join('');
+  $$('#cats .chip').forEach(b=>b.onclick=()=>{S.cat=b.dataset.c;renderItems()});
+  $('#f-status').innerHTML=[['all','All'],['attention','Needs action'],['risk','Below safety stock'],...Object.entries(ST).map(([k,v])=>[k,v[0]])].map(([k,l])=>`<option value="${k}" ${S.status===k?'selected':''}>${l}</option>`).join('');
+  $('#f-loc').innerHTML=[['all','All locations'],...[...new Set(scope.map(x=>x.loc))].map(l=>[l,l])].map(([k,l])=>`<option value="${k}" ${S.loc===k?'selected':''}>${l}</option>`).join('');
+  $('#f-sort').value=S.sort;
+  $$('[data-layout]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.layout===S.layout));
+  const L=filtered();$('#count').textContent=`${L.length} of ${scope.length} item${scope.length===1?'':'s'}${S.focus&&S.focus.kind==='supplier'?' from this supplier':''}`;
+  if(!L.length){$('#items-out').innerHTML=`<div class="panel empty"><b>No items match these filters</b>Try another category or status.<br><button class="btn btn-line" id="clr">Clear filters</button></div>`;$('#clr').onclick=()=>{Object.assign(S,{cat:'All',status:'all',loc:'all',q:''});$('#q').value='';renderItems()};return}
+  if(S.layout==='cards'){
+    $('#items-out').innerHTML=`<div class="cards${DEALT?'':' deal'}">${L.map(({x,c},n)=>{const lots=x.lots.length;return `<article class="pc" tabindex="0" data-sku="${x.sku}" ${lots>1?`data-lots="${Math.min(lots,3)}"`:''} style="--i:${Math.min(n,14)}" aria-label="${x.name}, ${ST[c.st][0]}">
+      <div class="pc-photo">${x.img?img(x):`<div class="noimg"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="m21 17-5-5-9 7"/></svg>Add a photo</div>`}<span class="cover num">${coverTxt(c.cover)}</span></div>
+      <div class="pc-label">
+        <span class="pc-tab ${ST[c.st][1]}">${ST[c.st][0]}</span>
+        <div class="card-t"><div><h3>${x.name}</h3><small>${x.sku} in ${x.loc}${lots>1?`, ${lots} lots`:''}</small></div><div class="onhand"><b class="num">${fq(x.onHand)}</b><span>${x.unit}</span></div></div>
+        ${gauge(x,c)}
+        <div class="pc-meta num"><span>Safety<b>${fq(c.ss)}</b></span><span>Reorder<b>${fq(c.rop)}</b></span><span>Max<b>${fq(c.max)}</b></span></div>
+        ${c.inc.q?`<div class="incoming"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg>+${fq(c.inc.q)} ${x.unit} arriving ${c.inc.po.eta}</div>`:c.sugg?`<div class="incoming" style="color:var(--amber)">Suggested order ${fq(c.sugg)} ${x.unit}, ${inr(c.sugg*x.cost)}</div>`:`<div class="incoming none">${API.live?(x.lastRecv==null?'Not received yet':x.lastRecv===0?'Received today':`Last received ${x.lastRecv} day${x.lastRecv>1?'s':''} ago`):`Last received ${1+x.i%5} days ago`}</div>`}
+      </div></article>`}).join('')}</div>`;DEALT=true;
+    $$('.pc').forEach(el=>{el.onclick=()=>openItem(el.dataset.sku);el.onkeydown=e=>{if(e.key==='Enter')openItem(el.dataset.sku)}});
+  }else{
+    const th=(k,l,r)=>`<th class="${r?'r':''}"><button data-ts="${k}" ${S.tsort===k?`data-dir="${S.tdir}"`:''}>${l}</button></th>`;
+    $('#items-out').innerHTML=`<div class="panel tablewrap"><table class="t"><thead><tr>${th('name','Item')}${th('cat','Category')}${th('onHand','On hand',1)}${th('ss','Safety',1)}${th('rop','Reorder pt',1)}${th('max','Max',1)}<th>Level</th>${th('cover','Cover',1)}${th('expiry','Use by',1)}${th('value','Value',1)}<th>Status</th></tr></thead><tbody>
+    ${L.map(({x,c})=>`<tr class="click" data-sku="${x.sku}"><td><div class="itm">${img(x)}<div><b>${x.name}</b><small>${x.sku} · ${x.sup}</small></div></div></td><td>${x.cat}</td>
+    <td class="r num"><b>${fq(x.onHand)}</b> ${x.unit}${c.inc.q?`<br><small style="color:var(--blue)">+${fq(c.inc.q)} on order</small>`:''}</td><td class="r num">${fq(c.ss)}</td><td class="r num">${fq(c.rop)}</td><td class="r num">${fq(c.max)}</td>
+    <td><div class="mini-gauge">${gauge(x,c)}</div></td><td class="r num">${c.cover>=99?'—':c.cover.toFixed(1)+' d'}</td><td class="r num" style="${c.expiry<=1?'color:var(--red);font-weight:700':''}">${c.expiry>=999?'—':c.expiry===0?'Today':c.expiry+' d'}</td><td class="r num">${inr(c.value)}</td><td>${tag(c.st)}</td></tr>`).join('')}</tbody></table></div>`;
+    $$('#items-out tr.click').forEach(r=>r.onclick=()=>openItem(r.dataset.sku));
+    $$('[data-ts]').forEach(b=>b.onclick=()=>{const k=b.dataset.ts;S.tdir=S.tsort===k&&S.tdir==='asc'?'desc':'asc';S.tsort=k;renderItems()});
+  }
+}
+$('#f-status').onchange=e=>{S.status=e.target.value;renderItems()};
+$('#f-loc').onchange=e=>{S.loc=e.target.value;renderItems()};
+$('#f-sort').onchange=e=>{S.sort=e.target.value;S.tsort=null;renderItems()};
+$$('[data-layout]').forEach(b=>b.onclick=()=>{S.layout=b.dataset.layout;renderItems()});
+
+/* ================= drawer ================= */
+function stockHistory(x,c){ // recorded 30-day levels, or an illustrative sawtooth offline
+  if(x.hist)return x.hist;
+  const R=rnd(x.i*31+5),pts=[];let lvl=c.max*.9,pending=[];
+  for(let d=0;d<30;d++){pending=pending.filter(p=>{if(p.at===d){lvl+=p.q;return false}return true});
+    lvl=Math.max(c.ss*.6,lvl-x.avg*(.7+R()*.6));
+    if(lvl<=c.rop&&!pending.length)pending.push({at:d+x.lead,q:c.max-c.ss});pts.push(lvl)}
+  // blend the last few days into today's real on-hand figure
+  for(let k=0;k<4;k++){const w=(k+1)/4;pts[26+k]=pts[26+k]*(1-w)+x.onHand*w}
+  return pts.map(v=>Math.max(0,v));
+}
+function stockChart(x,c){
+  const h=stockHistory(x,c),W=580,H=170,pl=36,pb=22,mx=Math.max(c.max*1.15,...h)*1.05,X=i=>pl+i*(W-pl-8)/29,Y=v=>H-pb-(v/mx)*(H-pb-8);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Stock level, last 30 days">`;
+  s+=`<rect x="${pl}" y="${Y(c.ss)}" width="${W-pl-8}" height="${Y(0)-Y(c.ss)}" style="fill:var(--melon-soft)"/><rect x="${pl}" y="${Y(c.rop)}" width="${W-pl-8}" height="${Y(c.ss)-Y(c.rop)}" style="fill:var(--turmeric-soft)"/>`;
+  [[c.max,'Max','var(--lime-ink)'],[c.rop,'Reorder','var(--turmeric-ink)'],[c.ss,'Safety','var(--melon-ink)']].forEach(([v,l,col])=>s+=`<line x1="${pl}" x2="${W-8}" y1="${Y(v)}" y2="${Y(v)}" stroke="${col}" stroke-dasharray="4 4" stroke-width="1.3"/><text x="${W-10}" y="${Y(v)-4}" text-anchor="end" font-size="11" font-weight="600" fill="${col}">${l} ${fq(v)}</text>`);
+  s+=`<path d="M${X(0)} ${Y(0)} ${h.map((v,i)=>'L'+X(i)+' '+Y(v)).join(' ')} L${X(29)} ${Y(0)}Z" style="fill:var(--night)" opacity=".08"/><path d="${h.map((v,i)=>(i?'L':'M')+X(i)+' '+Y(v)).join(' ')}" fill="none" style="stroke:var(--night)" stroke-width="2.2" stroke-linejoin="round"/>`;
+  s+=`<circle cx="${X(29)}" cy="${Y(h[29])}" r="4.5" style="fill:var(--night)" stroke="#fff" stroke-width="2"/>`;
+  [0,15,29].forEach(i=>s+=`<text x="${X(i)}" y="${H-5}" text-anchor="${i===29?'end':i?'middle':'start'}" font-size="11" style="fill:var(--text-3)">${i===29?'Today':new Date(TODAY-(29-i)*864e5).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</text>`);
+  s+=`<text x="${pl-6}" y="${Y(0)+4}" text-anchor="end" font-size="11" style="fill:var(--text-3)">0</text>`;
+  return s+'</svg>';
+}
+function openItem(sku){
+  const x=bySku[sku],c=calc(x);$('#drawer').dataset.sku=sku;
+  const mv=moves.filter(m=>m.x===x).slice(0,6);
+  $('#drawer').innerHTML=`
+  <div class="d-hero">${img(x)}<div class="tools"><button class="photo-btn" id="ph"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>${x.img?'Replace photo':'Add photo'}</button><button class="icon-btn" id="dx" aria-label="Close">✕</button></div>
+   <div class="cap"><span class="pill ${ST[c.st][1]}" style="position:static;display:inline-flex;margin-bottom:8px">${ST[c.st][0]}</span><h2>${esc(x.name)}</h2><p>${esc(x.sku)} · ${xl('category',x.cat)} · ${xl('location',x.loc)}</p></div></div>
+  <div class="d-body">
+    <div class="d-stats num">
+      <div><small>On hand</small><b>${fq(x.onHand)}<span>${x.unit}</span></b></div>
+      <div><small>On order</small><b style="color:${c.inc.q?'var(--blue)':''}">${fq(c.inc.q)}<span>${x.unit}</span></b></div>
+      <div><small>Days of cover</small><b>${c.cover>=99?'—':c.cover.toFixed(1)}</b></div>
+      <div><small>Stock value</small><b>${inrK(c.value)}</b></div>
+    </div>
+    <div class="panel"><div class="panel-b"><div class="d-sec"><h3>Stock level <span>Last 30 days</span></h3><div class="chart">${stockChart(x,c)}</div></div></div></div>
+    ${x.plan?`<div class="panel" id="d-levels"></div><div class="panel" id="d-cost" style="display:none"></div>`:`<div class="panel"><div class="panel-b d-sec"><h3>Replenishment settings <span>Planned figures</span></h3>
+      <div class="calc">
+        <label>Average daily use (${x.unit})<input type="number" step="0.1" id="c-avg" value="${x.avg}"></label>
+        <label>Supplier lead time (days)<input type="number" step="1" id="c-lead" value="${x.lead}"></label>
+        <label>Usage variability, σ (${x.unit}/day)<input type="number" step="0.1" id="c-sd" value="${x.sd.toFixed(2)}"></label>
+        <label>Service level<select id="c-sl"><option value="1.28">90%</option><option value="1.65" selected>95%</option><option value="2.33">99%</option></select></label>
+      </div>
+      <div class="calc-out num" id="c-out"></div>
+    </div></div>`}
+    <div class="panel"><div class="panel-b d-sec"><h3>Lots in stock <span>Use oldest first</span></h3>
+      <table class="t"><thead><tr><th>Lot</th><th class="r">Qty</th><th>Received</th><th>Use by</th></tr></thead><tbody>
+      ${x.lots.length?x.lots.sort((a,b)=>a.exp-b.exp).map((l,i)=>`<tr><td><b>${l.lot}</b>${i===0?' <span class="tag s-onorder" style="margin-left:4px">Use first</span>':''}</td><td class="r num">${fq(l.qty)} ${x.unit}</td><td>${dayLabel(l.recv)}</td><td style="${l.exp<=1?'color:var(--red);font-weight:700':''}">${l.exp>=900?'No expiry':l.exp===0?'Today':l.exp===1?'Tomorrow':`In ${l.exp} days`}</td></tr>`).join(''):`<tr><td colspan="4" class="muted">No stock. ${c.inc.q?`${fq(c.inc.q)} ${x.unit} arriving ${c.inc.po.eta}.`:''}</td></tr>`}
+      </tbody></table></div></div>
+    <div class="panel" id="d-profile"></div>
+    <div class="panel"><div class="panel-b d-sec"><h3>Supplier <span>Preferred</span></h3>
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><b>${xl('supplier',x.sup)}</b><div class="muted" style="font-size:13px">Lead time ${x.lead} day${x.lead>1?'s':''} · pack of ${x.pack} ${x.unit}</div></div><div style="text-align:right"><b class="num">${inr(x.cost)}</b><span class="muted"> / ${x.unit}</span><div style="font-size:12.5px;color:${API.live?(x.priceChange>0?'var(--red)':'var(--green)'):(x.i%4===0?'var(--red)':'var(--green)')};font-weight:600">${API.live?(x.priceChange==null?'':x.priceChange===0?'Same as last PO':`${x.priceChange>0?'+':''}${x.priceChange}% vs last PO`):(x.i%4===0?'+6% vs last PO':'Same as last PO')}</div></div></div></div></div>
+    <div class="panel"><div class="panel-b d-sec"><h3>Recent movements <span>${mv.length?`<a class="xl" href="#" data-allmv>See all</a>`:'No entries'}</span></h3>
+      <table class="t"><tbody>${mv.length?mv.map(m=>`<tr><td>${dayLabel(m.d)}, ${m.time}</td><td>${m.t}</td><td class="r num" style="font-weight:700;color:${m.q>0?'var(--green)':'var(--ink)'}">${m.q>0?'+':''}${fq(m.q)} ${x.unit}</td><td class="muted">${xl('person',m.user)}</td></tr>`).join(''):'<tr><td class="muted">No movements this week.</td></tr>'}</tbody></table></div></div>
+    <div class="d-actions"><button class="btn btn-primary" data-act="po">Add to purchase order</button><button class="btn btn-line" data-act="count">Count stock</button><button class="btn btn-line" data-act="issue">Issue to ${x.cat==='Beverage bases'||x.loc==='Beverage station'?'beverage':'kitchen'}</button><button class="btn btn-line" data-act="waste">Record wastage</button><button class="btn btn-line" data-act="transfer">Transfer</button></div>
+  </div>`;
+  if(x.plan){renderLevels(x);renderCosting(x)}else{const recalc=()=>{const t={...x,avg:+$('#c-avg').value||0,lead:+$('#c-lead').value||1,sd:+$('#c-sd').value||0};const r=calc(t,+$('#c-sl').value);
+    $('#c-out').innerHTML=`<div style="background:var(--red-soft);color:var(--red)"><small>Safety stock</small><b>${fq(r.ss)} ${x.unit}</b><p>${$('#c-sl').selectedOptions[0].text} chance of no stock-out</p></div><div style="background:var(--amber-soft);color:var(--amber)"><small>Reorder point</small><b>${fq(r.rop)} ${x.unit}</b><p>${fq(t.avg*t.lead)} lead-time use + safety</p></div><div style="background:var(--green-soft);color:var(--green)"><small>Max level</small><b>${fq(r.max)} ${x.unit}</b><p>Lead time + 7-day review</p></div>`};
+  ['#c-avg','#c-lead','#c-sd','#c-sl'].forEach(s=>$(s).oninput=recalc);recalc()}
+  const ph=profileHtml(x);$('#d-profile').innerHTML=ph;$('#d-profile').style.display=ph?'':'none';if($('#p-edit'))$('#p-edit').onclick=()=>editProfile(x);
+  $('#dx').onclick=closeItem;$('#ph').onclick=()=>pickPhoto(x);
+  $$('#drawer [data-act]').forEach(b=>b.onclick=()=>itemAction(x,b.dataset.act));
+  if($('#drawer [data-allmv]'))$('#drawer [data-allmv]').onclick=e=>{e.preventDefault();focusOn('moves','item',x.sku,x.name)};
+  document.body.classList.add('d-open');$('#drawer').scrollTop=0;$('#dx').focus();
+}
+function closeItem(){document.body.classList.remove('d-open')}
+$('#scrim').onclick=closeItem;
+
+/* ================= inward ================= */
+function renderInward(){
+  $('#expected').innerHTML=`<thead><tr><th>PO</th><th>Supplier</th><th>Items</th><th>Expected</th><th class="r">Value</th><th></th></tr></thead><tbody>${POS.map(p=>{const tot=Object.entries(p.lines).reduce((a,[s,q])=>a+q*bySku[s].cost,0);
+    return `<tr><td><b>${p.po}</b></td><td>${p.sup}</td><td><div style="display:flex;gap:-6px;align-items:center">${Object.keys(p.lines).slice(0,4).map(s=>`<span title="${bySku[s].name}" style="width:30px;height:30px;border-radius:50%;overflow:hidden;border:2px solid #fff;margin-left:-6px;display:inline-block;background:var(--grey-soft)">${bySku[s].img?`<img src="${U(bySku[s].img)}" alt="" style="width:100%;height:100%;object-fit:cover">`:''}</span>`).join('')}<span class="muted" style="margin-left:8px">${Object.keys(p.lines).length} lines</span></div></td>
+    <td>${p.day===0?`<span class="tag s-onorder">${p.eta}</span>`:p.eta}</td><td class="r num">${inr(tot)}</td><td class="r">${p.day<=1?`<button class="btn btn-sm ${p.day===0?'btn-primary':'btn-line'}" data-recv="${p.po}">Receive</button>`:''}</td></tr>`}).join('')}</tbody>`;
+  $$('[data-recv]').forEach(b=>b.onclick=()=>openReceive(b.dataset.recv));
+  $('#grns').innerHTML=`<thead><tr><th>GRN</th><th>Received</th><th>Supplier</th><th class="r">Ordered</th><th class="r">Received</th><th>Quality check</th><th>Note</th></tr></thead><tbody>${GRNS.map(g=>{const o=g.lines.reduce((a,l)=>a+l[1],0),r=g.lines.reduce((a,l)=>a+l[2],0);const cls=g.qc==='Accepted'?'s-ok':g.qc==='Short delivery'?'s-reorder':'s-crit';
+    return `<tr><td><b>${g.grn}</b><br><small class="muted">${g.po}</small></td><td>${dayLabel(g.d)}</td><td>${g.sup}</td><td class="r num">${g.lines.length} lines</td><td class="r num" style="${r<o?'color:var(--red);font-weight:700':''}">${Math.round(r/o*100)}%</td><td><span class="tag ${cls}">${g.qc}</span></td><td class="muted">${g.note}</td></tr>`}).join('')}</tbody>`;
+}
+function openReceive(po){
+  const p=POS.find(x=>x.po===po)||POS[0];
+  $('#modal-box').className='modal-box';$('#modal-box').dataset.size='wide';
+  $('#modal-box').innerHTML=`<div class="modal-h"><div><h2 id="m-title">Receive ${p.po}</h2><p class="muted">${p.sup} · expected ${p.eta}</p></div><button class="icon-btn" style="background:var(--grey-soft)" id="mx" aria-label="Close">✕</button></div>
+  <div class="tablewrap recv-t"><table class="t"><thead><tr><th>Item</th><th class="r">Ordered</th><th class="r">Received</th>${API.can.pricing&&p.prices?'<th class="r">Billed price</th>':''}<th>Lot no.</th><th>Use by</th><th>Quality</th></tr></thead><tbody>
+  ${Object.entries(p.lines).map(([s,q])=>{const x=bySku[s];return `<tr data-sku="${s}"><td><div class="itm">${img(x)}<div><b>${x.name}</b><small>${x.sku}</small></div></div></td><td class="r num" data-label="Ordered">${q} ${x.unit}</td><td class="r" data-label="Received"><span class="qty-unit"><input class="qty-in" type="number" value="${q}" aria-label="Received quantity">${unitPick(x,'ru')}</span></td>${API.can.pricing&&p.prices?`<td class="r" data-label="Billed price"><input class="qty-in price-in" type="number" min="0" step="0.01" value="${p.prices[s]??''}" aria-label="Billed price per unit received" title="Price per unit received, as on the supplier's bill"></td>`:''}<td data-label="Lot no."><input class="qty-in lot-in" style="text-align:left" value="L2611-${s.slice(-3)}" aria-label="Lot"></td><td data-label="Use by"><input class="qty-in" style="text-align:left" type="date" value="${new Date(TODAY.getTime()+(x.shelf>365?365:x.shelf)*864e5).toISOString().slice(0,10)}" aria-label="Use by" data-f="exp"></td><td data-label="Quality"><div class="qc"><button data-v="ok" aria-pressed="true">Accept</button><button data-v="no" aria-pressed="false">Reject</button></div></td></tr>`}).join('')}
+  </tbody></table></div>
+  <div style="padding:6px 20px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px" class="calc"><label>Supplier invoice no.<input id="r-inv" maxlength="60" placeholder="e.g. KMW/24-25/1182"></label><label>Chilled items temperature (°C)<input id="r-temp" type="number" step="0.1" value="4"></label></div>
+  <div class="modal-f"><button class="btn btn-line" id="mc">Cancel</button><button class="btn btn-primary" id="mok">Post goods receipt</button></div>`;
+  $('#modal').classList.add('on');
+  $$('.qc').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>g.querySelectorAll('button').forEach(o=>o.setAttribute('aria-pressed',o===b))));
+  const close=()=>$('#modal').classList.remove('on');$('#mx').onclick=close;$('#mc').onclick=close;
+  $('#mok').onclick=()=>postReceipt(p,close);
+}
+/* Modal sizing: big content (tables, item rows) opens as a side panel on wide screens; phones get a full-screen sheet */
+const WIDE_CONTENT='table,.reqrow,.rline,.urow,#rlines,#reqrows,.method-pick,.pal-pick';
+function fitModal(){
+  const box=$('#modal-box'),m=$('#modal');if(!box.firstElementChild)return;
+  const wide=box.dataset.size==='wide'||box.classList.contains('wide')||!!box.querySelector(WIDE_CONTENT);
+  box.classList.toggle('size-lg',wide);
+  m.classList.toggle('sheet',wide&&innerWidth>=900);
+}
+new MutationObserver(()=>{if(!$('#modal-box').firstElementChild)return;fitModal()}).observe($('#modal-box'),{childList:true,attributes:true,attributeFilter:['class','data-size']});
+addEventListener('resize',()=>{if($('#modal').classList.contains('on'))fitModal()});
+$('#receiveBtn').onclick=()=>POS.length?openReceive((POS.find(p=>p.day===0)||POS[0]).po):toast('No open purchase orders');
+$('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').classList.remove('on')};
+
+/* ================= replenish ================= */
+function renderRepl(){
+  $$('[data-sl]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.sl===SL));
+  const L=items.map(x=>({x,c:calc(x)})).filter(o=>o.c.sugg>0);
+  const groups={};L.forEach(o=>(groups[o.x.sup]=groups[o.x.sup]||[]).push(o));
+  $('#repl').innerHTML=Object.keys(groups).length?Object.entries(groups).map(([sup,list])=>{const tot=list.reduce((a,o)=>a+o.c.sugg*o.x.cost,0),lead=Math.max(...list.map(o=>o.x.lead));
+    return `<div class="panel supp" data-sup="${sup}"><div class="supp-h"><div><h2>${sup}</h2><div class="meta">${list.length} item${list.length>1?'s':''} · lead time ${lead} day${lead>1?'s':''} · arrives by ${new Date(TODAY.getTime()+lead*864e5).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}</div></div><div class="tot"><small class="muted">Order value</small><b class="num" data-tot>${inr(tot)}</b></div><button class="btn btn-primary" data-po="${sup}">Raise purchase order</button></div>
+    <div class="tablewrap"><table class="t"><thead><tr><th style="width:36px"></th><th>Item</th><th class="r">On hand</th><th class="r">On order</th><th class="r">Safety</th><th class="r">Reorder pt</th><th class="r">Max</th><th class="r">Order qty</th><th class="r">Pack</th><th class="r">Unit cost</th><th class="r">Line value</th></tr></thead><tbody>
+    ${list.sort((a,b)=>ST[a.c.st][2]-ST[b.c.st][2]).map(({x,c})=>`<tr data-sku="${x.sku}"><td><input type="checkbox" class="check" checked aria-label="Include ${x.name}"></td><td><div class="itm">${img(x)}<div><b>${x.name}</b><small>${tag(c.st)}</small></div></div></td><td class="r num" style="${x.onHand<c.ss?'color:var(--red);font-weight:700':''}">${fq(x.onHand)} ${x.unit}</td><td class="r num">${c.inc.q?fq(c.inc.q):'—'}</td><td class="r num">${fq(c.ss)}</td><td class="r num">${fq(c.rop)}</td><td class="r num">${fq(c.max)}</td><td class="r"><input class="qty-in" type="number" step="${x.pack}" value="${c.sugg}" data-cost="${x.cost}" aria-label="Order quantity"></td><td class="r num muted">${x.pack}</td><td class="r num">${inr(x.cost)}</td><td class="r num" data-line><b>${inr(c.sugg*x.cost)}</b></td></tr>`).join('')}
+    </tbody></table></div></div>`}).join(''):`<div class="panel empty"><b>Nothing to reorder</b>Every item is above its reorder point.</div>`;
+  $$('.supp').forEach(p=>{const upd=()=>{let t=0;p.querySelectorAll('tbody tr').forEach(tr=>{const on=tr.querySelector('.check').checked,inp=tr.querySelector('.qty-in'),v=on?(+inp.value||0)*+inp.dataset.cost:0;tr.style.opacity=on?1:.45;tr.querySelector('[data-line]').innerHTML=`<b>${inr(v)}</b>`;t+=v});p.querySelector('[data-tot]').textContent=inr(t)};
+    p.querySelectorAll('input').forEach(i=>i.oninput=upd);p.querySelector('[data-po]').onclick=e=>raisePO(p,e.currentTarget)});
+}
+$$('[data-sl]').forEach(b=>b.onclick=()=>{SL=+b.dataset.sl;renderMenu();renderRepl()});
+
+/* ================= movements ================= */
+function renderMoves(){
+  const types=['All','Receipt','Issue to kitchen','Issue to beverage','Transfer','Wastage','Adjustment'];
+  $('#mv-types').innerHTML=types.map(t=>`<button class="chip" data-mv="${t}" aria-pressed="${S.mv===t}">${t}<em>${t==='All'?moves.length:moves.filter(m=>m.t===t).length}</em></button>`).join('');
+  $$('[data-mv]').forEach(b=>b.onclick=()=>{S.mv=b.dataset.mv;renderMoves()});
+  const q=S.q.toLowerCase();const L=moves.filter(m=>(S.mv==='All'||m.t===S.mv)&&(!q||`${m.x.name} ${m.x.sku} ${m.ref} ${m.user}`.toLowerCase().includes(q)));
+  const col={Receipt:'s-ok','Issue to kitchen':'s-onorder','Issue to beverage':'s-onorder',Transfer:'s-over',Wastage:'s-crit',Adjustment:'s-reorder'};
+  $('#moves').innerHTML=`<thead><tr><th>When</th><th>Item</th><th>Type</th><th class="r">Quantity</th><th class="r">Value</th><th>Reference</th><th>By</th></tr></thead><tbody>${L.map(m=>`<tr class="click" data-sku="${m.x.sku}"><td class="num">${dayLabel(m.d)}<br><small class="muted">${m.time}</small></td><td><div class="itm">${img(m.x)}<div><b>${m.x.name}</b><small>${m.x.sku}</small></div></div></td><td><span class="tag ${col[m.t]}">${m.t}</span></td><td class="r num" style="font-weight:700;color:${m.q>0?'var(--green)':'var(--ink)'}">${m.q>0?'+':'−'}${fq(Math.abs(m.q))} ${m.x.unit}</td><td class="r num">${inr(Math.abs(m.q)*m.x.cost)}</td><td>${m.ref}</td><td class="muted">${m.user}</td></tr>`).join('')||'<tr><td colspan="7" class="empty"><b>No movements found</b>Try another type or search.</td></tr>'}</tbody>`;
+  $$('#moves tr.click').forEach(r=>r.onclick=()=>openItem(r.dataset.sku));
+}
+
+/* ================= backend (InvenTree + cm plugin) ================= */
+// Falls back to the sample data above when the server can't be reached.
+const API={base:(()=>{try{return localStorage.getItem('cm_api')}catch(e){return null}})()||(location.port==='5173'?'http://localhost:8000':location.origin),
+  token:(()=>{try{return sessionStorage.getItem('cm_token')}catch(e){return null}})(),live:false,can:{stock:true,purchase:true,part:true,pricing:true}};
+async function api(path,opts={}){
+  const headers={Accept:'application/json',...(opts.headers||{})};
+  if(API.token)headers.Authorization='Token '+API.token;
+  if(opts.json!==undefined){headers['Content-Type']='application/json';opts.body=JSON.stringify(opts.json)}
+  const r=await fetch(API.base+path,{method:opts.method||'GET',headers,body:opts.body});
+  if(r.status===401){API.token=null;try{sessionStorage.removeItem('cm_token')}catch(e){}throw Object.assign(new Error('Please sign in'),{auth:true})}
+  const data=r.status===204?null:await r.json().catch(()=>null);
+  if(!r.ok)throw new Error(errText(data)||`Request failed (${r.status})`);
+  return data;
+}
+function errText(d){if(!d)return'';if(typeof d==='string')return d;if(Array.isArray(d))return d.map(errText).join(' ');if(d.detail)return d.detail;return Object.entries(d).map(([k,v])=>`${k==='non_field_errors'?'':k+': '}${errText(v)}`).join(' · ')}
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fail(e){if(e.auth){showLogin(e.message);return}toast(`<span style="color:var(--melon)">${esc(e.message)}</span>`)}
+
+function applySnapshot(d){
+  TODAY.setTime(new Date(d.today+'T00:00:00').getTime());
+  items.splice(0,items.length,...d.items.map((r,i)=>({...r,i,img:r.image,cost:r.cost??0})));
+  Object.keys(bySku).forEach(k=>delete bySku[k]);items.forEach(x=>bySku[x.sku]=x);
+  POS.splice(0,POS.length,...d.pos);
+  GRNS.splice(0,GRNS.length,...d.grns.map(g=>({...g,lines:g.lines.filter(l=>bySku[l[0]])})));
+  moves.splice(0,moves.length,...d.moves.filter(m=>bySku[m.sku]).map(m=>({...m,x:bySku[m.sku]})));
+  WASTE_REASONS=d.wastageReasons||WASTE_REASONS;FLOW=d.flow;META=d.meta;
+  API.can=d.user.can;API.live=true;
+  const nm=d.user.name,ini=nm.split(/[\s.]+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');
+  $('.side-foot').innerHTML=`<span class="avatar">${esc(ini)}</span><div><b>${esc(nm)}</b><small>${esc((d.user.roles||[]).join(', ')||'No role')}</small></div>`;
+  $('#site').innerHTML=`<span class="live"></span>${esc(d.user.name)} · ${TODAY.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})} <button class="btn btn-sm btn-line" id="logout" style="margin-left:8px">Sign out</button>`;
+  $('#logout').onclick=()=>{API.token=null;try{sessionStorage.removeItem('cm_token')}catch(e){}location.reload()};
+}
+const PHOTOS={};
+async function loadPhotos(){
+  const todo=items.filter(x=>x.img&&x.img.startsWith('/'));
+  await Promise.all(todo.map(async x=>{const path=x.img;
+    if(!PHOTOS[path]){try{const r=await fetch(API.base+path,{headers:{Authorization:'Token '+API.token}});if(!r.ok)return;PHOTOS[path]=URL.createObjectURL(await r.blob())}catch(e){return}}
+    x.img=PHOTOS[path]}));
+  if(todo.length)render();
+}
+async function reload(){const d=await api('/plugin/cm/inventory/');applySnapshot(d);render();loadPhotos();const open=$('#drawer').dataset.sku;if(document.body.classList.contains('d-open')&&bySku[open])openItem(open)}
+
+async function boot(){
+  if(!API.token){render();showLogin();return}
+  try{await reload()}catch(e){render();if(e.auth)showLogin(e.message);else offline(e)}
+}
+function offline(e){$('#site').innerHTML=`<span class="live" style="background:var(--turmeric-ink)"></span>Sample data · server offline`;console.warn('Backend unavailable',e)}
+
+/* ---------- forms in the shared modal ---------- */
+function formModal(title,sub,body,okText,onOk){
+  $('#modal-box').className='modal-box';delete $('#modal-box').dataset.size;
+  $('#modal-box').innerHTML=`<div class="modal-h"><div><h2 id="m-title">${title}</h2><p class="muted">${sub}</p></div><button class="icon-btn" style="background:var(--grey-soft)" id="mx" aria-label="Close">✕</button></div>
+  <form id="mform" style="padding:6px 20px 16px;display:grid;gap:12px" class="calc">${body}<button type="submit" hidden></button><p id="merr" role="alert" style="color:var(--red);font-weight:600;min-height:1em"></p></form>
+  <div class="modal-f"><button class="btn btn-line" id="mc" type="button">Cancel</button><button class="btn btn-primary" id="mok" type="submit" form="mform">${okText}</button></div>`;
+  $('#modal').classList.add('on');
+  const close=()=>$('#modal').classList.remove('on');$('#mx').onclick=close;$('#mc').onclick=close;
+  $('#mform').onsubmit=async ev=>{ev.preventDefault();const b=$('#mok');b.disabled=true;$('#merr').textContent='';
+    try{await onOk(new FormData(ev.target),close)}catch(e){if(e.auth){close();showLogin(e.message)}else $('#merr').textContent=e.message}finally{b.disabled=false}};
+  setTimeout(()=>$('#mform input,#mform select')?.focus(),30);
+}
+function showLogin(msg=''){
+  formModal('Sign in','Chef &amp; Mixologist · Pantry',`
+    <label>Username<input name="u" autocomplete="username" required></label>
+    <label>Password<input name="p" type="password" autocomplete="current-password" required></label>
+    <label>Server<input name="s" value="${esc(API.base)}" required></label>${msg?`<p class="muted">${esc(msg)}</p>`:''}`,'Sign in',async f=>{
+    const base=f.get('s').replace(/\/+$/,'');
+    const r=await fetch(base+'/api/user/me/token/?name=cm-pantry',{headers:{Authorization:'Basic '+btoa(unescape(encodeURIComponent(f.get('u')+':'+f.get('p')))),Accept:'application/json'}}).catch(()=>null);
+    if(!r)throw new Error('Cannot reach the server');
+    if(!r.ok)throw new Error(r.status===401||r.status===403?'Wrong username or password':`Sign-in failed (${r.status})`);
+    const {token}=await r.json();API.base=base;API.token=token;
+    try{sessionStorage.setItem('cm_token',token);localStorage.setItem('cm_api',base)}catch(e){}
+    $('#modal').classList.remove('on');await reload();toast('Signed in');
+  });
+}
+let FLOW=null,META=null,DEALT=false;
+let WASTE_REASONS=['Spoiled','Over-ripe','Spilled','Expired','Over-prepped','Damaged'];
+function needLive(perm){if(!API.live){toast('Sign in to the server to make changes');return false}if(perm&&!API.can[perm]){toast('Your role cannot do this');return false}return true}
+
+/* ---------- item actions ---------- */
+function itemAction(x,act){
+  if(!needLive(act==='po'?'purchase':'stock'))return;
+  const u=esc(x.unit),name=esc(x.name);
+  if(act==='count')return formModal(`Count ${name}`,`System shows ${fq(x.onHand)} ${u} in stock`,
+    qtyField('Counted quantity',x,{name:'count',value:x.onHand})+`<label>Note<input name="note" maxlength="100" placeholder="e.g. Weekly count"></label>`,'Save count',async(f,close)=>{
+    const r=await api(`/plugin/cm/item/${x.id}/count/`,{method:'POST',json:{count:f.get('count'),unit:f.get('countUnit'),note:f.get('note')}});close();if(r.pending)return toast(esc(r.message));
+    toast(r.adjustment?`Count saved · ${r.adjustment>0?'+':''}${fq(r.adjustment)} ${u}`:'Count matches stock');await reload()});
+  if(act==='issue'){const bev=x.cat==='Beverage bases'||x.loc==='Beverage station';
+    return formModal(`Issue ${name}`,`To the ${bev?'beverage station':'kitchen'} · oldest lot first`,
+    qtyField('Quantity',x),'Issue',async(f,close)=>{
+    await api(`/plugin/cm/item/${x.id}/move/`,{method:'POST',json:{kind:bev?'issue_beverage':'issue_kitchen',quantity:f.get('q'),unit:f.get('qUnit')}});close();toast(`Issued ${esc(f.get('q'))} ${esc(f.get('qUnit'))} ${name}`);await reload()})}
+  if(act==='waste')return formModal(`Record wastage · ${name}`,'Taken from the lot nearest its use-by date',
+    qtyField('Quantity',x)+`<label>Reason<select name="r">${WASTE_REASONS.map(r=>`<option>${esc(r)}</option>`).join('')}</select></label>`,'Record wastage',async(f,close)=>{
+    const r=await api(`/plugin/cm/item/${x.id}/move/`,{method:'POST',json:{kind:'wastage',quantity:f.get('q'),unit:f.get('qUnit'),reason:f.get('r')}});close();toast(r.pending?esc(r.message):'Wastage recorded');await reload()});
+  if(act==='po'){const c=calc(x);return formModal(`Order ${name}`,`${esc(x.sup)} · packs of ${x.pack} ${u}`,
+    qtyField('Quantity',x,{value:c.sugg||x.pack})+
+    (API.can.pricing?`<label>Price per ${u} (₹)<input name="p" type="number" min="0" step="0.01" value="${x.listPrice??''}" placeholder="Supplier's current price"></label><p class="muted" style="margin:0;font-size:var(--fs-xs)">The price is per ${u}, whatever unit you order in.</p><p class="muted" style="margin:0">Change it if the supplier quoted a new price. It becomes their price for later orders.</p>`:'')+
+    (waSupplier(x.supId,x.sup).whatsapp?`<label style="flex-direction:row;display:flex;gap:8px;align-items:center"><input type="checkbox" name="wa" checked>Send it to ${esc(x.sup)} on WhatsApp</label>`:''),'Raise purchase order',async(f,close)=>{
+    const line={part:x.id,quantity:toStockQty(x,f.get('q'),f.get('qUnit'))},p=f.get('p');if(p&&+p!==x.listPrice)line.unit_cost=p;
+    if(f.get('wa')){close();return waRaiseAndSend(x.supId,x.sup,[line])}
+    const r=await api('/plugin/cm/po/',{method:'POST',json:{supplier:x.supId,lines:[line]}});close();toast(r.pending?esc(r.message):`${esc(r.reference)} raised with ${esc(x.sup)}`);await reload()})}
+}
+function pickPhoto(x){
+  if(!needLive('part'))return;
+  const inp=Object.assign(document.createElement('input'),{type:'file',accept:'image/jpeg,image/png,image/webp'});
+  inp.onchange=async()=>{const f=inp.files[0];if(!f)return;
+    if(!/^image\/(jpeg|png|webp)$/.test(f.type))return toast('Use a JPG, PNG or WebP photo');
+    if(f.size>5*1024*1024)return toast('Photo must be under 5 MB');
+    const fd=new FormData();fd.append('image',f);
+    try{await api(`/api/part/${x.id}/`,{method:'PATCH',body:fd});toast('Photo saved');await reload()}catch(e){fail(e)}};
+  inp.click();
+}
+
+/* ---------- goods receipt / purchase orders ---------- */
+async function postReceipt(p,close){
+  if(!needLive('purchase'))return;
+  const lines=$$('#modal-box tbody tr[data-sku]').map(tr=>{const v=q=>tr.querySelector(q),pr=v('.price-in');
+    return{line:p.lineIds[tr.dataset.sku],quantity:v('.qty-in').value||0,unit:v('[name=ru]')?.value||'',batch:v('.lot-in').value,expiry_date:v('[data-f="exp"]').value||null,
+      ...(pr&&pr.value!==''?{unit_cost:pr.value}:{}),accepted:tr.querySelector('.qc [aria-pressed="true"]').dataset.v==='ok'}});
+  const b=$('#mok');b.disabled=true;
+  try{const r=await api(`/plugin/cm/po/${p.id}/receive/`,{method:'POST',json:{lines,invoice:$('#r-inv').value,temperature:$('#r-temp').value===''?null:$('#r-temp').value}});
+    close();toast(`${esc(r.reference)} posted for ${esc(p.po)} · ${esc(r.qc)}`);await reload()}catch(e){fail(e)}finally{b.disabled=false}
+}
+async function raisePO(panel,btn){
+  if(!needLive('purchase'))return;
+  const rows=[...panel.querySelectorAll('tbody tr[data-sku]')].filter(tr=>tr.querySelector('.check').checked);
+  const lines=rows.map(tr=>({part:bySku[tr.dataset.sku].id,quantity:tr.querySelector('.qty-in').value})).filter(l=>+l.quantity>0);
+  if(!lines.length)return toast('Tick at least one item with a quantity');
+  btn.disabled=true;
+  try{const r=await api('/plugin/cm/po/',{method:'POST',json:{supplier:bySku[rows[0].dataset.sku].supId,lines}});toast(r.pending?esc(r.message):`${esc(r.reference)} raised for ${esc(panel.dataset.sup)}`);await reload()}catch(e){fail(e)}finally{btn.disabled=false}
+}
+
+/* ================= render ================= */
+function render(){renderMenu();$$('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+S.view));
+  (VIEWS[S.view]||renderOverview)()}
+const VIEWS={overview:renderOverview,items:renderItems,inward:renderInward,replenish:renderRepl,moves:renderMoves};
+$('#q').addEventListener('input',e=>{S.q=e.target.value;if(!['items','moves'].includes(S.view))S.view='items';render()});
+document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();$('#q').focus()}if(e.key==='Escape'){closeItem();$('#modal').classList.remove('on')}});
+</script>
+<script src="erp.js"></script>
+<script src="setup.js"></script>
+<script src="cards.js"></script>
+<script src="paging.js"></script>
+<script src="screens.js"></script>
+<script src="admin.js"></script>
+<script src="levels.js"></script>
+<script src="uom.js"></script>
+<script src="stocktake.js"></script>
+<script src="requests.js"></script>
+<script src="closing.js"></script>
+<script src="approvals.js"></script>
+<script src="whatsapp.js"></script>
+<script src="search.js"></script>
+<script src="photos.js"></script>
+<script src="pricelist.js"></script>
+<script src="links.js"></script>
+</body>
+</html>
