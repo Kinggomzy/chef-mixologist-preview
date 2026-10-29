@@ -886,3 +886,8 @@ label{align-self:stretch}
 .dish.jar.jain:hover,.dish.jar.jain:focus-visible{box-shadow:inset 5px 0 0 var(--jade-ink),var(--lift)}
 .dish.jain:not(.jar){box-shadow:inset 5px 0 0 var(--jade-ink),var(--lift-sm)}
 .dish.jain:not(.jar):hover,.dish.jain:not(.jar):focus-visible{box-shadow:inset 5px 0 0 var(--jade-ink),var(--lift)}
+
+/* Supplier cards: chips and rings keep their natural size; only the space above the price list grows */
+.biz{display:flex;flex-direction:column;gap:14px;grid-template-rows:none}
+.biz > details{margin-top:auto}
+.biz > *{flex:none}
