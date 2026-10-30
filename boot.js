@@ -388,11 +388,11 @@
       ['limitWastage', 'limitPo', 'limitCountPct', 'limitCountValue'].forEach(function (k) { if (b[k] !== undefined) o.limits[k] = b[k] === '' || b[k] == null ? null : +b[k]; });
       if (b.whatsappTarget) { o.whatsappTarget = b.whatsappTarget; inv().meta.whatsapp.target = b.whatsappTarget; }
       if (b.whatsappPrices !== undefined) { o.whatsappPrices = !!b.whatsappPrices; inv().meta.whatsapp.prices = !!b.whatsappPrices; }
-      if (b.name) { DB.branding.name = b.name; DB.branding.outlet = o.outlet; }
+      DB.branding.name = o.name; DB.branding.outlet = o.outlet; DB.branding.tagline = o.tagline;
       if (b.costingMethod) inv().costing = { method: b.costingMethod, label: { fifo: 'FIFO: first in, first out', lifo: 'LIFO: last in, first out', avg: 'Moving average' }[b.costingMethod] };
       return [200, o];
     }
-    if (path === 'org/logo/') return [200, {}];
+    if (path === 'org/logo/' || path === 'org/icon/') return [200, DB.org];
     if (path === 'profile/' && method === 'PATCH') { Object.assign(DB.profile, b); return [200, DB.profile]; }
     if (path.indexOf('profile/mfa/') === 0) return err(400, 'code', 'Two-step verification is switched off in the preview');
     if (path === 'profile/password/') return [200, {}];
@@ -471,6 +471,14 @@
         var path = p.slice(i + '/plugin/cm/'.length), body = init.body, isForm = typeof FormData !== 'undefined' && body instanceof FormData;
         if (!isForm && typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
         if (method === 'DELETE' && u.searchParams.get('id')) body = { id: +u.searchParams.get('id') };
+        if (path === 'org/icon/' && method === 'POST' && isForm && body.get('icon')) {   // keep the picked image so the sidebar can show it
+          return new Promise(function (ok) {
+            var fr = new FileReader();
+            fr.onload = function () { DB.branding.icon = DB.org.icon = fr.result; ok(new Response(JSON.stringify(clone(DB.org)), { status: 200, headers: { 'Content-Type': 'application/json' } })); };
+            fr.readAsDataURL(body.get('icon'));
+          });
+        }
+        if (path === 'org/icon/' && method === 'DELETE') { DB.branding.icon = DB.org.icon = null; }
         res = method === 'GET' ? get(path, u.searchParams) : write(method, path, body, isForm);
       } else res = [200, {}];  // /api/part/<id>/ photo upload and the like
       var status = res[0], data = res[1];

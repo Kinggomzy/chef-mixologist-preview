@@ -257,4 +257,4 @@ VIEWS.setup=async function(){
 
 /* ================= sign-in card ================= */
 const baseLogin=showLogin;
-showLogin=function(msg){baseLogin(msg);const f=$('#mform');if(f&&f.querySelector('[name=u]'))f.insertAdjacentHTML('afterbegin','<div class="signin-brand"><img src="brand/mark-light.png" alt=""><b>Chef &amp; Mixologist</b><span>Resto &amp; Cafe · stores, kitchen and bar</span></div>')};
+showLogin=function(msg){baseLogin(msg);const f=$('#mform');if(f&&f.querySelector('[name=u]')&&!f.querySelector('.signin-brand')){const b=BRAND||{name:'Chef & Mixologist'};f.insertAdjacentHTML('afterbegin',`<div class="signin-brand"><img src="${b.logo||'brand/mark-light.png'}" alt=""><b>${esc(b.name)}</b>${b.tagline?`<span>${esc(b.tagline)}</span>`:''}</div>`)}};

@@ -5,7 +5,7 @@
 
 // sections inside pages: [view, card title, extra words people might type]
 const SECTIONS=[
-  ['org','Restaurant details','name address phone gstin fssai website timezone outlet tagline'],['org','Logo','brand image upload'],
+  ['org','Restaurant details','name address phone gstin fssai website timezone outlet tagline'],['org','Logo and App Icon','brand image upload logo app icon favicon home screen'],
   ['org','Kitchen targets','food cost target stock-out protection service level'],['org','Colour palette','theme colours brand'],
   ['org','Stock costing & reordering','fifo lifo moving average costing method order cost holding rate eoq'],
   ['org','Approval limits','wastage purchase order count limit approve'],['org','WhatsApp orders','whatsapp desktop web prices'],

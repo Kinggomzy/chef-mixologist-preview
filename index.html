@@ -301,7 +301,7 @@ body.d-open .drawer{transform:none}
 <body>
 <div class="app">
   <aside class="side" id="side">
-    <div class="logo"><img class="logo-img" src="brand/mark-light.png" alt="Chef &amp; Mixologist"><div><b>Chef &amp; Mixologist</b><small>RESTO &amp; CAFE</small></div>
+    <div class="logo"><img class="logo-img" src="brand/mark-light.png" alt=""><div><b data-brand-name>Chef &amp; Mixologist</b><small data-brand-tag hidden></small></div>
       <button type="button" class="nav-toggle" id="navToggle" aria-controls="side" aria-expanded="false" aria-label="Open menu"><svg class="bars" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><svg class="x" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <label class="menu-q"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="menuQ" type="search" placeholder="Search the menu" aria-label="Search the menu"></label>
     <nav class="menu" id="menu" aria-label="Sections"></nav>
@@ -798,7 +798,7 @@ function formModal(title,sub,body,okText,onOk){
   setTimeout(()=>$('#mform input,#mform select')?.focus(),30);
 }
 function showLogin(msg=''){
-  formModal('Sign in','Chef &amp; Mixologist · Pantry',`
+  formModal('Sign in',esc(BRAND&&BRAND.name||''),`
     <label>Username<input name="u" autocomplete="username" required></label>
     <label>Password<input name="p" type="password" autocomplete="current-password" required></label>
     <label>Server<input name="s" value="${esc(API.base)}" required></label>${msg?`<p class="muted">${esc(msg)}</p>`:''}`,'Sign in',async f=>{

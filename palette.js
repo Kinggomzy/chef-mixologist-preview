@@ -5,7 +5,7 @@
    Loaded in <head> so the last palette used on this device is applied before the page draws. */
 
 const PALETTES={
-  copper:['Copper & espresso','From the Chef & Mixologist logo','#2B1710','#B4420E'],
+  copper:['Copper & espresso','From the original logo','#2B1710','#B4420E'],
   peacock:['Peacock & saffron','Deep teal with warm saffron','#0F3440','#C2602A'],
   emerald:['Emerald & brass','Bottle green with polished brass','#123328','#9A6B1F'],
   plum:['Royal plum & rose','Aubergine with dusky rose','#2E1530','#A8445F'],

@@ -1710,3 +1710,15 @@ h2,h3,.panel-h h2{font-weight:600;letter-spacing:-.01em}
 .baskets li .stepper .qty-in{width:var(--qw);min-width:0;text-overflow:ellipsis}
 .baskets li > .lv{width:var(--lw);min-width:0;justify-content:flex-end;overflow:hidden}
 .baskets li > .lv [data-lvt]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.logo small[data-brand-tag]{text-transform:uppercase}
+.logo small[hidden]{display:none}
+.icon-prev{width:72px;height:72px;border-radius:18px;object-fit:cover;background:var(--espresso);padding:6px;box-sizing:border-box}
+
+/* logo and app icon side by side */
+.brand-pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:18px 24px;align-items:start}
+.brand-pair .be-t{font-size:var(--fs-sm);color:var(--text-3)}
+.brand-pair .logo-edit img{max-width:100%}
+.brand-pair{grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));gap:18px 16px}
+.brand-pair .logo-edit img{width:128px;height:128px;max-width:100%;object-fit:contain;border-radius:var(--r-md)}
+.brand-pair .logo-edit img.icon-prev{background:var(--espresso);padding:14px;box-sizing:border-box;object-fit:contain}

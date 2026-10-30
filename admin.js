@@ -14,6 +14,16 @@ function saveToken(t,keep){API.token=t;try{(keep?localStorage:sessionStorage).se
 function clearToken(){API.token=null;try{sessionStorage.removeItem('cm_token');localStorage.removeItem('cm_token')}catch(e){}}
 try{if(!API.token)API.token=localStorage.getItem('cm_token')}catch(e){}
 let PROFILE=null,BRAND=null,UNREAD=0,SAVED_THEME=null;
+/* the name, tagline and logo in the sidebar come from Organisation settings */
+function applyBrand(b){
+  if(!b)return;
+  $$('[data-brand-name]').forEach(e=>e.textContent=b.name||'Chef & Mixologist');
+  $$('[data-brand-tag]').forEach(e=>{e.textContent=b.tagline||'';e.hidden=!b.tagline});
+  $$('.logo-img').forEach(i=>{i.src=b.icon||'brand/mark-light.png';i.alt=''});
+  if(b.icon){const fav=document.querySelector('link[rel=icon]'),apple=document.querySelector('link[rel=apple-touch-icon]');if(fav)fav.href=b.icon;if(apple)apple.href=b.icon}
+  if(b.name)document.title=b.name;
+}
+function refreshBrand(){return fetch(API.base+CM+'branding/').then(r=>r.json()).then(b=>{BRAND=b;applyBrand(b);return b}).catch(()=>{})}
 const baseApply=applySnapshot;
 applySnapshot=function(d){baseApply(d);renderShellUser()};
 
@@ -22,7 +32,7 @@ showLogin=async function(msg=''){
   if(!BRAND){try{BRAND=await fetch(API.base+CM+'branding/').then(r=>r.json())}catch(e){BRAND={name:'Chef & Mixologist'}}}
   let step='password',creds=null;
   const draw=()=>formModal('Sign in',esc(BRAND.outlet?`${BRAND.name} · ${BRAND.outlet}`:BRAND.name),
-    `<div class="signin-brand"><img src="${BRAND.logo||'brand/mark-light.png'}" alt=""><b>${esc(BRAND.name)}</b><span>Resto &amp; Cafe · stores, kitchen and bar</span></div>`+
+    `<div class="signin-brand"><img src="${BRAND.logo||BRAND.icon||'brand/mark-light.png'}" alt=""><b>${esc(BRAND.name)}</b>${BRAND.tagline?`<span>${esc(BRAND.tagline)}</span>`:''}</div>`+
     (step==='password'?`<label>Username<input name="u" autocomplete="username" required></label>
       <label>Password<input name="p" type="password" autocomplete="current-password" required></label>
       <label style="flex-direction:row;display:flex;gap:8px;align-items:center"><input type="checkbox" name="keep" ${keepSignedIn()?'checked':''}>Keep me signed in on this device</label>
@@ -356,7 +366,7 @@ async function renderOrg(){
      <label>GSTIN<input name="gstin" value="${esc(o.gstin)}" ${dis} maxlength="15" placeholder="19ABCDE1234F1Z5"></label><label>FSSAI licence<input name="fssai" value="${esc(o.fssai)}" ${dis} maxlength="20"></label>
      <label>Website<input name="website" value="${esc(o.website)}" ${dis}></label><label>Timezone<input name="timezone" value="${esc(o.timezone)}" ${dis}></label></div>
      ${can?'<div><button class="btn btn-primary">Save details</button></div>':''}</form>`)}
-   ${panel('Logo','PNG, JPG or WebP up to 1 MB. Used on the sign-in screen.',`<div class="logo-edit"><img src="brand/logo.png" id="orgLogo2" alt=""><div style="display:flex;gap:8px;flex-wrap:wrap">${can?`<label class="btn btn-sm btn-line">Upload logo<input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp" hidden></label>${o.logo?btn('Remove','id="logoDel"'):''}`:''}</div><small class="muted">${o.logo?'Your uploaded logo.':'Showing the built-in Chef & Mixologist logo.'}</small></div>`)}
+   ${panel('Logo and app icon','PNG, JPG or WebP up to 1 MB each. The icon is cropped square and shown in the sidebar, the browser tab and on the home screen.',`<div class="brand-pair"><div class="logo-edit"><b class="be-t">Logo</b><img src="brand/logo.png" id="orgLogo2" alt=""><div style="display:flex;gap:8px;flex-wrap:wrap">${can?`<label class="btn btn-sm btn-line">Upload logo<input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp" hidden></label>${o.logo?btn('Remove','id="logoDel"'):''}`:''}</div><small class="muted">${o.logo?'Your uploaded logo, used on the sign-in screen.':'Showing the built-in Chef & Mixologist logo.'}</small></div><div class="logo-edit"><b class="be-t">App icon</b><img src="brand/mark-light.png" id="orgIcon" class="icon-prev" alt=""><div style="display:flex;gap:8px;flex-wrap:wrap">${can?`<label class="btn btn-sm btn-line">Upload icon<input type="file" id="iconFile" accept="image/png,image/jpeg,image/webp" hidden></label>${o.icon?btn('Remove','id="iconDel"'):''}`:''}</div><small class="muted">${o.icon?'Your uploaded icon. Wide pictures are cropped to a square.':'Showing the built-in icon.'}</small></div></div>`)}
    ${panel('Kitchen targets','Used by reports and reorder suggestions',`<form id="opsF" class="calc" style="display:grid;gap:12px"><div class="two">
      <label>Food cost target (%)<input name="foodCostTarget" type="number" min="5" max="80" step="0.5" value="${o.foodCostTarget}" ${dis}></label>
      <label>Stock-out protection<select name="serviceLevel" ${dis}>${[[1.28,'90%'],[1.65,'95%'],[2.33,'99%']].map(([v,l])=>`<option value="${v}" ${o.serviceLevel===v?'selected':''}>${l}</option>`).join('')}</select></label></div>
@@ -369,14 +379,17 @@ async function renderOrg(){
      <option value="admins" ${o.mfaPolicy==='admins'?'selected':''}>Owners, managers and auditors</option><option value="required" ${o.mfaPolicy==='required'?'selected':''}>Everyone</option><option value="optional" ${o.mfaPolicy==='optional'?'selected':''}>Optional for everyone</option></select></label>
      <p class="muted" style="margin:0">People who must use it are asked to set it up the next time they sign in.</p>${can?'<div><button class="btn btn-primary">Save security</button></div>':''}</form>`)}</div>`;
   if(o.logo){const r=await fetch(API.base+o.logo,{headers:{Authorization:'Token '+API.token}}).catch(()=>null);if(r&&r.ok){const u=URL.createObjectURL(await r.blob());if($('#orgLogo'))$('#orgLogo').src=u;if($('#orgLogo2'))$('#orgLogo2').src=u}}else if($('#orgLogo'))$('#orgLogo').src='brand/logo.png';
+  if(o.icon){const r=o.icon.startsWith('data:')?null:await fetch(API.base+o.icon,{headers:{Authorization:'Token '+API.token}}).catch(()=>null);if(o.icon.startsWith('data:')){if($('#orgIcon'))$('#orgIcon').src=o.icon}else if(r&&r.ok){const u=URL.createObjectURL(await r.blob());if($('#orgIcon'))$('#orgIcon').src=u}}
   if(!can||!body.isConnected)return;  // the page was redrawn while the logo loaded
-  const save=sel=>$(sel).onsubmit=async e=>{e.preventDefault();try{await api(CM+'org/',{method:'PATCH',json:Object.fromEntries(new FormData(e.target))});toast('Saved');BRAND=null;renderOrg()}catch(err){fail(err)}};
+  const save=sel=>$(sel).onsubmit=async e=>{e.preventDefault();try{await api(CM+'org/',{method:'PATCH',json:Object.fromEntries(new FormData(e.target))});toast('Saved');BRAND=null;refreshBrand();renderOrg()}catch(err){fail(err)}};
   save('#orgF');save('#opsF');save('#secF');save('#costF');save('#limF');if($('#waF'))$('#waF').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);
     try{await api(CM+'org/',{method:'PATCH',json:{whatsappTarget:f.get('whatsappTarget'),whatsappPrices:!!f.get('whatsappPrices')}});toast('Saved');await reload();renderOrg()}catch(err){fail(err)}};
   wireTheme(o);
   $$('#costF input[name="costingMethod"]').forEach(r=>r.onchange=()=>$$('#costF .method').forEach(l=>l.classList.toggle('on',l.contains(r)&&r.checked)));
-  $('#logoFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(f.size>1048576)return toast('Logo must be under 1 MB');const fd=new FormData();fd.append('logo',f);try{await api(CM+'org/logo/',{method:'POST',body:fd});toast('Logo saved');BRAND=null;renderOrg()}catch(err){fail(err)}};
-  if($('#logoDel'))$('#logoDel').onclick=async()=>{await api(CM+'org/logo/',{method:'DELETE'});toast('Logo removed');BRAND=null;renderOrg()};
+  $('#logoFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(f.size>1048576)return toast('Logo must be under 1 MB');const fd=new FormData();fd.append('logo',f);try{await api(CM+'org/logo/',{method:'POST',body:fd});toast('Logo saved');BRAND=null;refreshBrand();renderOrg()}catch(err){fail(err)}};
+  $('#iconFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(f.size>1048576)return toast('Icon must be under 1 MB');const fd=new FormData();fd.append('icon',f);try{await api(CM+'org/icon/',{method:'POST',body:fd});toast('App icon saved');BRAND=null;refreshBrand();renderOrg()}catch(err){fail(err)}};
+  if($('#iconDel'))$('#iconDel').onclick=async()=>{await api(CM+'org/icon/',{method:'DELETE'});toast('App icon removed');BRAND=null;refreshBrand();renderOrg()};
+  if($('#logoDel'))$('#logoDel').onclick=async()=>{await api(CM+'org/logo/',{method:'DELETE'});toast('Logo removed');BRAND=null;refreshBrand();renderOrg()};
 }
 
 /* Colour palette: preview as you pick, saved for everyone on Save */
@@ -410,7 +423,7 @@ function wireTheme(o){
   $('#palUndo').onclick=()=>{applyTheme(saved);renderOrg()};
   f.onsubmit=async e=>{e.preventDefault();if(!pick())return toast('Choose colours with enough contrast first');
     try{const d=Object.fromEntries(new FormData(f));await api(CM+'org/',{method:'PATCH',json:d});
-      SAVED_THEME={theme:d.theme,primary:d.themePrimary.toUpperCase(),accent:d.themeAccent.toUpperCase()};applyTheme(SAVED_THEME);toast('Palette saved');BRAND=null;renderOrg()}catch(err){fail(err)}};
+      SAVED_THEME={theme:d.theme,primary:d.themePrimary.toUpperCase(),accent:d.themeAccent.toUpperCase()};applyTheme(SAVED_THEME);toast('Palette saved');BRAND=null;refreshBrand();renderOrg()}catch(err){fail(err)}};
 }
 
 /* ================= Install app (PWA) ================= */
@@ -421,13 +434,13 @@ function renderInstall(){
   const installed=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
   const msg=installed?'Everything is set up.':ios?'On iPhone or iPad: tap the Share button, then “Add to Home Screen”.':INSTALL_EVT?'One tap adds it to this device.':'Use your browser\'s menu and choose “Install app” or “Add to Home screen”.';
-  const body=view('install',`<img class="ph-logo" src="brand/icon-192.png" alt="">${installed?'You are using the installed app':'Chef &amp; Mixologist on this device'}`,msg,!installed&&INSTALL_EVT?'<button class="btn btn-primary" id="doInstall">Install app</button>':'');
+  const body=view('install',`<img class="ph-logo" src="${BRAND&&BRAND.icon||'brand/icon-192.png'}" alt="">${installed?'You are using the installed app':`${esc(BRAND&&BRAND.name||'The app')} on this device`}`,msg,!installed&&INSTALL_EVT?'<button class="btn btn-primary" id="doInstall">Install app</button>':'');
   const sw='serviceWorker' in navigator&&navigator.serviceWorker.controller;
   body.innerHTML=`<div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin:16px 0">
       <div class="tile ${sw?'good':'warn'}"><span class="lbl">Offline page</span><span class="val" style="font-size:var(--fs-lg)">${sw?'Active':'Starting…'}</span><span class="sub">Opens even on a weak connection</span></div>
       <div class="tile ${installed?'good':'info'}"><span class="lbl">This device</span><span class="val" style="font-size:var(--fs-lg)">${installed?'Installed':'In the browser'}</span><span class="sub">${installed?'Running in its own window':'Install for quicker access'}</span></div>
       <div class="tile info"><span class="lbl">Alerts</span><span class="val" style="font-size:var(--fs-lg)">${'Notification' in window?({granted:'Allowed',denied:'Blocked',default:'Not set'})[Notification.permission]:'Not supported'}</span><span class="sub"><a href="#prefs">Notification preferences</a></span></div></div>
-    <div class="admin-grid">${panel('Kept on this device','So the app opens fast',`<ul class="ticks good"><li>The app's screens and styling</li><li>The Chef &amp; Mixologist logo and icons</li><li>A “you're offline” page</li></ul>`)}
+    <div class="admin-grid">${panel('Kept on this device','So the app opens fast',`<ul class="ticks good"><li>The app's screens and styling</li><li>Your logo and icons</li><li>A “you're offline” page</li></ul>`)}
       ${panel('Never stored on this device','Always fetched from the server',`<ul class="ticks bad"><li>Stock levels, orders and sales</li><li>Prices, costs and supplier details</li><li>Item photos and recipes</li><li>Passwords and sign-in sessions</li></ul>`)}</div>`;
   if($('#doInstall'))$('#doInstall').onclick=async()=>{INSTALL_EVT.prompt();await INSTALL_EVT.userChoice;INSTALL_EVT=null;renderInstall()};
 }
@@ -516,7 +529,7 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
 // start once every script (links, units, stock-takes …) has loaded, so the first page has all its helpers
 window.addEventListener('DOMContentLoaded',async function start(){
   $$('[data-signin]').forEach(b=>b.onclick=()=>API.live?go('profile'):showLogin());
-  fetch(API.base+CM+'branding/').then(r=>r.json()).then(b=>{BRAND=BRAND||b;SAVED_THEME=b.theme;applyTheme(b.theme)}).catch(()=>{});
+  refreshBrand().then(b=>{if(b){SAVED_THEME=b.theme;applyTheme(b.theme)}});
   if(activationFromHash()){render();return}
   const want=location.hash.slice(1);
   if(!API.token){render();showLogin();return}
