@@ -841,7 +841,7 @@ label{align-self:stretch}
 .btn-wa svg{flex:none}
 .basket-acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .docket-f .btn-wa{padding:0 9px}
-@media (max-width:600px){.basket-f{flex-wrap:wrap}.basket-acts{width:100%}.basket-acts .btn{flex:1;justify-content:center}}
+
 
 /* Menu search results */
 #mqBox,#gqBox{position:fixed;z-index:120;width:min(340px,calc(100vw - 24px));max-height:min(70vh,520px);overflow:auto;padding:6px;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--lift),0 0 0 1px var(--line)}
@@ -1588,12 +1588,10 @@ h2,h3,.panel-h h2{font-weight:600;letter-spacing:-.01em}
 .pg-x{all:unset;cursor:pointer;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;color:var(--text-3);font-size:18px;line-height:1}
 .pg-x:hover{background:var(--surface-2);color:var(--text)}
 .fm-btns .pg-search{margin-right:6px}
-@media (max-width:860px){.pg-search{display:none}}
 
 /* search row under the heading on list pages without a toolbar */
 .pg-bar{display:flex;justify-content:flex-end;margin:-4px 0 14px}
 .pg-bar .pg-search{width:min(340px,100%)}
-@media (max-width:860px){.pg-bar{display:none}}
 .pg-x[hidden]{display:none}
 
 /* supplier cards: every card the same height; the header band holds the logo and the name, centred together; names take two lines and end in "…" beyond that */
@@ -1633,3 +1631,82 @@ h2,h3,.panel-h h2{font-weight:600;letter-spacing:-.01em}
   .peek-bar .d-act span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
 .fm-btns .pg-search{margin-right:6px}
+
+/* the page search shows as a box wherever the row has room and shrinks to an icon only where it would crowd the other buttons (phones, beside Sort and Filter) */
+@media (max-width:860px){
+  .page-head .search,.page-head .head-acts > .search{display:none!important}
+  .pg-bar{justify-content:flex-end;margin:-6px 0 12px}
+  .pg-bar .pg-search{width:min(340px,100%)}
+  .fm-btns .pg-search{display:flex;width:210px;height:38px}
+}
+@media (max-width:600px){
+  .fm-btns .pg-search{display:grid;place-items:center;position:relative;flex:none;width:38px;min-width:0;height:38px;padding:0;margin:0;border-radius:12px;background:var(--surface);border:1px solid var(--line);box-shadow:none;cursor:pointer}
+  .fm-btns .pg-search svg{pointer-events:none;color:var(--text-2)}
+  .fm-btns .pg-search input{position:absolute;inset:0;width:100%;height:100%;opacity:0;padding:0;cursor:pointer}
+  .fm-btns .pg-search .pg-x{display:none}
+  .fm-btns .pg-search:focus-within{position:fixed;z-index:45;left:12px;right:12px;top:68px;width:auto;height:48px;display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--surface);border-color:transparent;box-shadow:var(--lift);cursor:text}
+  .fm-btns .pg-search:focus-within input{position:static;opacity:1;flex:1;height:100%;cursor:text}
+  .fm-btns .pg-search:focus-within .pg-x:not([hidden]){display:grid}
+  .fm-btns .pg-search:has(input:not(:placeholder-shown)){border-color:var(--copper-light)}
+}
+
+/* Replenishment price box: compact (room for a price like 12,345.50), never stretched across the card; it shrinks only on very narrow phones */
+.baskets .price-q{width:auto;justify-self:start}
+.baskets .price-q input{flex:0 1 112px;width:112px;max-width:100%}
+
+/* basket footer: the order value and the buttons share a row whenever they fit; the buttons drop below only when they cannot */
+.basket-f{flex-wrap:wrap;row-gap:10px}
+.basket-tot{display:flex;align-items:center;gap:6px;margin-right:auto;white-space:nowrap}
+.basket-tot .total{margin-right:0}
+.basket-acts{flex:1 1 auto;margin-left:auto}
+.basket-acts .btn{flex:1 1 auto;justify-content:center}
+
+/* a line reads left to right: price, then quantity, then the value of the line */
+.baskets li{grid-template-columns:auto auto minmax(0,1fr) auto auto}
+.baskets li > .lv{grid-column:5;grid-row:2;justify-self:end;min-width:76px;text-align:right;font-size:var(--fs-md);color:var(--text);white-space:nowrap}
+.basket{container-type:inline-size}
+/* the value only appears when the card itself is wide enough to hold price, quantity and value on one line */
+@container (max-width:480px){.baskets li > .lv{display:none}.baskets li{grid-template-columns:auto auto minmax(0,1fr) auto}}
+
+.baskets .price-q input{flex:0 1 84px;width:84px;height:32px;padding:0 8px;font-size:var(--fs-sm)}
+
+/* narrow cards: price, quantity and value still share one line (smaller box, tighter gaps); a one-item basket then needs no second total in the footer */
+.baskets li{column-gap:6px}
+.baskets .price-q input{flex:0 1 68px;width:68px;padding:0 6px}
+.baskets li > .lv{min-width:0;font-size:var(--fs-sm);font-weight:var(--fw-bold)}
+@container (max-width:480px){.baskets li > .lv{display:block}.baskets li{grid-template-columns:auto auto minmax(0,1fr) auto auto}}
+@container (max-width:299px){.baskets li > .lv{display:none}.baskets li{grid-template-columns:auto auto minmax(0,1fr) auto}}
+@container (min-width:300px){.basket.one .basket-tot{display:none}.basket.one .basket-acts{flex-basis:100%}}
+
+.baskets li > .lv{padding:0;background:none;border:0;border-radius:0;box-shadow:none}
+.baskets li .stepper .qty-in{width:44px}
+.baskets li .stepper button{width:26px}
+
+/* the free room in the price row goes to the price box (up to a sensible size); the amount carries its own info icon */
+.baskets .price-q input{flex:1 1 84px;width:auto;min-width:68px;max-width:130px}
+.baskets li > .lv{display:inline-flex;align-items:center;gap:4px}
+.baskets li > .lv .info-tip{display:inline-grid;color:var(--text-3)}
+.baskets li.off > .lv{visibility:hidden}
+@container (max-width:299px){.baskets li > .lv{display:none}}
+.baskets li > .price-q{width:100%;min-width:0;justify-self:stretch}
+.baskets .price-q input{flex:1 1 68px;min-width:60px}
+/* price, quantity and value read as one set: same size, same weight, same height, same centre line */
+.baskets li .price-q input,.baskets li .stepper .qty-in,.baskets li > .lv,.baskets li > .lv [data-lvt]{font-family:var(--font-ui);font-size:14px;font-weight:var(--fw-bold);line-height:1;font-variant-numeric:tabular-nums}
+.baskets li .price-q input{height:32px}
+.baskets li .stepper{height:32px;align-items:center}
+.baskets li .stepper .qty-in{height:32px;padding:0}
+.baskets li > .lv{height:32px}
+.baskets li > .price-q,.baskets li > .stepper,.baskets li > .lv{align-self:center}
+.baskets li .stepper .qty-in{width:40px}
+.baskets li .stepper button{width:24px}
+/* Replenishment cards a little wider on desktop, so price, quantity and value sit comfortably */
+@media (min-width:861px){.baskets{grid-template-columns:repeat(auto-fill,minmax(min(410px,100%),440px));justify-content:start}}
+/* Replenishment line sizes follow the card: a small price box, a roomy quantity and amount; anything too long ends in "…" */
+.baskets li{--pw:72px;--qw:64px;--lw:110px}
+@container (max-width:419px){.baskets li{--pw:60px;--qw:52px;--lw:92px}}
+@container (max-width:349px){.baskets li{--pw:56px;--qw:46px;--lw:64px}.baskets li > .lv .info-tip{display:none}}
+.baskets li .price-q input{flex:0 0 var(--pw);width:var(--pw);min-width:0;max-width:none}
+.baskets li .price-q span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.baskets li .stepper .qty-in{width:var(--qw);min-width:0;text-overflow:ellipsis}
+.baskets li > .lv{width:var(--lw);min-width:0;justify-content:flex-end;overflow:hidden}
+.baskets li > .lv [data-lvt]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

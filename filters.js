@@ -44,9 +44,9 @@ function pageSearch(view,generic){
 /* ---------- page search for the other list pages ----------
    One search row under the heading. Every paginated list on the page is filtered by the words typed: paginate() does the
    narrowing, and each list's own redraw (registered when its pager is wired) is called so nothing reloads or loses focus. */
-const PG_PAGES=['inward','events','requests','approvals','stocktake','recipes','suppliers','sales','access','notifications'];
+const PG_PAGES=['inward','events','closing','requests','approvals','stocktake','recipes','suppliers','sales','access','notifications'];
 const PG_AWARE=new Set(['items','moves','dockets','grn']);   // these lists already read S.q themselves
-const PG_HINT={events:'Search event nights',inward:'Search orders and deliveries',requests:'Search requests',approvals:'Search approvals',stocktake:'Search stock-takes',recipes:'Search dishes and recipes',suppliers:'Search suppliers',sales:'Search sales imports',access:'Search access requests',notifications:'Search notifications'};
+const PG_HINT={closing:'Search month-end closes',events:'Search event nights',inward:'Search orders and deliveries',requests:'Search requests',approvals:'Search approvals',stocktake:'Search stock-takes',recipes:'Search dishes and recipes',suppliers:'Search suppliers',sales:'Search sales imports',access:'Search access requests',notifications:'Search notifications'};
 const PG_REDRAW=[];
 const pgText=new WeakMap();
 function pgTextOf(it,depth=0){
