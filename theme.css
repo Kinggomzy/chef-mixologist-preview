@@ -1503,3 +1503,19 @@ select,textarea,input:not([type=checkbox]):not([type=radio]):not([type=range]):n
 .basket.edge .basket-f .btn-primary:hover:not(:disabled){filter:brightness(1.06);background:linear-gradient(135deg,var(--copper-light),var(--copper))}
 .basket.edge .basket-f .btn-wa{background:#18794A;color:#fff;border-color:transparent}
 .basket.edge .basket-f .btn-wa:hover:not(:disabled){background:#136339}
+
+/* Replenishment price row: the box takes all the room it is given, and the unit stays beside it on one line */
+.baskets .price-q{display:flex;align-items:center;gap:6px;width:100%;box-sizing:border-box;flex-wrap:nowrap}
+.baskets .price-q input{flex:1 1 auto;width:auto;min-width:0;height:34px}
+.baskets .price-q span{white-space:nowrap;flex:none}
+
+/* Replenishment lines: the item name uses the whole width; the price box and the quantity stepper share the row below */
+.baskets li{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:8px 10px;align-items:center}
+.baskets li > div{grid-column:3 / -1;min-width:0}
+.baskets li > .price-q{grid-column:1 / 4;grid-row:2;margin-top:0}
+.baskets li > .stepper{grid-column:4;grid-row:2;justify-self:end}
+.baskets li > .price-q:not(:nth-child(4)){grid-column:1 / 4}
+
+/* Quantity boxes that already have − and + buttons do not also show the browser's own up/down arrows */
+.stepper input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.stepper input[type=number]::-webkit-inner-spin-button,.stepper input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
