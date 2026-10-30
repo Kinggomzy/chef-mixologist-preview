@@ -1537,3 +1537,10 @@ select,textarea,input:not([type=checkbox]):not([type=radio]):not([type=range]):n
 .feed-row.edge .edge-tip{justify-self:end}
 .audit-row.edge > summary{align-items:center}
 .audit-row.edge .edge-tip{justify-self:end;margin-right:6px}
+
+/* Fraunces: sturdy strokes, so headings use a medium-bold weight with slightly easier spacing */
+h1,h2,h3,h4,.tile .val,.sc-m b,.price,.amt,.total,.big,.pct,.donut span,.bigdonut b,.rank,.mono,.qty-pill,.stamp,.page-head h1{font-optical-sizing:auto;font-variation-settings:"SOFT" 50,"WONK" 0}
+h1,.page-head h1{font-weight:600;letter-spacing:-.02em}
+h2,h3,.panel-h h2{font-weight:600;letter-spacing:-.01em}
+/* the wordmark stays on one line with the wider serif */
+#side .logo b{font-size:15.5px;white-space:nowrap;letter-spacing:-.01em}

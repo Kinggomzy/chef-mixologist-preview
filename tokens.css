@@ -32,10 +32,10 @@
   --info-soft:var(--espresso-soft);
 
   /* type */
-  --font-display:"Cormorant Garamond",Georgia,serif;          /* headings, big numbers */
-  --font-ui:"Hanken Grotesk",system-ui,sans-serif;            /* everything else */
+  --font-display:"Fraunces",Georgia,serif;          /* headings, big numbers */
+  --font-ui:"Figtree",system-ui,sans-serif;            /* everything else */
   --fs-xs:12px;  --fs-sm:13px;  --fs-base:14.5px; --fs-md:16px;
-  --fs-lg:21px;  --fs-xl:30px;  --fs-2xl:42px;    --fs-3xl:60px;
+  --fs-lg:19px;  --fs-xl:26px;  --fs-2xl:36px;    --fs-3xl:50px;
   --fw-regular:500; --fw-medium:600; --fw-bold:700; --fw-heavy:700;
   --lh-tight:1.05; --lh-body:1.45;
 

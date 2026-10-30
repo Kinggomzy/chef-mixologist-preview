@@ -485,7 +485,7 @@
     css.textContent = '#demoBadge{position:fixed;right:14px;bottom:14px;z-index:90;display:flex;gap:10px;align-items:center;padding:8px 8px 8px 14px;border-radius:99px;background:#2B1710;color:#FFF8F0;font:600 12.5px/1 "Hanken Grotesk",system-ui,sans-serif;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}' +
       '#demoBadge button{all:unset;cursor:pointer;padding:7px 12px;border-radius:99px;background:#B4420E;color:#fff}#demoBadge button:focus-visible{outline:2px solid #E08A5C;outline-offset:2px}' +
       '#demoWelcome{position:fixed;inset:0;z-index:300;display:grid;place-items:center;background:rgba(30,15,10,.6);padding:16px}#demoWelcome > div{max-width:480px;background:#FFFCF8;border-radius:26px;padding:28px;box-shadow:0 40px 80px -30px rgba(0,0,0,.6);font-family:"Hanken Grotesk",system-ui,sans-serif;color:#24160F}' +
-      '#demoWelcome h2{font-family:"Cormorant Garamond",Georgia,serif;font-size:30px;margin:0 0 8px}#demoWelcome p{margin:0 0 10px;line-height:1.5;color:#5A463B}#demoWelcome ul{margin:0 0 16px;padding-left:18px;color:#5A463B;line-height:1.6}' +
+      '#demoWelcome h2{font-family:"Fraunces",Georgia,serif;font-size:26px;margin:0 0 8px}#demoWelcome p{margin:0 0 10px;line-height:1.5;color:#5A463B}#demoWelcome ul{margin:0 0 16px;padding-left:18px;color:#5A463B;line-height:1.6}' +
       '#demoWelcome button{all:unset;cursor:pointer;padding:11px 18px;border-radius:12px;background:#B4420E;color:#fff;font-weight:700}@media (max-width:600px){#demoBadge{right:8px;bottom:8px;font-size:12px}}';
     document.head.appendChild(css);
     var seen = false; try { seen = sessionStorage.getItem('cm_demo_welcome') === '1'; } catch (e) {}
