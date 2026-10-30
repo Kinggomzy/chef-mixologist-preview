@@ -31,7 +31,8 @@ VIEWS.overview=function(){
   const att=C.filter(o=>['out','crit','reorder'].includes(o.c.st)||(o.c.expiry<=1&&o.x.onHand>0)).sort((a,b)=>ST[a.c.st][2]-ST[b.c.st][2]||a.c.cover-b.c.cover);
   const rail=$('#att');rail.className='panel-b';
   const drawAtt=()=>{const pg=paginate('att',att,6,String(att.length));
-  rail.innerHTML=(pg.rows.length?`<div class="act-grid">${pg.rows.map(({x,c})=>`<button class="chipcard" data-sku="${x.sku}">${img(x)}<span><b>${esc(x.name)}</b><small>${fq(x.onHand)} ${esc(x.unit)} left · ${coverTxt(c.cover)}</small>${c.expiry<=1&&!['out','crit','reorder'].includes(c.st)?'<span class="sticker melon">Use within 24 h</span>':sticker(c.st)}${c.inc.q?` <span class="sticker soft">+${fq(c.inc.q)} ${esc(x.unit)} coming</span>`:''}</span></button>`).join('')}</div>`:'<p class="muted">Nothing needs action right now.</p>')+pg.html;
+  rail.innerHTML=(pg.rows.length?`<div class="act-grid">${pg.rows.map(({x,c})=>{const use24=c.expiry<=1&&!['out','crit','reorder'].includes(c.st),tone=use24||['out','crit'].includes(c.st)?'bad':c.st==='reorder'?'warn':c.st==='onorder'?'info':c.st==='ok'?'ok':'mute';
+    return `<button class="chipcard edge edge-${tone}" data-sku="${x.sku}">${edgeTip(use24?'Use within 24 h':ST[c.st][0])}${img(x)}<span><b>${esc(x.name)}</b><small>${fq(x.onHand)} ${esc(x.unit)} left · ${coverTxt(c.cover)}</small></span>${c.inc.q?`<span class="chip-f">+${fq(c.inc.q)} ${esc(x.unit)} coming</span>`:''}</button>`}).join('')}</div>`:'<p class="muted">Nothing needs action right now.</p>')+pg.html;
   rail.querySelectorAll('[data-sku]').forEach(r=>r.onclick=()=>openItem(r.dataset.sku));wirePager(rail,drawAtt)};drawAtt();
 };
 

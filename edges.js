@@ -21,7 +21,10 @@ const LEGEND={
   requests:[['warn','Waiting for the store'],['info','Partly issued'],['ok','Done'],['bad','Late'],['mute','Cancelled']],
   approvals:[['warn','Waiting for a decision'],['ok','Approved'],['bad','Turned down']],
   closing:[['ok','Closed'],['warn','Ready to close'],['info','Month still running'],['mute','Not ready']],
-  team:[['ok','Active'],['warn','Invited, not signed in yet'],['mute','Deactivated']]
+  team:[['ok','Active'],['warn','Invited, not signed in yet'],['mute','Deactivated']],
+  profile:[['ok','Blinking dot: the device you are using right now']],
+  access:[['warn','Waiting for review'],['ok','Approved'],['bad','Rejected'],['mute','Expired or cancelled']],
+  audit:[['ok','Done'],['bad','Refused or failed']]
 };
 function legendHtml(id){
   const L=LEGEND[id];if(!L)return '';

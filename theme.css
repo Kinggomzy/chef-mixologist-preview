@@ -1519,3 +1519,21 @@ select,textarea,input:not([type=checkbox]):not([type=radio]):not([type=range]):n
 /* Quantity boxes that already have − and + buttons do not also show the browser's own up/down arrows */
 .stepper input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .stepper input[type=number]::-webkit-inner-spin-button,.stepper input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+/* Needs-action cards: colour-coded like every other card (edge, tooltip, tinted strip) instead of a status label */
+.chipcard.edge{position:relative;grid-template-columns:56px minmax(0,1fr);--cx:10px;--cy:10px;padding:12px 12px 12px 14px;border-width:0;border-left:5px solid var(--edge)}
+.chipcard.edge:hover,.chipcard.edge:focus-visible{box-shadow:var(--lift-sm);border-color:var(--edge)}
+.chipcard .edge-tip{position:absolute;right:10px;top:10px}
+.chipcard .chip-f{grid-column:1 / -1;margin:2px -12px -12px -14px;padding:10px 14px;font-size:var(--fs-xs);font-weight:var(--fw-bold);color:var(--text-2);background:color-mix(in srgb,var(--edge,var(--line-2)) 24%,transparent);border-radius:0 0 18px 18px;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit}
+
+/* Rows of cards: the same 16 px gap between a row and the next one as between neighbours in a row */
+.admin-grid{margin-bottom:16px}
+.admin-grid > .panel{margin-bottom:0}
+.admin-grid + .panel{margin-top:0}
+
+/* The device you are using right now: a small blinking green dot */
+.live-dot{display:inline-block;width:10px;height:10px;margin-left:8px;border-radius:50%;background:var(--jade-ink,#1E5E47);vertical-align:middle;box-shadow:0 0 0 3px color-mix(in srgb,var(--jade-ink,#1E5E47) 22%,transparent);animation:unreadBlink 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.live-dot{animation:none}}
+.feed-row.edge .edge-tip{justify-self:end}
+.audit-row.edge > summary{align-items:center}
+.audit-row.edge .edge-tip{justify-self:end;margin-right:6px}
