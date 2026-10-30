@@ -40,7 +40,7 @@ async function showMonth(d){
   if(m.close){
     let p;try{p=await api(`/plugin/cm/closing/${m.close.id}/`)}catch(e){return fail(e)}
     box.innerHTML=`<div class="menu-h"><h2>${esc(p.label)}</h2><span>Closed · valued at ${METHOD[p.method]||p.method}${p.note?` · ${esc(p.note)}`:''}</span>
-       <span style="margin-left:auto;display:flex;gap:8px"><button class="btn btn-sm btn-line" id="clCsv">Download closing stock (CSV)</button>${d.canReopen?'<button class="btn btn-sm btn-line" id="clReopen">Reopen month</button>':''}</span></div>
+       <span style="margin-left:auto;display:flex;flex-wrap:wrap;gap:8px"><button class="btn btn-sm btn-line" id="clCsv">Download closing stock (CSV)</button>${d.canReopen?'<button class="btn btn-sm btn-line" id="clReopen">Reopen month</button>':''}</span></div>
       ${closeTiles(p)}<div class="admin-grid">${panel('By category','',catTable(p.categories))}
       ${panel('Closing stock by item','Highest value first',table(['Item','>Quantity','>Value'],p.items.slice(0,20).map(i=>`<tr><td>${xlItemName(i.name)}</td><td class="r num">${fq(i.qty)} ${esc(i.unit)}</td><td class="r num">${inr(i.value)}</td></tr>`)))}</div>`;
     $('#clCsv').onclick=()=>{const rows=[['SKU','Item','Category','Quantity','Unit','Unit cost','Value'],...p.items.map(i=>[i.sku,i.name,i.category,i.qty,i.unit,i.unitCost??'',i.value])];

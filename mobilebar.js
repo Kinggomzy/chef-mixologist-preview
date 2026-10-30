@@ -70,7 +70,10 @@
   const baseView=view;
   view=function(...a){park();const b=baseView(...a);place();return b};
   const baseGo2=go;
-  go=function(...a){park();const r=baseGo2.apply(this,a);place();return r};
+  /* every page opens at its top, even when the menu was open (its scroll lock can swallow the first scroll) or the page fills in after loading */
+  const toTop=()=>{window.scrollTo(0,0);if(document.scrollingElement)document.scrollingElement.scrollTop=0;document.body.scrollTop=0};
+  let userScrolled=false;['wheel','touchmove','keydown'].forEach(ev=>addEventListener(ev,()=>{userScrolled=true},{passive:true}));
+  go=function(...a){park();const r=baseGo2.apply(this,a);place();userScrolled=false;toTop();requestAnimationFrame(toTop);[120,400,900].forEach(ms=>setTimeout(()=>{if(!userScrolled)toTop()},ms));return r};
   mq.addEventListener('change',place);phone.addEventListener('change',place);
   bar.addEventListener('click',e=>{if(bar.parentNode===side&&e.target.closest('.btn'))setNav(false)});
   addEventListener('load',()=>setTimeout(place,0));

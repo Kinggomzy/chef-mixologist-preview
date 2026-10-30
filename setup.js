@@ -19,7 +19,7 @@ async function renderSetup(){
   const body=view('setup','Setup','Suppliers, storage areas, categories and bulk item import. Archived records are kept and can be restored; delete only works for records nothing refers to yet.');
   const d=await load(body,'/plugin/cm/setup/');if(!d)return;SETUP=d;const c=d.can;await Promise.all([phIndex('area'),phIndex('category')]);
   const thumb=(u,t='')=>u?`<img class="row-ph" data-auth-src="${esc(u)}" alt="${esc(t)}">`:'';
-  const supRows=d.suppliers.filter(s=>s.active).map(s=>`<tr><td><div class="with-ph">${thumb(s.image,s.name)}<span><b>${xl('supplier',s.name)}</b><br><small class="muted">${esc(s.contact)} ${esc(s.phone)} ${esc(s.email)}</small></span></div></td><td>${esc(s.gstin)||'—'}</td><td class="r num">${s.items}</td>
+  const supRows=d.suppliers.filter(s=>s.active).map(s=>`<tr><td><div class="with-ph">${thumb(s.image,s.name)}<span><b>${xl('supplier',s.name)}</b><br><small class="muted">${esc(s.contact)} ${esc(s.phone)} ${esc(s.email)}</small>${s.gstin?`<small class="gst-inline muted">GSTIN ${esc(s.gstin)}</small>`:''}</span></div></td><td class="gst">${esc(s.gstin)||'—'}</td><td class="r num">${s.items}</td>
     <td class="r">${c.supplier.change?btn('Edit',`data-sup-edit="${s.id}"`)+' '+btn('Archive',`data-arch="supplier:${s.id}"`):''} ${c.supplier.delete?btn('Delete',`data-del="supplier:${s.id}:${esc(s.name)}" ${danger}`):''}</td></tr>`);
   const locRows=d.locations.filter(l=>!d.archived.locations.some(a=>a.id===l.id)).map(l=>`<tr><td><div class="with-ph">${thumb(PH.idx.area?.covers?.[l.id],l.name)}<b>${xl('location',l.name)}</b></div></td><td>${esc(l.owner||'Anyone with stock access')}</td><td class="r num">${l.items}</td>
     <td class="r">${c.location.change?btn('Edit',`data-loc-edit="${l.id}"`)+' '+btn('Archive',`data-arch="location:${l.id}"`):''} ${c.location.delete?btn('Delete',`data-del="location:${l.id}:${esc(l.name)}" ${danger}`):''}</td></tr>`);
@@ -30,7 +30,7 @@ async function renderSetup(){
   const archRow=([t,id,name,label,p])=>`<tr><td>${esc(name)}</td><td class="muted">${label}</td><td class="r">${p.change?btn('Restore',`data-restore="${t}:${id}"`,'btn-primary'):''} ${p.delete||(t==='item'&&c.item.delete)?btn('Delete',`data-del="${t}:${id}:${esc(name)}" ${danger}`):''}</td></tr>`;
   body.innerHTML=
     panel('Suppliers',c.supplier.add?btn('+ Add supplier','id="supAdd"','btn-primary'):'',table(['Supplier','GSTIN','>Items',''],supRows,'No suppliers yet'))+
-    `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:16px">`+
+    `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr));gap:16px">`+
     panel('Storage areas',c.location.add?btn('+ Add area','id="locAdd"','btn-primary'):'',table(['Area','Owned by','>Lots',''],locRows))+
     panel('Item categories',c.category.add?btn('+ Add category','id="catAdd"','btn-primary'):'',table(['Category','>Items',''],catRows))+`</div>`+
     `<div class="setup-pair">`+(c.item.add?panel('Import items from a spreadsheet','Save your sheet as CSV. Existing SKUs are updated; nothing is saved if any row has an error.',

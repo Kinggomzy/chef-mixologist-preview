@@ -173,7 +173,7 @@ async function renderPrep(){
   let waste='';
   if(w){const bar=(rows,key)=>{const max=Math.max(...rows.map(r=>r.value||0),1);return rows.slice(0,6).map(r=>`<div style="display:grid;grid-template-columns:140px 1fr 80px;gap:8px;align-items:center;margin:4px 0"><span>${esc(r[key])}</span><span style="height:10px;border-radius:5px;background:var(--red);opacity:.75;width:${(r.value||0)/max*100}%"></span><b class="num" style="text-align:right">${r.value==null?'—':inr(r.value)}</b></div>`).join('')||'<p class="muted">No wastage recorded.</p>'};
     waste=panel(`Wastage · ${money&&w.total!=null?inr(w.total):''}`,`<span class="seg">${[7,30,90].map(d=>`<button data-wd="${d}" aria-pressed="${WASTE_DAYS===d}">${d} days</button>`).join('')}</span>`,
-      `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px"><div><h3 style="margin:0 0 6px">By reason</h3>${bar(w.byReason,'reason')}</div><div><h3 style="margin:0 0 6px">By area</h3>${bar(w.byArea,'area')}</div></div>
+      `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:18px"><div><h3 style="margin:0 0 6px">By reason</h3>${bar(w.byReason,'reason')}</div><div><h3 style="margin:0 0 6px">By area</h3>${bar(w.byArea,'area')}</div></div>
       <h3 style="margin:14px 0 6px">Items</h3>${table(['Item','>Quantity',...(money?['>Value']:[])],w.byItem.slice(0,10).map(r=>`<tr><td>${esc(r.item)}</td><td class="r num">${num(r.qty)}</td>${money?`<td class="r num">${inr(r.value)}</td>`:''}</tr>`))}`)}
   body.innerHTML=panel('Preps','Stock of prepared items',table(['Prep','>On hand','Lots',...(money?['>Cost']:[]),''],prepRows))+panel('Recent batches','',table(['Made','Batch','>Quantity',...(money?['>Cost']:[]),'By'],batchRows))+waste;
   body.querySelectorAll('[data-make]').forEach(b=>b.onclick=()=>{const x=p.preps.find(q=>q.id===+b.dataset.make);
@@ -188,7 +188,7 @@ async function renderSuppliers(){
     API.live&&API.can.stock?'<button class="btn btn-line" id="newReturn">Return to supplier</button>':'');
   const d=await load(body,'/plugin/cm/suppliers/');if(!d)return;
   const metric=(l,v,good)=>`<div><small class="muted">${l}</small><br><b class="num" style="color:${v==null?'inherit':good(v)?'var(--green)':'var(--red)'}">${pct(v)}</b></div>`;
-  body.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:16px">${d.suppliers.map(s=>`<div class="panel"><div class="panel-b">
+  body.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:14px;margin-bottom:16px">${d.suppliers.map(s=>`<div class="panel"><div class="panel-b">
     <h2 style="margin:0 0 4px;font-size:17px">${esc(s.name)}</h2><p class="muted" style="margin:0 0 10px">${s.items.length} items · ${s.openOrders} open PO · ${s.receipts} receipts</p>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${metric('On time',s.onTimePct,v=>v>=90)}${metric('Fill rate',s.fillPct,v=>v>=95)}${metric('Rejected',s.rejectPct,v=>v<=2)}</div>
     ${s.priceAlerts.length?`<div style="margin-top:10px">${s.priceAlerts.map(a=>`<div>${esc(a.name)} ${signed(a.change,false)} · now ${inr(a.price)}/${esc(a.unit)}</div>`).join('')}</div>`:''}
@@ -287,7 +287,7 @@ async function renderReports(){
    <div class="kpis bento b9">${kpi('Sales',inrK(r.sales),r.salesChange==null?'No earlier period to compare':signed(r.salesChange)+' vs previous period')}${kpi('Food cost (recipes)',pct(r.foodCostPct),`target ${r.targetFoodCostPct}%`,fcOver?'var(--melon-ink)':'var(--lime-ink)')}${kpi('Actual usage',pct(r.actualFoodCostPct),`${inrK(r.actualUsageValue)} left the stores`,'var(--turmeric-ink)')}
      ${kpi('Gross margin',pct(r.grossMarginPct),r.grossMarginChange==null?'':`${r.grossMarginChange>0?'+':''}${r.grossMarginChange} pts`)}${kpi('Guests',num(r.covers),signed(r.coversChange))}${kpi('Average bill',r.avgBill==null?'—':inr(r.avgBill),signed(r.avgBillChange))}
      ${kpi('Ingredient spend',inrK(r.spend),signed(r.spendChange,false),'var(--turmeric)')}${kpi('Waste',inrK(r.waste||0),'this period','var(--melon-ink)')}${kpi('Stock on hand',inrK(r.stockValue),'at current prices','var(--night-3)')}</div>
-   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:16px">
+   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:16px;margin-top:16px">
     ${panel('Sales vs ingredient spend','Weekly, click a week for detail',`<div class="chart" id="weeksChart"></div>`)}
     ${panel('Where waste happened','Top items',table(['Item','>Value'],r.wasteTop.map(w=>`<tr><td>${xlItemName(w.item)}</td><td class="r num">${inr(w.value)}</td></tr>`),'No waste recorded'))}
     ${panel('Supplier price changes','5% or more since the last order',table(['Item','Supplier','>Change'],r.priceAlerts.map(a=>`<tr><td>${xlItemName(a.name)}</td><td>${xl('supplier',a.supplier)}</td><td class="r">${signed(a.change,false)}</td></tr>`),'No big price moves'))}
