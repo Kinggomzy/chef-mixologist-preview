@@ -123,6 +123,7 @@ async function renderRecipes(){
 function showRecipe(id){
   const r=RECIPES.recipes.find(x=>x.id===id),money=API.can.pricing;
   formModal(esc(r.name),`${esc(r.sku)} · ${r.kind==='prep'?`batch makes ${r.batchYield} ${esc(r.unit)}${r.shelfHours?` · use within ${r.shelfHours} h`:''}`:`${inr(r.price)} before GST`}`,
+    (r.image?`<img class="rc-photo" data-auth-src="${esc(r.image)}" alt="${esc(r.name)}">`:'')+
     table(['Ingredient','>Quantity',...(money?['>Cost']:[])],r.lines.map(l=>`<tr><td>${xlPart(l.part,l.name)}</td><td class="r num">${l.useUnit?`${num(l.useQty)} ${esc(l.useUnit)}`:`${num(l.qty)} ${esc(l.unit)}`}${l.usablePct<100?`<br><small class="muted">${num(l.asBought)} ${esc(l.unit)} as bought (${num(l.usablePct)}% usable)</small>`:''}</td>${money?`<td class="r num">${l.cost==null?'—':inr(l.cost)}</td>`:''}</tr>`))+
     (r.method?`<p style="white-space:pre-wrap">${esc(r.method)}</p>`:'')+(money&&r.cost!=null?`<p><b>Total ${inr(r.cost)}</b>${r.foodCostPct!=null?` · food cost ${r.foodCostPct}% (target ${r.target}%)`:''}</p>`:''),
     API.can.recipes?'Edit recipe':'Close',async(f,close)=>{close();if(API.can.recipes)editRecipe(r)});
@@ -133,7 +134,7 @@ function editRecipe(r){
   const ingOf=id=>{const i=d.ingredients.find(o=>o.id===+id)||{};return items.find(x=>x.id===i.id)||{unit:i.unit}};
   const lineRow=l=>{const first=l?l.part:(d.ingredients.find(i=>!r.id||i.id!==r.id)||{}).id;
     return `<div class="rline" style="display:grid;grid-template-columns:1fr 90px 120px 32px;gap:8px;align-items:end"><label>Ingredient<select name="lp">${ingOpts(first)}</select></label><label>Qty<input name="lq" type="number" min="0" step="any" value="${l?(l.useQty??l.qty):''}" required></label><label>Unit${unitPick(ingOf(first),'lu',l&&l.useUnit)}</label><button type="button" class="icon-btn rdel" aria-label="Remove">✕</button></div>`};
-  formModal(isNew?'New recipe':`Edit ${esc(r.name)}`,'Quantities are per portion (or per batch for preps), as used after trimming',`${isNew?'':photoBlock(r.image,r.name)}
+  formModal(isNew?'New recipe':`Edit ${esc(r.name)}`,'Quantities are per portion (or per batch for preps), as used after trimming',`${isNew?pendingPhotoBlock():photoBlock(r.image,r.name)}
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
     <label>Name<input name="name" required maxlength="100" value="${esc(r.name||'')}"></label>
     ${isNew?'<label>SKU<input name="sku" required pattern="[A-Za-z0-9-]{2,20}" placeholder="e.g. MN-810"></label>':`<label>SKU<input value="${esc(r.sku)}" disabled></label>`}
@@ -152,11 +153,11 @@ function editRecipe(r){
     const kind=f.get('kind'),body={name:f.get('name'),kind,category:f.get('category'),station:f.get('station'),price:kind==='prep'?null:(f.get('price')||null),
       target:f.get('target')||null,batch_yield:f.get('yield')||1,unit:kind==='prep'?f.get('unit'):'',shelf_hours:kind==='prep'?(f.get('shelf')||null):null,method:f.get('method'),lines};
     if(isNew)body.sku=f.get('sku');
-    await api(isNew?'/plugin/cm/recipes/':`/plugin/cm/recipes/${r.id}/`,{method:isNew?'POST':'PUT',json:body});close();toast('Recipe saved');renderRecipes()});
+    const saved=await api(isNew?'/plugin/cm/recipes/':`/plugin/cm/recipes/${r.id}/`,{method:isNew?'POST':'PUT',json:body});if(isNew&&saved&&saved.id)await commitPendingPhoto(`/plugin/cm/recipes/${saved.id}/photo/`);RECIPES=null;close();toast('Recipe saved');renderRecipes()});
   const wire=()=>{$$('#rlines .rdel').forEach(b=>b.onclick=()=>{if($$('#rlines .rline').length>1)b.parentElement.remove()});
     $$('#rlines [name=lp]').forEach(s=>s.onchange=()=>{const lab=s.closest('.rline').querySelector('[name=lu]').closest('label');lab.innerHTML='Unit'+unitPick(ingOf(s.value),'lu')})};
   $('#raddl').onclick=()=>{$('#rlines').insertAdjacentHTML('beforeend',lineRow(null));wire()};wire();
-  if(!isNew)wirePhotoBlock(`/plugin/cm/recipes/${r.id}/photo/`,()=>{RECIPES=null;if(S.view==='recipes')renderRecipes()});
+  if(isNew)wirePendingPhoto();else wirePhotoBlock(`/plugin/cm/recipes/${r.id}/photo/`,()=>{RECIPES=null;if(S.view==='recipes')renderRecipes()});
 }
 
 /* ================= module 3: prep & wastage ================= */
