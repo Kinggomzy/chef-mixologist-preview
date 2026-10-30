@@ -223,11 +223,11 @@ async function renderEvents(){
       <span class="status">${esc(e.statusLabel)}${e.inWindow&&e.status!=='closed'?', licence valid now':''}</span>
       <dl><dt>Date</dt><dd>${esc(e.date)}</dd><dt>Licence</dt><dd>${esc(e.licence)}</dd><dt>From</dt><dd>${esc(e.from)}</dd><dt>Until</dt><dd>${esc(e.until)}</dd>${e.guests?`<dt>Guests</dt><dd>${e.guests}</dd>`:''}</dl>
       ${barcode(e.licence)}
-      <div class="pass-ph">${phBtn('event',e.id,e.name)}</div>
+      <div class="card-f">${phBtn('event',e.id,e.name)}
       ${d.canManage&&e.status!=='closed'?`<div class="actions">
         ${e.status==='planned'?`<button class="btn btn-sm btn-primary" data-ev="open" data-id="${e.id}" ${e.inWindow?'':'disabled title="Opens only inside the licence window"'}>Open service</button>`:''}
         <button class="btn btn-sm btn-line" data-ev="receive" data-id="${e.id}">Receive liquor</button>
-        ${e.status==='open'?`<button class="btn btn-sm btn-line" data-ev="issue" data-id="${e.id}">Issue</button><button class="btn btn-sm btn-line" data-ev="return" data-id="${e.id}">Return unused</button><button class="btn btn-sm btn-line" data-ev="close" data-id="${e.id}">Close event</button>`:''}</div>`:''}
+        ${e.status==='open'?`<button class="btn btn-sm btn-line" data-ev="issue" data-id="${e.id}">Issue</button><button class="btn btn-sm btn-line" data-ev="return" data-id="${e.id}">Return unused</button><button class="btn btn-sm btn-line" data-ev="close" data-id="${e.id}">Close event</button>`:''}</div>`:''}</div>
     </article>
     <div class="panel ev-reg"><div class="panel-h"><h2>Excise register</h2><p>${e.notes?esc(e.notes):'Issued, returned and consumed for this licence'}</p></div><div class="panel-b">
     ${table(['Liquor','>Issued','>Returned','>Consumed','>Pegs (30 ml)',...(API.can.pricing?['>Value']:[])],e.register.map(l=>`<tr><td>${esc(l.item)}</td><td class="r num">${num(l.issued)}</td><td class="r num">${num(l.returned)}</td><td class="r num"><b>${num(l.consumed)}</b> ${esc(l.unit)}</td><td class="r num">${num(l.pegs)}</td>${API.can.pricing?`<td class="r num">${l.value==null?'—':inr(l.value)}</td>`:''}</tr>`),'No liquor issued yet')}

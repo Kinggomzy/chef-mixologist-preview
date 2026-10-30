@@ -1428,3 +1428,78 @@ select,textarea,input:not([type=checkbox]):not([type=radio]):not([type=range]):n
   .role-select select{width:100%;flex:1 1 auto}
 }
 @media (max-width:860px){.side,.side.open{border-radius:0}}
+
+
+/* Replenishment cards: the footer is a deep shade of the card's own colour code (red, gold or brown) */
+.basket.edge .basket-f{background:linear-gradient(135deg,color-mix(in srgb,var(--edge) 52%,#150b06),color-mix(in srgb,var(--edge) 66%,#000))}
+.basket.edge .basket-f small{color:rgba(255,255,255,.92)}
+
+
+/* Stock cards: the bottom strip is a light tint of the card's own colour code, matching its left edge */
+.sc .sc-f{background:color-mix(in srgb,var(--edge,var(--line-2)) 17%,#fff);color:color-mix(in srgb,var(--edge,var(--line-2)) 52%,#150b06)}
+.sc.sc-st-over .sc-f,.sc.edge-mute .sc-f{color:var(--text-2)}
+
+/* Card action areas: buttons keep one look everywhere; the area behind them is a light tint of the card's colour code,
+   the same as the strip at the bottom of the stock cards */
+.docket{--cx:16px;--cy:14px}.appr{--cx:18px;--cy:18px}.zr{--cx:18px;--cy:24px}.biz{--cx:20px;--cy:20px}
+@media (max-width:860px){.docket{--cx:14px;--cy:10px}.appr{--cx:14px;--cy:12px}.zr{--cx:14px;--cy:14px}.biz{--cx:14px;--cy:12px}}
+.edge .card-f,.docket.edge .docket-f{margin:10px calc(var(--cx) * -1) calc(var(--cy) * -1);padding:12px var(--cx) 14px;background:color-mix(in srgb,var(--edge,var(--line-2)) 17%,#fff);border-radius:0 0 var(--r-lg,16px) var(--r-lg,16px)}
+.card-f{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:auto}
+.docket.edge .docket-f{margin-top:6px}
+.jar-card{--cx:18px;--cy:18px}.pass{--cx:20px;--cy:18px}
+@media (max-width:860px){.jar-card{--cx:14px;--cy:12px}.pass{--cx:16px;--cy:14px}}
+.pass .card-f{background:color-mix(in srgb,var(--edge,var(--line-2)) 30%,#150b06);margin-top:12px}
+.biz .card-f,.jar-card .card-f{margin-top:10px}
+.edge .card-f,.docket.edge .docket-f{margin-top:auto;align-self:end}
+.pass .card-f{margin-top:auto}
+.zr{display:flex;flex-direction:column;gap:8px}
+.zr .card-f{margin-top:auto;align-self:stretch}
+
+/* Cards keep their rounded corners; the colour strip inside simply fills the bottom of the card and follows its curve */
+.edge .card-f,.docket.edge .docket-f,.pass .card-f{border-radius:0;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit}
+.basket.edge .basket-f{border-radius:0;border-bottom-left-radius:inherit;border-bottom-right-radius:inherit}
+
+/* Delivery cards: the price and all the buttons share one line; when the card is too narrow the whole button group drops to a second line together */
+.docket-f{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.docket-f .total{margin-right:auto}
+.docket-acts{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;margin-left:auto;max-width:100%}
+.docket-acts .btn{flex:none}
+.docket-f > .docket-acts:only-child{margin-left:0}
+.edge .card-f,.docket.edge .docket-f,.pass .card-f,.zr .card-f{align-self:stretch;width:auto}
+/* Delivery cards: the price has its own line, the buttons sit together on the line below, on every card */
+.docket-f{flex-direction:column;align-items:flex-start;gap:8px}
+.docket-f .total{margin-right:0}
+.docket-acts{flex-wrap:wrap;margin-left:0;width:100%}
+.docket-acts{gap:6px;flex-wrap:nowrap}
+.docket-acts .btn{padding-left:10px;padding-right:10px}
+.docket-acts .ph-btn,.docket-acts .btn-wa{padding-left:9px;padding-right:9px;min-width:36px}
+@media (max-width:330px){.docket-acts{flex-wrap:wrap}}
+
+/* Replenishment footer: cream and outline buttons that sit well on the red, gold and brown footers alike */
+.basket.edge .basket-f .btn-primary{background:#FFF8F0;color:#2B1A10;border:1.5px solid #FFF8F0;background-image:none}
+.basket.edge .basket-f .btn-primary:hover:not(:disabled){background:#fff}
+.basket.edge .basket-f .btn-wa{background:transparent;color:#FFF8F0;border:1.5px solid rgba(255,248,240,.85)}
+.basket.edge .basket-f .btn-wa:hover:not(:disabled){background:rgba(255,248,240,.16)}
+.basket.edge .basket-f .btn-wa svg{color:inherit;fill:currentColor}
+
+/* Card action strips: every button in the row has the same height and sits on the same line */
+.card-f > .appr-act{display:contents}
+.card-f{align-items:center;gap:8px}
+.card-f .btn,.docket-f .btn{height:34px;min-height:34px;box-sizing:border-box;padding-top:0;padding-bottom:0;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}
+
+/* One height for every button in the app (38 px), so rows of buttons always line up */
+.btn,.btn-sm,.icon-btn,.btn-row-ico,.card-f .btn,.docket-f .btn,.docket-acts .btn,.tablewrap table.t td.r .btn-row-ico,.page-head .btn.btn-ico{height:38px;min-height:38px;box-sizing:border-box;padding-top:0;padding-bottom:0}
+.btn,.btn-sm{display:inline-flex;align-items:center;justify-content:center}
+.icon-btn,.btn-row-ico,.docket-acts .ph-btn,.docket-acts .btn-wa,.card-f .ph-btn,.card-f .btn-wa{min-width:38px}
+.btn-row-ico,.tablewrap table.t td.r .btn-row-ico{width:38px}
+@media (max-width:860px){.page-head .btn,.page-head .topbar .search:not(:focus-within){height:38px;min-height:38px}.page-head .btn.btn-ico,.page-head .topbar .search:not(:focus-within){width:38px}}
+
+/* One colour rule for the bottom of every card: the card's own edge colour at low opacity, so the strip is a light shade of its left border */
+.sc .sc-f,.edge .card-f,.docket.edge .docket-f,.basket.edge .basket-f{background:color-mix(in srgb,var(--edge,var(--line-2)) 24%,transparent)}
+.basket.edge .basket-f{color:var(--text)}
+.basket.edge .basket-f small,.basket.edge .basket-f .total{color:var(--text)}
+.basket.edge .basket-f small{color:var(--text-2)}
+.basket.edge .basket-f .btn-primary{background:linear-gradient(135deg,var(--copper-light),var(--copper));color:var(--on-dark);border-color:transparent}
+.basket.edge .basket-f .btn-primary:hover:not(:disabled){filter:brightness(1.06);background:linear-gradient(135deg,var(--copper-light),var(--copper))}
+.basket.edge .basket-f .btn-wa{background:#18794A;color:#fff;border-color:transparent}
+.basket.edge .basket-f .btn-wa:hover:not(:disabled){background:#136339}

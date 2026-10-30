@@ -19,10 +19,10 @@ function renderInwardDockets(){
       <div class="docket-h"><div><h3>${esc(p.po)}</h3><small>${xl('supplier',p.sup)}</small></div><span class="docket-eta ${p.late?'late':p.day===0?'today':''}">${esc(p.eta)}</span></div>
       <ol>${lines.map(([s,q])=>{const x=bySku[s];return x?`<li>${img(x)}<span>${xl('item',x.sku,x.name)}</span><b>${fq(q)} ${esc(x.unit)}</b></li>`:''}).join('')}</ol>
       <div class="docket-f"><span class="total">${inr(tot)}</span>
-        ${p.id?phBtn('docket',p.id,p.po):''}
+        <div class="docket-acts">${p.id?phBtn('docket',p.id,p.po):''}
         <button class="btn btn-sm btn-wa" data-wapo="${esc(p.po)}" title="Send this order to ${esc(p.sup)} on WhatsApp" aria-label="Send ${esc(p.po)} on WhatsApp">${WA_ICON}</button>
         ${p.day<=1?`<button class="btn btn-sm ${p.day===0?'btn-primary':'btn-line'}" data-recv="${esc(p.po)}">Receive</button>`:''}
-        ${API.live&&API.can.poCancel?`<button class="btn btn-sm btn-line" data-pocancel="${p.id}" style="color:var(--red)">Cancel</button>`:''}</div>
+        ${API.live&&API.can.poCancel?`<button class="btn btn-sm btn-line" data-pocancel="${p.id}" style="color:var(--red)">Cancel</button>`:''}</div></div>
     </article>`}).join('')+(pgD.html?`<div style="grid-column:1/-1">${pgD.html}</div>`:'');
   wirePager(box,renderInwardDockets);
   box.querySelectorAll('[data-recv]').forEach(b=>b.onclick=()=>openReceive(b.dataset.recv));
