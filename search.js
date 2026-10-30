@@ -71,3 +71,32 @@ $('#menuQ').onkeydown=e=>{
 $('#menuQ').addEventListener('blur',()=>setTimeout(()=>mqBox.hidden=true,150));
 $('#menuQ').addEventListener('focus',drawMenuResults);
 addEventListener('resize',()=>{if(!mqBox.hidden)drawMenuResults()});
+
+
+/* ---------- top search bar: one search across pages, items, suppliers, orders, recipes and people ---------- */
+const gqBox=document.body.appendChild(Object.assign(document.createElement('div'),{id:'gqBox',role:'listbox',hidden:true}));
+let GQ_HITS=[],GQ_SEL=0;
+function drawGlobalResults(){
+  const input=$('#q'),v=input.value.trim();GQ_HITS=menuResults(v);GQ_SEL=0;
+  if(!v){gqBox.hidden=true;return}
+  const r=input.closest('.search').getBoundingClientRect();
+  if(!r.width){gqBox.hidden=true;return}   // this page keeps the search tucked away on small screens
+  gqBox.style.width=innerWidth<=860?'':Math.max(r.width,340)+'px';
+  gqBox.style.left=(innerWidth<=860?12:r.left)+'px';gqBox.style.top=(r.bottom+6)+'px';
+  gqBox.innerHTML=GQ_HITS.length?GQ_HITS.map((h,i)=>`<button type="button" role="option" data-i="${i}" aria-selected="${i===0}"><span class="mq-k">${h.kind}</span><b>${esc(h.label)}</b><small>${esc(h.where)}</small></button>`).join('')
+    :`<p class="muted" style="margin:0;padding:10px 12px;font-size:var(--fs-sm)">${v.length<2?'Keep typing…':`Nothing found for “${esc(v)}”`}</p>`;
+  gqBox.hidden=false;
+  gqBox.querySelectorAll('[data-i]').forEach(b=>b.onmousedown=e=>{e.preventDefault();pickGlobalResult(+b.dataset.i)});
+}
+function pickGlobalResult(i){const h=GQ_HITS[i];if(!h)return;const q=$('#q');q.value='';S.q='';gqBox.hidden=true;q.blur();h.go()}
+$('#q').addEventListener('input',drawGlobalResults);
+$('#q').addEventListener('focus',drawGlobalResults);
+$('#q').addEventListener('blur',()=>setTimeout(()=>gqBox.hidden=true,150));
+$('#q').addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){if(!GQ_HITS.length)return;e.preventDefault();GQ_SEL=(GQ_SEL+(e.key==='ArrowDown'?1:-1)+GQ_HITS.length)%GQ_HITS.length;
+    gqBox.querySelectorAll('[data-i]').forEach(b=>b.setAttribute('aria-selected',+b.dataset.i===GQ_SEL));gqBox.querySelector(`[data-i="${GQ_SEL}"]`).scrollIntoView({block:'nearest'})}
+  else if(e.key==='Enter'){if(GQ_HITS.length){e.preventDefault();pickGlobalResult(GQ_SEL)}}
+  else if(e.key==='Escape'){gqBox.hidden=true}
+});
+$('.topbar .search > svg').addEventListener('click',()=>{$('#q').focus();drawGlobalResults()});
+addEventListener('resize',()=>{if(!gqBox.hidden)drawGlobalResults()});

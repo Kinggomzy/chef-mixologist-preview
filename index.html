@@ -615,12 +615,26 @@ function stockChart(x,c){
   s+=ckLayer('stock',30,i=>X(i)-(W-pl-8)/58,(W-pl-8)/29,H,4);
   return s+'</svg>';
 }
+const ICON_ACT={
+  po:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2l2.4 11h10.2L20 7H6"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg>',
+  issue:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h12M12 6l6 6-6 6"/><path d="M20 4v16"/></svg>',
+  count:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 13l2 2 4-4"/></svg>',
+  waste:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg>',
+  transfer:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg>',
+  more:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>'};
 function openItem(sku){
   const x=bySku[sku],c=calc(x);$('#drawer').dataset.sku=sku;
   const mv=moves.filter(m=>m.x===x).slice(0,6);
   $('#drawer').innerHTML=`
   <div class="d-hero">${img(x)}<div class="tools"><button class="photo-btn" id="ph"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>${x.img?'Replace photo':'Add photo'}</button><button class="icon-btn" id="dx" aria-label="Close">✕</button></div>
    <div class="cap"><span class="pill ${ST[c.st][1]}" style="position:static;display:inline-flex;margin-bottom:8px">${ST[c.st][0]}</span><h2>${esc(x.name)}</h2><p>${esc(x.sku)} · ${xl('category',x.cat)} · ${xl('location',x.loc)}</p></div></div>
+  <div class="d-bar" role="toolbar" aria-label="Actions for ${esc(x.name)}">
+    <div class="d-bar-grid">${[
+      ['po','Add to order',ICON_ACT.po],['issue','Issue to '+(x.cat==='Beverage bases'||x.loc==='Beverage station'?'bar':'kitchen'),ICON_ACT.issue],['count','Count stock',ICON_ACT.count],['waste','Wastage',ICON_ACT.waste],['transfer','Transfer',ICON_ACT.transfer]
+    ].map(([k,l,ic])=>`<button type="button" class="d-act${k===(['out','crit','reorder'].includes(c.st)?'po':'issue')?' primary':''}" data-act="${k}">${ic}<span>${l}</span></button>`).join('')}
+      <button type="button" class="d-act" id="dMore" aria-haspopup="menu" aria-expanded="false" hidden>${ICON_ACT.more}<span>More</span></button></div>
+    <div class="d-more" id="dMoreMenu" role="menu" hidden></div>
+  </div>
   <div class="d-body">
     <div class="d-stats num">
       <div><small>On hand</small><b>${fq(x.onHand)}<span>${x.unit}</span></b></div>
@@ -639,7 +653,7 @@ function openItem(sku){
       <div class="calc-out num" id="c-out"></div>
     </div></div>`}
     <div class="panel"><div class="panel-b d-sec"><h3>Lots in stock <span>Use oldest first</span></h3>
-      <table class="t"><thead><tr><th>Lot</th><th class="r">Qty</th><th>Received</th><th>Use by</th></tr></thead><tbody>
+      <table class="t"><thead><tr><th>Lot</th><th class="r">Qty</th><th>Received</th><th>Use by</th></tr></thead><tbody id="dLots">
       ${x.lots.length?x.lots.sort((a,b)=>a.exp-b.exp).map((l,i)=>`<tr><td><b>${l.lot}</b>${i===0?' <span class="tag s-onorder" style="margin-left:4px">Use first</span>':''}</td><td class="r num">${fq(l.qty)} ${x.unit}</td><td>${dayLabel(l.recv)}</td><td style="${l.exp<=1?'color:var(--red);font-weight:700':''}">${l.exp>=900?'No expiry':l.exp===0?'Today':l.exp===1?'Tomorrow':`In ${l.exp} days`}</td></tr>`).join(''):`<tr><td colspan="4" class="muted">No stock. ${c.inc.q?`${fq(c.inc.q)} ${x.unit} arriving ${c.inc.po.eta}.`:''}</td></tr>`}
       </tbody></table></div></div>
     <div class="panel" id="d-profile"></div>
@@ -647,12 +661,12 @@ function openItem(sku){
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><b>${xl('supplier',x.sup)}</b><div class="muted" style="font-size:13px">Lead time ${x.lead} day${x.lead>1?'s':''} · pack of ${x.pack} ${x.unit}</div></div><div style="text-align:right"><b class="num">${inr(x.cost)}</b><span class="muted"> / ${x.unit}</span><div style="font-size:12.5px;color:${API.live?(x.priceChange>0?'var(--red)':'var(--green)'):(x.i%4===0?'var(--red)':'var(--green)')};font-weight:600">${API.live?(x.priceChange==null?'':x.priceChange===0?'Same as last PO':`${x.priceChange>0?'+':''}${x.priceChange}% vs last PO`):(x.i%4===0?'+6% vs last PO':'Same as last PO')}</div></div></div></div></div>
     <div class="panel"><div class="panel-b d-sec"><h3>Recent movements <span>${mv.length?`<a class="xl" href="#" data-allmv>See all</a>`:'No entries'}</span></h3>
       <table class="t"><tbody>${mv.length?mv.map(m=>`<tr><td>${dayLabel(m.d)}, ${m.time}</td><td>${m.t}</td><td class="r num" style="font-weight:700;color:${m.q>0?'var(--green)':'var(--ink)'}">${m.q>0?'+':''}${fq(m.q)} ${x.unit}</td><td class="muted">${xl('person',m.user)}</td></tr>`).join(''):'<tr><td class="muted">No movements this week.</td></tr>'}</tbody></table></div></div>
-    <div class="d-actions"><button class="btn btn-primary" data-act="po">Add to purchase order</button><button class="btn btn-line" data-act="count">Count stock</button><button class="btn btn-line" data-act="issue">Issue to ${x.cat==='Beverage bases'||x.loc==='Beverage station'?'beverage':'kitchen'}</button><button class="btn btn-line" data-act="waste">Record wastage</button><button class="btn btn-line" data-act="transfer">Transfer</button></div>
   </div>`;
   if(x.plan){renderLevels(x);renderCosting(x)}else{const recalc=()=>{const t={...x,avg:+$('#c-avg').value||0,lead:+$('#c-lead').value||1,sd:+$('#c-sd').value||0};const r=calc(t,+$('#c-sl').value);
     $('#c-out').innerHTML=`<div style="background:var(--red-soft);color:var(--red)"><small>Safety stock</small><b>${fq(r.ss)} ${x.unit}</b><p>${$('#c-sl').selectedOptions[0].text} chance of no stock-out</p></div><div style="background:var(--amber-soft);color:var(--amber)"><small>Reorder point</small><b>${fq(r.rop)} ${x.unit}</b><p>${fq(t.avg*t.lead)} lead-time use + safety</p></div><div style="background:var(--green-soft);color:var(--green)"><small>Max level</small><b>${fq(r.max)} ${x.unit}</b><p>Lead time + 7-day review</p></div>`};
   ['#c-avg','#c-lead','#c-sd','#c-sl'].forEach(s=>$(s).oninput=recalc);recalc()}
   const ph=profileHtml(x);$('#d-profile').innerHTML=ph;$('#d-profile').style.display=ph?'':'none';if($('#p-edit'))$('#p-edit').onclick=()=>editProfile(x);
+  pageDom($('#dLots'),'tr','dlots-'+x.sku,5);
   $('#dx').onclick=closeItem;$('#ph').onclick=()=>pickPhoto(x);
   $$('#drawer [data-act]').forEach(b=>b.onclick=()=>itemAction(x,b.dataset.act));
   if($('#drawer [data-allmv]'))$('#drawer [data-allmv]').onclick=e=>{e.preventDefault();focusOn('moves','item',x.sku,x.name)};
@@ -858,7 +872,7 @@ async function raisePO(panel,btn){
 function render(){renderMenu();$$('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+S.view));
   (VIEWS[S.view]||renderOverview)()}
 const VIEWS={overview:renderOverview,items:renderItems,inward:renderInward,replenish:renderRepl,moves:renderMoves};
-$('#q').addEventListener('input',e=>{S.q=e.target.value;if(!['items','moves','inward'].includes(S.view))S.view='items';render()});
+$('#q').addEventListener('input',e=>{if(!['items','moves','inward'].includes(S.view)){S.q='';return}S.q=e.target.value;render()});
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();$('#q').focus()}if(e.key==='Escape'){closeItem();$('#modal').classList.remove('on')}});
 </script>
 <script src="erp.js"></script>

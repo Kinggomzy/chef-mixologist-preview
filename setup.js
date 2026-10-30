@@ -108,12 +108,20 @@ const baseOpenItem=openItem;
 openItem=function(sku){
   baseOpenItem(sku);
   const x=bySku[sku];if(!API.live||!x)return;
-  const bar=document.createElement('div');bar.className='d-actions';bar.style.marginTop='0';
-  bar.innerHTML=(API.can.part?btn('Edit item','data-adm="edit"')+btn('Archive','data-adm="archive"'):'')+
-    (API.can.stockAdd&&!x.onHand?btn('Add opening stock','data-adm="opening"'):'')+(API.can.partDelete?btn('Delete','data-adm="delete" '+danger):'');
-  if(!bar.innerHTML)return;
-  $('#drawer .d-body').appendChild(bar);
-  bar.querySelectorAll('[data-adm]').forEach(b=>b.onclick=()=>itemAdmin(x,b.dataset.adm));
+  /* the manage actions live in the "More" menu of the action bar at the top of the item */
+  const items=[];
+  if(API.can.part)items.push(['edit','Edit item']);
+  if(API.can.stockAdd&&!x.onHand)items.push(['opening','Add opening stock']);
+  if(API.can.part)items.push(['archive','Archive']);
+  if(API.can.partDelete)items.push(['delete','Delete',true]);
+  const more=$('#dMore'),menu=$('#dMoreMenu');if(!items.length||!more||!menu)return;
+  menu.innerHTML=items.map(([k,l,danger])=>`${danger?'<hr>':''}<button type="button" role="menuitem" data-adm="${k}"${danger?' class="danger"':''}>${l}</button>`).join('');
+  more.hidden=false;
+  const close=()=>{menu.hidden=true;more.setAttribute('aria-expanded','false')};
+  more.onclick=e=>{e.stopPropagation();const open=menu.hidden;menu.hidden=!open;more.setAttribute('aria-expanded',String(open));if(open)menu.querySelector('button').focus()};
+  menu.onclick=e=>{const b=e.target.closest('[data-adm]');if(!b)return;close();itemAdmin(x,b.dataset.adm)};
+  menu.onkeydown=e=>{if(e.key==='Escape'){close();more.focus()}};
+  $('#drawer').addEventListener('click',e=>{if(!e.target.closest('#dMore,#dMoreMenu'))close()},{once:false});
 };
 function itemAdmin(x,what){
   const m=META;

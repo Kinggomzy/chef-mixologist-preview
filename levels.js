@@ -59,6 +59,7 @@ async function renderCosting(x){
      ${d.layers.map((l,i)=>`<tr><td>${d.method==='avg'?'Batch '+(i+1):i===0&&d.method==='fifo'||i===d.layers.length-1&&d.method==='lifo'?'<b>Used next</b>':'Batch '+(i+1)}</td><td class="r">${fq(l.qty)} ${u}</td><td class="r">${inr(l.cost)}</td></tr>`).join('')}</tbody></table>`:''}
    ${d.purchases.length?`<table class="t"><thead><tr><th>Recent purchases</th><th class="r">Qty</th><th class="r">Price / ${u}</th></tr></thead><tbody>
      ${d.purchases.map(r=>`<tr><td>${esc(r.at)} · ${esc(r.ref||r.kind)}</td><td class="r">${fq(r.qty)} ${u}</td><td class="r">${inr(r.cost)}</td></tr>`).join('')}</tbody></table>`:''}</div>`;
+  el.querySelectorAll('table').forEach((t,i)=>pageDom(t.querySelector('tbody'),'tr',`dcost-${x.sku}-${i}`,5));
 }
 
 function costingPanel(o,dis,can){

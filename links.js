@@ -50,11 +50,22 @@ const renderBeforeLinks=render;
 render=function(){renderBeforeLinks();if(VIEWS[S.view])setTimeout(()=>showFocusBar(S.view),0)};
 
 /* ---------- quick views ---------- */
+const PK=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+/* tile icon picked from what the action does, so the same kind of action always looks the same */
+function peekIcon(label){
+  const l=String(label).toLowerCase();
+  if(/receive/.test(l))return PK('<path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/>');
+  if(/whatsapp|send/.test(l))return PK('<path d="m4 12 16-8-6 16-3-7z"/>');
+  if(/edit/.test(l))return PK('<path d="M4 20h4L19 9l-4-4L4 16z"/>');
+  if(/items/.test(l))return PK('<path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/>');
+  if(/order|deliver|inward/.test(l))return PK('<path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.5"/><circle cx="17" cy="18" r="1.5"/>');
+  return PK('<path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5"/>');
+}
 function peek(title,sub,body,actions=[]){
   $('#modal-box').className='modal-box';delete $('#modal-box').dataset.size;
   $('#modal-box').innerHTML=`<div class="modal-h"><div><small class="peek-kind">${sub[0]}</small><h2 id="m-title">${title}</h2><p class="muted">${sub[1]||''}</p></div><button class="icon-btn" style="background:var(--grey-soft)" id="mx" aria-label="Close">✕</button></div>
-   <div class="peek-b">${body}</div>
-   <div class="modal-f">${actions.map((a,i)=>`<button class="btn ${i===0?'btn-primary':'btn-line'}" type="button" data-pa="${i}">${a[0]}</button>`).join('')}</div>`;
+   ${actions.length?`<div class="d-bar peek-bar" role="toolbar" aria-label="Actions"><div class="d-bar-grid" style="--n:${actions.length}">${actions.map((a,i)=>`<button type="button" class="d-act${i===0?' primary':''}" data-pa="${i}">${peekIcon(a[0])}<span>${a[0]}</span></button>`).join('')}</div></div>`:''}
+   <div class="peek-b">${body}</div>`;
   $('#modal').classList.add('on');
   const close=()=>$('#modal').classList.remove('on');$('#mx').onclick=close;
   $$('#modal-box [data-pa]').forEach(b=>b.onclick=()=>{close();actions[+b.dataset.pa][1]()});
@@ -67,6 +78,10 @@ const poTotal=p=>Object.entries(p.lines).reduce((a,[s,q])=>a+q*(bySku[s]?bySku[s
 let SUP_CACHE=null;
 async function supplierBoard(){if(!API.live||!API.can.suppliers)return null;if(!SUP_CACHE)SUP_CACHE=api('/plugin/cm/suppliers/').catch(()=>null);return SUP_CACHE}
 async function recipeBook(){if(!RECIPES){try{RECIPES=await api('/plugin/cm/recipes/')}catch(e){return null}}return RECIPES}
+
+/* an item opened from inside a panel or sheet replaces it, so two layers are never stacked; a refresh of the open drawer keeps things as they are */
+const openItemBeforeLayers=openItem;
+openItem=function(sku){if(!document.body.classList.contains('d-open'))$('#modal').classList.remove('on');openItemBeforeLayers(sku)};
 
 async function openXL(kind,key){
   if(kind==='item')return openItem(key);
