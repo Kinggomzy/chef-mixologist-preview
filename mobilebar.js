@@ -2,18 +2,24 @@
    share one row with the page heading and its action button. The bar is parked back in its
    normal place before a page redraws, then moved into the new page heading. */
 (function(){
-  const mq=matchMedia('(max-width:860px)'),phone=matchMedia('(max-width:600px)'),bar=document.querySelector('.topbar'),side=document.querySelector('#side');
+  const mq=matchMedia('(max-width:860px)'),phone=matchMedia('(max-width:600px)'),bar=document.querySelector('.topbar'),side=document.querySelector('#side'),srch=bar&&bar.querySelector('.search');
   if(!bar)return;
   const home=bar.parentNode,next=bar.nextSibling;
-  const park=()=>{if(bar.parentNode!==home)home.insertBefore(bar,next)};
+  const park=()=>{if(srch&&srch.parentNode!==bar)bar.insertBefore(srch,bar.firstChild);if(bar.parentNode!==home)home.insertBefore(bar,next)};
   // (the heading's own action buttons are wrapped into .head-acts so the bar can sit beside them)
   const place=()=>{
     iconifyRows();
     if(!mq.matches){park();iconify();return}
-    if(phone.matches&&side){   // phones: the bar lives in the menu drawer, off the page
+    if(phone.matches&&side){   // phones: Reorder and Receive live in the menu drawer; the search button stays in the heading row
       iconify();
-      if(bar.parentNode===side)return;
-      park();side.insertBefore(bar,side.querySelector('.menu-q'));return}
+      const head=document.querySelector('.view.on > .page-head');
+      if(bar.parentNode===side&&(!head||head.contains(srch)))return;
+      park();side.insertBefore(bar,side.querySelector('.menu-q'));
+      if(head&&srch){
+        let acts=head.querySelector(':scope > .head-acts');
+        if(!acts){acts=document.createElement('div');acts.className='head-acts';[...head.children].slice(1).forEach(c=>acts.append(c));head.append(acts)}
+        acts.insertBefore(srch,acts.firstChild)}
+      return}
     const head=document.querySelector('.view.on > .page-head');if(!head){park();return}
     iconify();
     if(head.contains(bar))return;
