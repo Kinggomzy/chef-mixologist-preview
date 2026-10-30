@@ -1123,3 +1123,8 @@ label{align-self:stretch}
   .seg[aria-label=Layout] button{font-size:0;gap:0;padding:0;width:34px;height:32px;display:inline-grid;place-items:center}
   .seg[aria-label=Layout] button svg{width:16px;height:16px;margin:0}
 }
+@media (max-width:860px){
+  .toolbar:has(> .fm-btns){align-items:center}
+  .toolbar > .seg[aria-label=Layout]{height:38px;box-sizing:border-box;display:inline-flex;align-items:center;align-self:center;margin:0}
+  .toolbar > .fm-btns{align-self:center}
+}
