@@ -108,8 +108,27 @@ VIEWS.moves=function(){
     return `<div class="feed-row" data-sku="${m.x.sku}" tabindex="0"><span class="bubble ${c}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="${p}"/></svg></span>
       <div><b>${esc(m.x.name)}</b><small>${esc(m.t)} · ${m.time} · ${xl('person',m.user)}${m.ref?` · ${xlCan('po',m.ref)?xl('po',m.ref):esc(m.ref)}`:''}</small></div><span class="qty-pill num ${m.q>0?'in':''}">${m.q>0?'+':'−'}${fq(Math.abs(m.q))} ${esc(m.x.unit)}</span></div>`}).join('')}</div></section>`).join('')||'<div class="panel empty"><b>No movements found</b>Try another type or search.</div>';
   box.insertAdjacentHTML('beforeend',pg.html);wirePager(box,VIEWS.moves);
-  box.querySelectorAll('[data-sku]').forEach(r=>{r.onclick=()=>openItem(r.dataset.sku);r.onkeydown=e=>{if(e.key==='Enter')openItem(r.dataset.sku)}});
+  const rowsOnPage=days.flatMap(d=>pg.rows.filter(m=>m.d===d));
+  box.querySelectorAll('.feed-row').forEach((r,i)=>{const m=rowsOnPage[i];const open=e=>{if(e.target.closest&&e.target.closest('a,button'))return;openMove(m)};
+    r.onclick=open;r.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openMove(m)}}});
 };
+
+/* one stock movement in full: what moved, when, who did it and what it was for */
+function openMove(m){
+  if(!m)return;
+  const x=m.x,when=new Date(TODAY.getTime()-m.d*864e5).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const money=API.can.pricing!==false&&x.cost!=null,sign=m.q>0?'+':'−',amt=`${sign}${fq(Math.abs(m.q))} ${esc(x.unit)}`;
+  const isRef=m.ref&&xlCan('po',m.ref),ref=m.ref?(isRef?xl('po',m.ref):esc(m.ref)):'—';
+  const [c,p]=MV[m.t]||MV.Adjustment;
+  const row=(k,v)=>`<div><span class="muted">${k}</span><span>${v}</span></div>`;
+  const acts=[['Open item',()=>openItem(x.sku)],['All movements of this item',()=>focusOn('moves','item',x.sku,x.name)]];
+  if(isRef)acts.push(['Open order',()=>openXL('po',m.ref)]);
+  peek(esc(x.name),['Stock movement',`${esc(m.t)} · ${dayLabel(m.d)}, ${esc(m.time)}`],
+    `<div class="peek-stats num" style="grid-template-columns:repeat(3,1fr)"><div><b style="color:${m.q>0?'var(--green)':'var(--text)'}">${amt}</b><small>Quantity</small></div>`+
+    `<div><b>${money?inr(Math.abs(m.q)*x.cost):'—'}</b><small>Value</small></div>`+
+    `<div><b>${fq(x.onHand)} ${esc(x.unit)}</b><small>On hand now</small></div></div>`+
+    peekSec('Details',peekRows([row('Item',`${xl('item',x.sku,x.name)} · ${esc(x.sku)}`),row('Type',esc(m.t)),row('When',`${esc(when)}, ${esc(m.time)}`),row('Done by',xl('person',m.user)),row('Reference',ref),row('Stored in',xl('location',x.loc))])),acts);
+}
 
 /* ================= menu & recipes: dish, glass and jar cards ================= */
 VIEWS.recipes=async function(){
@@ -169,10 +188,11 @@ VIEWS.suppliers=async function(){
   const draw=()=>{const pg=paginate('sup',SUPS,fitSize(300,18,3),JSON.stringify([SUPS.length,S.focus]));
   body.innerHTML=`<div class="bizcards">${pg.rows.map(s=>{const miss=[s.onTimePct!=null&&s.onTimePct<90,s.fillPct!=null&&s.fillPct<95,s.rejectPct!=null&&100-s.rejectPct*10<80].filter(Boolean).length;
     return `<article class="biz edge edge-${miss>=2?'bad':miss===1?'warn':'ok'}"><div class="biz-h">${s.image?`<img class="mono photo" data-auth-src="${esc(s.image)}" alt="">`:`<span class="mono">${esc(initials(s.name))}</span>`}<div><h3>${esc(s.name)}</h3><small>${s.items.length} item${s.items.length===1?'':'s'} · ${s.openOrders} open order${s.openOrders===1?'':'s'} · ${s.receipts} deliver${s.receipts===1?'y':'ies'}</small></div></div>
-    <div class="rings">${ring(s.onTimePct,'On time',v=>v>=90)}${ring(s.fillPct,'In full',v=>v>=95)}${ring(s.rejectPct==null?null:Math.max(0,100-s.rejectPct*10),'Quality',v=>v>=80)}</div>
-    ${s.priceAlerts.length?`<div class="row" style="display:flex;flex-wrap:wrap;gap:6px">${s.priceAlerts.map(a=>`<span class="sticker ${a.change>0?'melon':'lime'}">${xlItemName(a.name)} ${a.change>0?'+':''}${a.change}%</span>`).join('')}</div>`:''}
-    <div class="card-f"><button type="button" class="btn btn-sm btn-line biz-pl" data-pl="${esc(s.name)}">Price list (${s.items.length})</button></div></article>`}).join('')}</div>${pg.html}`+
+    <div class="biz-mid"><div class="rings">${ring(s.onTimePct,'On time',v=>v>=90)}${ring(s.fillPct,'In full',v=>v>=95)}${ring(s.rejectPct==null?null:Math.max(0,100-s.rejectPct*10),'Quality',v=>v>=80)}</div>
+    ${s.priceAlerts.length?`<div class="row biz-alerts">${s.priceAlerts.slice(0,2).map(a=>`<span class="sticker ${a.change>0?'melon':'lime'}">${xlItemName(a.name)} ${a.change>0?'+':''}${a.change}%</span>`).join('')}${s.priceAlerts.length>2?`<span class="sticker">+${s.priceAlerts.length-2} more</span>`:''}</div>`:''}</div>
+    <div class="card-f"><button type="button" class="btn btn-sm btn-line biz-pl" data-pl="${esc(s.name)}">Price list (${s.items.length})</button>${API.live&&API.can.suppliersEdit?`<button type="button" class="btn btn-sm btn-line" data-sup-edit-id="${s.id}">Edit</button>`:''}</div></article>`}).join('')}</div>${pg.html}`+
     (RETS.length?`<div class="menu-h" style="margin-top:22px"><h2>Returns</h2></div><div class="feed">${RETS.map(r=>`<div class="feed-row" style="cursor:default"><span class="bubble bad">${esc(initials(r.supplier))}</span><div><b>${xlItemName(r.item)} · ${num(r.qty)} ${esc(r.unit)}</b><small>${esc(r.ref)} · ${xl('supplier',r.supplier)} · ${esc(r.reason)} · ${esc(r.at)}</small></div><span class="qty-pill num">${inr(r.value)}</span>${r.id?phBtn('return',r.id,r.ref):''}</div>`).join('')}</div>`:'');wirePager(body,draw);
+  body.querySelectorAll('[data-sup-edit-id]').forEach(b=>b.onclick=()=>editSupplierById(+b.dataset.supEditId));
   body.querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>{const s=d.suppliers.find(x=>x.name===b.dataset.pl);if(!s)return;
     peek(esc(s.name),['Price list',`${s.items.length} item${s.items.length===1?'':'s'}${s.priceAlerts.length?` · ${s.priceAlerts.length} price move${s.priceAlerts.length===1?'':'s'} of 5% or more`:''}`],
       peekSec('Current prices',peekRows(s.items.map(i=>`<div>${xlItemName(i.name)}<span class="num">${i.price==null?'—':inr(i.price)}/${esc(i.unit)}</span></div>`))),

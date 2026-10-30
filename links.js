@@ -57,7 +57,8 @@ function peekIcon(label){
   if(/receive/.test(l))return PK('<path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/>');
   if(/whatsapp|send/.test(l))return PK('<path d="m4 12 16-8-6 16-3-7z"/>');
   if(/edit/.test(l))return PK('<path d="M4 20h4L19 9l-4-4L4 16z"/>');
-  if(/items/.test(l))return PK('<path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/>');
+  if(/movement/.test(l))return PK('<path d="M7 4v16M7 4 3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/>');
+  if(/items?$|^open item/.test(l)||/items/.test(l))return PK('<path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/>');
   if(/order|deliver|inward/.test(l))return PK('<path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.5"/><circle cx="17" cy="18" r="1.5"/>');
   return PK('<path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5"/>');
 }

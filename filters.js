@@ -26,6 +26,71 @@ function fmLabel(f){
   return t?t.textContent.trim():'Filter';
 }
 
+/* a search box for the page itself (desktop): filters this page's list as you type */
+const PG_SEARCHES=[];
+function pageSearch(view,generic){
+  const l=document.createElement('label');l.className='pg-search';
+  l.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" autocomplete="off" aria-label="Search this page" placeholder="'+(PG_HINT[view]||({items:'Search raw materials',moves:'Search movements'})[view])+'"><button type="button" class="pg-x" aria-label="Clear search" hidden>×</button>';
+  const inp=l.querySelector('input'),x=l.querySelector('.pg-x');
+  const apply=v=>{S.q=v;x.hidden=!v;if(generic)pgRedrawAll();else if(VIEWS[view])VIEWS[view]();else render()};
+  inp.value=S.q||'';x.hidden=!inp.value;
+  inp.addEventListener('input',()=>apply(inp.value));
+  inp.addEventListener('keydown',e=>{if(e.key==='Escape'&&inp.value){e.stopPropagation();inp.value='';apply('')}});
+  x.onclick=()=>{inp.value='';apply('');inp.focus()};
+  PG_SEARCHES.push({view,inp,x});
+  return l;
+}
+/* ---------- page search for the other list pages ----------
+   One search row under the heading. Every paginated list on the page is filtered by the words typed: paginate() does the
+   narrowing, and each list's own redraw (registered when its pager is wired) is called so nothing reloads or loses focus. */
+const PG_PAGES=['inward','requests','approvals','stocktake','recipes','suppliers','sales','access','notifications'];
+const PG_AWARE=new Set(['items','moves','dockets','grn']);   // these lists already read S.q themselves
+const PG_HINT={inward:'Search orders and deliveries',requests:'Search requests',approvals:'Search approvals',stocktake:'Search stock-takes',recipes:'Search dishes and recipes',suppliers:'Search suppliers',sales:'Search sales imports',access:'Search access requests',notifications:'Search notifications'};
+const PG_REDRAW=[];
+const pgText=new WeakMap();
+function pgTextOf(it,depth=0){
+  if(it==null)return '';
+  if(typeof it!=='object')return String(it);
+  if(it.nodeType===1)return it.textContent;
+  if(depth>3)return '';
+  return Object.values(it).map(v=>pgTextOf(v,depth+1)).join(' ');
+}
+function pgMatch(it,q){
+  let t=typeof it==='object'&&it?pgText.get(it):null;
+  if(t==null){t=pgTextOf(it).toLowerCase();if(typeof it==='object'&&it)pgText.set(it,t)}
+  return q.every(w=>t.includes(w));
+}
+const paginateBeforeSearch=paginate;
+paginate=function(key,list,size,sig=''){
+  const q=PG_AWARE.has(key)?'':String(S.q||'').toLowerCase().trim().split(/\s+/).filter(Boolean);
+  if(!q||!q.length||!PG_PAGES.includes(S.view))return paginateBeforeSearch(key,list,size,sig);
+  return paginateBeforeSearch(key,list.filter(it=>pgMatch(it,q)),size,sig+'|'+q.join(' '));
+};
+const wirePagerBeforeSearch=wirePager;
+wirePager=function(root,rerender){
+  const at=PG_REDRAW.findIndex(r=>r.root===root);if(at>=0)PG_REDRAW.splice(at,1);
+  PG_REDRAW.push({root,rerender});
+  wirePagerBeforeSearch(root,rerender);
+};
+function pgRedrawAll(){
+  for(let i=PG_REDRAW.length-1;i>=0;i--)if(!PG_REDRAW[i].root.isConnected)PG_REDRAW.splice(i,1);
+  const v=document.querySelector('.view.on');
+  PG_REDRAW.filter(r=>v&&v.contains(r.root)).forEach(r=>r.rerender());
+}
+{const ih=document.querySelector('#v-inward .page-head');if(ih){const row=document.createElement('div');row.className='pg-bar';row.append(pageSearch('inward',true));ih.after(row)}}
+const viewBeforeSearch=view;
+view=function(id,...rest){
+  const body=viewBeforeSearch(id,...rest);
+  if(PG_PAGES.includes(id)){
+    const head=body.parentElement.querySelector('.page-head'),l=pageSearch(id,true);
+    const row=document.createElement('div');row.className='pg-bar';row.append(l);head.after(row);
+  }
+  return body;
+};
+/* the box always shows what the page is filtered by, and clears when you move to another page */
+const goBeforePageSearch=go;
+go=function(v,opts={}){if(!('q' in opts)&&v!==S.view)S.q='';goBeforePageSearch(v,opts);PG_SEARCHES.forEach(p=>{p.inp.value=S.q||'';p.x.hidden=!p.inp.value})};
+
 function tidyBar(bar,bars=[bar]){
   const sortSel=bars.map(b=>b.querySelector('select[data-sort]')).find(Boolean)||null,filters=bars.flatMap(b=>[...b.querySelectorAll('[data-filter]')]);
   bars.forEach(b=>b.dataset.tidy='1');
@@ -38,6 +103,8 @@ function tidyBar(bar,bars=[bar]){
   const box=document.createElement('span');box.className='fm-btns';
   box.innerHTML=(sortSel?`<button type="button" class="icon-btn" data-fm="sort" aria-haspopup="menu" aria-label="Sort" title="Sort">${FI_SORT}</button>`:'')+
     (filters.length?`<button type="button" class="icon-btn" data-fm="filter" aria-haspopup="dialog" aria-label="Filters" title="Filters">${FI_FILTER}<i class="fm-badge" hidden></i></button>`:'');
+  const vid=(bar.closest('.view')||{}).id;
+  if(['v-items','v-moves'].includes(vid))box.prepend(pageSearch(vid.slice(2)));
   const seg=bar.querySelector('.seg');
   seg?seg.before(box):bar.insertBefore(box,holder);
   bars.forEach(b=>{if(b!==bar&&!b.children.length)b.hidden=true});

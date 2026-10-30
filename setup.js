@@ -47,6 +47,11 @@ async function renderSetup(){
     wireRestoreDel(box);pageDom(box.querySelector('tbody'),'tr','setup-arch',12)};
   if($('#archBox')){$('#archSort').onchange=drawArch;$('#archType').onchange=drawArch;drawArch()}
 }
+/* a supplier can be edited from Setup or from the Suppliers page: redraw whichever one is showing */
+function afterSupplier(){SUP_CACHE=null;if(S.view==='suppliers'&&VIEWS.suppliers)VIEWS.suppliers();else renderSetup()}
+async function editSupplierById(id){
+  try{if(!SETUP)SETUP=await api('/plugin/cm/setup/');const s=SETUP.suppliers.find(x=>x.id===id);if(!s)return toast('That supplier is no longer here');supplierForm(s)}catch(e){fail(e)}
+}
 function supplierForm(s){
   s=s||{};
   formModal(s.id?`Edit ${esc(s.name)}`:'Add supplier','',`${s.id?photoBlock(s.image,s.name):pendingPhotoBlock()}<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -56,8 +61,8 @@ function supplierForm(s){
     <label>GSTIN<input name="gstin" maxlength="15" value="${esc(s.gstin||'')}" placeholder="19ABCDE1234F1Z5"></label><label>FSSAI licence<input name="fssai" maxlength="20" value="${esc(s.fssai||'')}"></label></div>
     ${addressFields(s)}<label>Notes<input name="notes" maxlength="250" value="${esc(s.notes||'')}"></label>`,'Save',async(f,close)=>{
     const body=Object.fromEntries(['name','contact','phone','whatsapp','email','gstin','fssai','address','address2','city','state','pin','country','notes'].map(k=>[k,f.get(k)]));
-    const r=await api(s.id?`/plugin/cm/supplier/${s.id}/`:'/plugin/cm/supplier/',{method:s.id?'PATCH':'POST',json:body});if(!s.id&&r&&r.id)await commitPendingPhoto(`/plugin/cm/supplier/${r.id}/photo/`);close();toast('Supplier saved');renderSetup();reload()});
-  if(s.id)wirePhotoBlock(`/plugin/cm/supplier/${s.id}/photo/`,()=>{SUP_CACHE=null;renderSetup()});else wirePendingPhoto();
+    const r=await api(s.id?`/plugin/cm/supplier/${s.id}/`:'/plugin/cm/supplier/',{method:s.id?'PATCH':'POST',json:body});if(!s.id&&r&&r.id)await commitPendingPhoto(`/plugin/cm/supplier/${r.id}/photo/`);close();toast('Supplier saved');afterSupplier();reload()});
+  if(s.id)wirePhotoBlock(`/plugin/cm/supplier/${s.id}/photo/`,afterSupplier);else wirePendingPhoto();
 }
 function locationForm(l){
   l=l||{};
