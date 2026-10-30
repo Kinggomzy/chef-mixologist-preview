@@ -343,12 +343,12 @@ body.d-open .drawer{transform:none}
         <div class="page-head"><div><h1>Raw materials</h1><p>Each card shows stock on hand against its safety stock, reorder point and maximum level.</p></div>
           <button class="btn btn-line" id="newItem">+ New item</button></div>
         <div class="toolbar">
-          <div class="chips" id="cats"></div>
+          <div class="chips" id="cats" data-filter data-label="Category"></div>
         </div>
         <div class="toolbar">
-          <label class="field">Status<select id="f-status"></select></label>
-          <label class="field">Location<select id="f-loc"></select></label>
-          <label class="field">Sort<select id="f-sort">
+          <label class="field" data-filter>Status<select id="f-status"></select></label>
+          <label class="field" data-filter>Location<select id="f-loc"></select></label>
+          <label class="field">Sort<select id="f-sort" data-sort>
             <option value="urgency">Most urgent first</option><option value="cover">Days of cover</option><option value="name">Name A–Z</option><option value="value">Stock value</option><option value="expiry">Nearest expiry</option></select></label>
           <span class="result-count" id="count"></span>
           <span class="grow"></span>
@@ -383,7 +383,7 @@ body.d-open .drawer{transform:none}
       <!-- MOVEMENTS -->
       <section class="view" id="v-moves">
         <div class="page-head"><div><h1>Stock movements</h1><p>Every receipt, issue, transfer, wastage and adjustment, with who did it.</p></div><button class="btn btn-line" id="exportCsv">Export CSV</button></div>
-        <div class="toolbar"><div class="chips" id="mv-types"></div></div>
+        <div class="toolbar"><div class="chips" id="mv-types" data-filter data-label="Type"></div></div>
         <div class="panel"><div class="tablewrap"><table class="t" id="moves"></table></div></div>
       </section>
     </div>
@@ -882,5 +882,6 @@ document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|SELECT|TEXTAREA/
 <script src="pricelist.js"></script>
 <script src="links.js"></script>
 <script src="edges.js"></script>
+<script src="filters.js"></script>
 </body>
 </html>
