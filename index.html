@@ -579,7 +579,7 @@ function renderItems(){
   }else{
     const th=(k,l,r)=>`<th class="${r?'r':''}"><button data-ts="${k}" ${S.tsort===k?`data-dir="${S.tdir}"`:''}>${l}</button></th>`;
     $('#items-out').innerHTML=`<div class="panel tablewrap"><table class="t"><thead><tr>${th('name','Item')}${th('cat','Category')}${th('onHand','On hand',1)}${th('ss','Safety',1)}${th('rop','Reorder pt',1)}${th('max','Max',1)}<th>Level</th>${th('cover','Cover',1)}${th('expiry','Use by',1)}${th('value','Value',1)}<th>Status</th></tr></thead><tbody>
-    ${L.map(({x,c})=>`<tr class="click" data-sku="${x.sku}"><td><div class="itm">${img(x)}<div><b>${x.name}</b><small>${x.sku} · ${x.sup}</small></div></div></td><td>${x.cat}</td>
+    ${L.map(({x,c})=>`<tr class="click row-st row-st-${c.st}" data-sku="${x.sku}" title="${ST[c.st][0]}"><td><div class="itm">${img(x)}<div><b>${x.name}</b><small>${x.sku} · ${x.sup}</small></div></div></td><td>${x.cat}</td>
     <td class="r num"><b>${fq(x.onHand)}</b> ${x.unit}${c.inc.q?`<br><small style="color:var(--blue)">+${fq(c.inc.q)} on order</small>`:''}</td><td class="r num">${fq(c.ss)}</td><td class="r num">${fq(c.rop)}</td><td class="r num">${fq(c.max)}</td>
     <td><div class="mini-gauge">${gauge(x,c)}</div></td><td class="r num">${c.cover>=99?'—':c.cover.toFixed(1)+' d'}</td><td class="r num" style="${c.expiry<=1?'color:var(--red);font-weight:700':''}">${c.expiry>=999?'—':c.expiry===0?'Today':c.expiry+' d'}</td><td class="r num">${inr(c.value)}</td><td>${tag(c.st)}</td></tr>`).join('')}</tbody></table></div>`;
     $$('#items-out tr.click').forEach(r=>r.onclick=()=>openItem(r.dataset.sku));
@@ -858,7 +858,7 @@ async function raisePO(panel,btn){
 function render(){renderMenu();$$('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+S.view));
   (VIEWS[S.view]||renderOverview)()}
 const VIEWS={overview:renderOverview,items:renderItems,inward:renderInward,replenish:renderRepl,moves:renderMoves};
-$('#q').addEventListener('input',e=>{S.q=e.target.value;if(!['items','moves'].includes(S.view))S.view='items';render()});
+$('#q').addEventListener('input',e=>{S.q=e.target.value;if(!['items','moves','inward'].includes(S.view))S.view='items';render()});
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();$('#q').focus()}if(e.key==='Escape'){closeItem();$('#modal').classList.remove('on')}});
 </script>
 <script src="erp.js"></script>
@@ -883,5 +883,6 @@ document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|SELECT|TEXTAREA/
 <script src="charts.js"></script>
 <script src="mobilebar.js"></script>
 <script src="fillrows.js"></script>
+<script src="titles.js"></script>
 </body>
 </html>

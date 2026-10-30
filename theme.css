@@ -1304,3 +1304,95 @@ a.xl:hover{color:inherit;background:color-mix(in srgb,currentColor 10%,transpare
   .panel-b{padding-left:14px;padding-right:14px}
 }
 @media (max-width:860px){#v-setup .t td.r:last-child:has(.btn-row-ico),.tablewrap .t td.r:has(.btn-row-ico){white-space:nowrap;min-width:0;text-align:right}}
+
+/* Form controls: borders clearly separate dropdowns and inputs from the card behind them (3:1 or better) */
+:root{--field-line:#9C8370}
+.field{border:1px solid var(--field-line);box-shadow:none}
+select,textarea,input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]):not([type=hidden]):not([type=submit]){border-color:var(--field-line)}
+.field:focus-within,select:focus,textarea:focus,input:focus{border-color:var(--copper)}
+/* Filter dialog: the dropdown carries its own clear border */
+.fm-group .field{border:0;box-shadow:none}
+.fm-group .field select{border:1px solid var(--field-line);border-radius:12px;padding:10px 12px;background:var(--surface);min-height:42px}
+.fm-group .field select:focus{border-color:var(--copper)}
+
+/* Wide screens: the top bar ends where the page content ends, so its right-hand buttons line up with the cards below */
+@media (min-width:861px){.topbar{padding-right:max(28px,calc(100% - 1520px + 28px))}}
+.calc input:not([type=checkbox]):not([type=radio]),.calc select,.calc textarea,#mform input:not([type=checkbox]):not([type=radio]),#mform select,#mform textarea,.two input,.two select{border-color:var(--field-line)}
+.calc input:focus,.calc select:focus,.calc textarea:focus,#mform input:focus,#mform select:focus,#mform textarea:focus{border-color:var(--copper)}
+
+/* Tables: only the first column (names, e-mails) may break inside a word; other columns wrap between words */
+.tablewrap table.t:not(.grid) td:not(:first-child),.tablewrap table.t:not(.grid) th{overflow-wrap:normal;word-break:normal}
+@media (max-width:860px){#v-items .tablewrap{padding:0 12px}#v-items .tablewrap table.t th:first-child,#v-items .tablewrap table.t td:first-child{padding-left:0}#v-items .tablewrap table.t th:last-child,#v-items .tablewrap table.t td:last-child{padding-right:0}}
+@media (max-width:860px){#v-items .tablewrap table.t td.r,#v-items .tablewrap table.t td.r.num{white-space:normal}}
+@media (max-width:600px){#v-items .tablewrap table.t th:nth-child(2),#v-items .tablewrap table.t td:nth-child(2){display:none}}
+
+/* Hamburger layouts: the raw materials table keeps item, quantity and status; the rest is in the item itself */
+@media (max-width:860px){
+  #items-out table.t :is(th,td):is(:nth-child(2),:nth-child(n+4):nth-child(-n+10)){display:none}
+  .itm small{display:none}
+}
+@media (max-width:860px){
+  #v-events table.t:has(th:nth-child(6)) :is(th,td):is(:nth-child(3),:nth-child(5),:nth-child(6)){display:none}
+  #v-closing table.t:has(th:nth-child(5)) :is(th,td):is(:nth-child(2),:nth-child(3)){display:none}
+  #v-setup table.t:has(th:nth-child(4)) :is(th,td):nth-child(2){display:none}
+}
+@media (max-width:860px){
+  #items-out table.t td.r small{display:none}
+  #items-out table.t td:last-child .tag{font-size:11px;padding:3px 8px;white-space:nowrap}
+  #items-out table.t th,#items-out table.t td{padding-left:6px;padding-right:6px}
+}
+@media (max-width:860px){
+  #items-out table.t{table-layout:fixed;width:100%}
+  #items-out table.t th:nth-child(3){width:74px}
+  #items-out table.t th:nth-child(11){width:96px}
+  #items-out table.t td:last-child{overflow:hidden}
+}
+/* Hamburger layouts: the grey detail line under a name in the first column of a list is dropped; open the record to see it */
+@media (max-width:860px){.view:not(#v-stocktake):not(#v-replenish) .tablewrap table.t:not(.recv-t) td:first-child small{display:none}}
+
+/* Hamburger layouts: the status is the coloured edge of the row (same colours as the stock cards), not a column */
+@media (max-width:860px){
+  #items-out table.t th:nth-child(11),#items-out table.t td:nth-child(11){display:none}
+  #items-out table.t th:nth-child(3){width:90px}
+  #items-out tr.row-st > td:first-child{box-shadow:inset 4px 0 0 var(--edge,var(--line-2));padding-left:12px}
+  #items-out tr.row-st-out,#items-out tr.row-st-crit{--edge:var(--rust)}
+  #items-out tr.row-st-reorder{--edge:var(--gold)}
+  #items-out tr.row-st-onorder{--edge:var(--espresso-3)}
+  #items-out tr.row-st-ok{--edge:var(--jade-ink)}
+  #items-out tr.row-st-over{--edge:var(--line-2)}
+}
+@media (max-width:860px){#items-out table.t tr.row-st > td:first-child{padding-left:14px!important}}
+
+/* Colour guide: a small heading on its own line, the colour codes start on the next line */
+.colour-guide{padding:12px 18px 14px}
+.colour-guide > b{flex:0 0 100%;margin:0;font-size:var(--fs-xs);font-weight:var(--fw-bold);letter-spacing:.02em;color:var(--text-3)}
+#v-moves .toolbar{align-items:flex-start}
+/* segmented switches: buttons centre exactly inside their pill, at every size */
+.seg{display:inline-flex;align-items:center}
+.seg button{display:inline-flex;align-items:center;justify-content:center;line-height:1;min-height:32px}
+#v-moves .toolbar .fm-btns{align-self:flex-start}
+
+/* Phone dialogs: quantity, unit and the remove button share one row under the ingredient or item */
+@media (max-width:600px){
+  #mform .rline,#mform .reqrow,#mform .urow{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px!important}
+  #mform .rline > label:first-child,#mform .reqrow > label:first-child{grid-column:1/-1}
+  #mform .rline > .rdel,#mform .reqrow > .rdel,#mform .urow > .udel{align-self:end;justify-self:end}
+}
+/* icon-only switch buttons: the icon sits exactly in the middle (their hidden label no longer takes a grid row) */
+.seg button{display:flex!important;align-items:center;justify-content:center}
+.seg button svg{display:block;flex:none}
+/* Colour guide: the colour mark and its name line up with the first line of the description */
+.colour-guide span{align-items:flex-start}
+.colour-guide .sw{margin-top:1px}
+.colour-guide u{line-height:1.4}
+/* Supplier price lists on small screens: the dropdown and both buttons use the full width of the card */
+@media (max-width:860px){
+  .pl-bar{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+  .pl-bar .field,.pl-bar .btn,.pl-bar label.btn{width:100%;max-width:none;box-sizing:border-box;justify-content:center;text-align:center}
+  .pl-bar .field select{width:100%;flex:1 1 auto}
+}
+@media (max-width:860px){
+  .pl-bar{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .pl-bar .field{grid-column:1/-1}
+  .pl-bar .btn,.pl-bar label.btn{padding-left:10px;padding-right:10px;white-space:nowrap}
+}

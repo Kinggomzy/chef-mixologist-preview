@@ -478,10 +478,6 @@
       '#demoWelcome h2{font-family:"Cormorant Garamond",Georgia,serif;font-size:30px;margin:0 0 8px}#demoWelcome p{margin:0 0 10px;line-height:1.5;color:#5A463B}#demoWelcome ul{margin:0 0 16px;padding-left:18px;color:#5A463B;line-height:1.6}' +
       '#demoWelcome button{all:unset;cursor:pointer;padding:11px 18px;border-radius:12px;background:#B4420E;color:#fff;font-weight:700}@media (max-width:600px){#demoBadge{right:8px;bottom:8px;font-size:12px}}';
     document.head.appendChild(css);
-    var b = document.createElement('div'); b.id = 'demoBadge';
-    b.innerHTML = '<span>Preview · sample data, nothing is saved</span><button type="button">Start over</button>';
-    b.querySelector('button').onclick = function () { location.hash = '#overview'; location.reload(); };
-    document.body.appendChild(b);
     var seen = false; try { seen = sessionStorage.getItem('cm_demo_welcome') === '1'; } catch (e) {}
     if (!seen) {
       var w = document.createElement('div'); w.id = 'demoWelcome';

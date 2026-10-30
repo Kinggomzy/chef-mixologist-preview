@@ -8,7 +8,7 @@
   const park=()=>{if(srch&&srch.parentNode!==bar)bar.insertBefore(srch,bar.firstChild);if(bar.parentNode!==home)home.insertBefore(bar,next)};
   // (the heading's own action buttons are wrapped into .head-acts so the bar can sit beside them)
   // the search box filters Raw materials and Stock movements only, so its button shows on those pages
-  const SEARCHABLE=['items','moves'];
+  const SEARCHABLE=['items','moves','inward'];
   const syncSearch=()=>{if(!srch)return;const v=document.querySelector('.view.on'),id=v?v.id.replace(/^v-/,''):'';srch.style.display=mq.matches&&!SEARCHABLE.includes(id)?'none':''};
   const place=()=>{
     syncSearch();

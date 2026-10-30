@@ -42,11 +42,13 @@ VIEWS.inward=function(){
   const wrap=$('#grns').closest('.tablewrap');wrap.hidden=true;
   let box=$('#stubs');if(!box){box=Object.assign(document.createElement('div'),{id:'stubs'});wrap.after(box)}
   const stampCls={Accepted:'good','Short delivery':'warn','Partly rejected':'bad'};
-  const G=GRNS.filter(g=>!S.focus||(S.focus.kind==='supplier'?g.sup===S.focus.key:S.focus.kind==='po'?g.po===S.focus.key:true));
-  const drawStubs=()=>{const pg=paginate('grn',G,8,JSON.stringify([G.length,S.focus]));
+  const gq=(S.q||'').toLowerCase().trim();
+  const grnText=g=>`${g.grn} ${g.sup} ${g.po} ${g.qc} ${g.note||''} ${dayLabel(g.d)} ${g.lines.map(l=>`${l[0]} ${(bySku[l[0]]||{}).name||''}`).join(' ')}`.toLowerCase();
+  const G=GRNS.filter(g=>(!S.focus||(S.focus.kind==='supplier'?g.sup===S.focus.key:S.focus.kind==='po'?g.po===S.focus.key:true))&&(!gq||grnText(g).includes(gq)));
+  const drawStubs=()=>{const pg=paginate('grn',G,8,JSON.stringify([G.length,S.focus,gq]));
   box.innerHTML=`<div class="stubs">${pg.rows.map(g=>{const o=g.lines.reduce((a,l)=>a+l[1],0),r=g.lines.reduce((a,l)=>a+l[2],0);
     return `<article class="stub edge edge-${{Accepted:'ok','Short delivery':'warn','Partly rejected':'bad'}[g.qc]||'mute'}">${edgeTip(g.qc)}<h4>${esc(g.grn)}</h4><small>${xl('supplier',g.sup)}</small><small>${dayLabel(g.d)} · against ${xl('po',g.po)}</small>
-      <div class="pct num ${r<o?'bad':''}">${o?Math.round(r/o*100):0}% <small>received</small></div>${g.note?`<small>${esc(g.note)}</small>`:''}</article>`}).join('')||'<p class="muted">No goods received yet.</p>'}</div>${pg.html?`<div style="padding:0 18px 16px">${pg.html}</div>`:''}`;wirePager(box,drawStubs)};drawStubs();
+      <div class="pct num ${r<o?'bad':''}">${o?Math.round(r/o*100):0}% <small>received</small></div>${g.note?`<small>${esc(g.note)}</small>`:''}</article>`}).join('')||`<p class="muted">${gq?'No receipts match your search.':'No goods received yet.'}</p>`}</div>${pg.html?`<div style="padding:0 18px 16px">${pg.html}</div>`:''}`;wirePager(box,drawStubs)};drawStubs();
 };
 
 /* ================= replenishment: supplier baskets ================= */
