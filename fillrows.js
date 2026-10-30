@@ -1,14 +1,17 @@
 /* Chef & Mixologist: no empty cells at the end of a card grid.
    When the last row is short, its cards grow to share the whole row. */
 (function(){
-  const SEL='.reqs,.takes,.mcloses,.dockets,.jars,.menu-grid,.zreports,.bizcards,.stubs,.stock-cards,.people,.act-grid,.stock-grid';
+  const SEL='.reqs,.takes,.mcloses,.dockets,.jars,.menu-grid,.zreports,.bizcards,.stubs,.stock-cards,.people,.act-grid,.stock-grid,#feed .feed';
   function fill(g){
-    const kids=[...g.children].filter(k=>k.nodeType===1&&getComputedStyle(k).display!=='none');
-    kids.forEach(k=>{if(k.dataset.fr){k.style.gridColumn='';delete k.dataset.fr}});
+    const all=[...g.children].filter(k=>k.nodeType===1&&getComputedStyle(k).display!=='none');
+    all.forEach(k=>{if(k.dataset.fr){k.style.gridColumn='';delete k.dataset.fr}});
+    // the pager (or the full-width row holding it) is not a card and keeps its own row
+    const kids=all.filter(k=>!k.matches('.pager')&&!k.querySelector(':scope > .pager'));
     const cols=getComputedStyle(g).gridTemplateColumns.split(' ').filter(x=>x&&x!=='none').length;
     if(cols<2||!kids.length)return;
     const r=kids.length%cols;if(!r)return;
-    const base=Math.floor(cols/r),extra=cols%r;
+    return;  // cards keep one size: a short last row stays short rather than stretching its cards
+    const base=Math.floor(cols/r),extra=0;
     kids.slice(-r).forEach((k,i)=>{k.style.gridColumn='span '+(base+(i<extra?1:0));k.dataset.fr='1'});
   }
   function run(){document.querySelectorAll(SEL).forEach(g=>{if(g.offsetParent)fill(g)})}

@@ -30,7 +30,8 @@ function legendHtml(id){
 function addLegend(sec,id){
   if(!sec||!LEGEND[id])return;
   sec.querySelectorAll(':scope > .colour-guide').forEach(n=>n.remove());
-  sec.insertAdjacentHTML('beforeend',legendHtml(id));
+  const tail=sec.querySelector(':scope > .formula-wrap');  // explanations stay below the colour guide
+  tail?tail.insertAdjacentHTML('beforebegin',legendHtml(id)):sec.insertAdjacentHTML('beforeend',legendHtml(id));
 }
 const viewBeforeEdges=view;
 view=function(id,...rest){const body=viewBeforeEdges(id,...rest);addLegend(body.parentElement,id);return body};

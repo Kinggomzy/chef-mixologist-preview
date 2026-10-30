@@ -187,7 +187,7 @@ async function renderTeam(){
   if($('#invite'))$('#invite').onclick=inviteForm;
   const draw=()=>{const q=TEAM_Q.toLowerCase();
     const L=d.staff.filter(s=>(!focusIs('person')||s.name===S.focus.key||s.username===S.focus.key)&&(TEAM_STATUS==='all'||s.status===TEAM_STATUS)&&(!q||`${s.name} ${s.username} ${s.email} ${s.roles.join(' ')}`.toLowerCase().includes(q)));
-    const pg=paginate('team',L,12,TEAM_Q+TEAM_STATUS);
+    const pg=paginate('team',L,fitSize(300,14,4),TEAM_Q+TEAM_STATUS);
     body.innerHTML=`<div class="toolbar"><label class="field" style="flex:1;max-width:360px">Find<input id="tq" value="${esc(TEAM_Q)}" placeholder="Name, username or role" style="border:0;background:none;height:100%;flex:1"></label>
       <label class="field" data-filter>Status<select id="ts">${[['all','Everyone'],['active','Active'],['invited','Invited'],['deactivated','Deactivated']].map(([k,l])=>`<option value="${k}" ${TEAM_STATUS===k?'selected':''}>${l}</option>`).join('')}</select></label><span class="result-count">${L.length} of ${d.staff.length}</span></div>
       <div class="people">${pg.rows.map(s=>`<button class="person edge edge-${s.status==='active'?'ok':s.status==='invited'?'warn':'mute'}" data-u="${s.id}">${phAvatar('person',s.id,s.name.split(/[\s.]+/).slice(0,2).map(w=>w[0]?.toUpperCase()||'').join(''))}

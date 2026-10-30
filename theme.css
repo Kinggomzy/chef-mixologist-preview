@@ -1199,3 +1199,15 @@ img.ph-cover{object-fit:cover;display:block}
 .pager .pg-info{flex:1 1 auto;margin-right:auto;white-space:nowrap;min-width:0}
 .pager button{flex:0 1 36px;min-width:26px}
 .pager .pg-gap{flex:0 0 auto}
+.formula-wrap{margin-top:16px;margin-bottom:0}
+.formula-wrap:not([open]) > summary{margin-bottom:0}
+
+/* Stock movements: the filter icon shares the row of the first day heading ("Today") */
+#v-moves .toolbar{height:0;min-height:0;margin:0;padding:0;overflow:visible;position:relative;z-index:3;justify-content:flex-end}
+#v-moves .toolbar .fm-btns{position:relative;margin-right:2px}
+#v-moves .feed-day:first-of-type > h3{min-height:38px;display:flex;align-items:center;margin-top:0;margin-bottom:6px}
+/* Stock movements: more columns as the screen widens */
+#feed .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:8px 12px;align-items:stretch}
+#feed .feed > .feed-row{margin:0;min-width:0}
+@media (max-width:860px){#feed .feed{grid-template-columns:minmax(0,1fr)}}
+.dockets{grid-auto-rows:auto;align-items:stretch}

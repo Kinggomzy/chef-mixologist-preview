@@ -123,7 +123,7 @@ VIEWS.recipes=async function(){
       <div class="row">${r.allergens.map(a=>`<span class="sticker soft">${esc(ALLERGEN(a))}</span>`).join('')||'<span class="muted" style="font-size:12.5px">No listed allergens</span>'}</div>
       ${money&&r.missingCosts.length?`<div class="warn">No price yet for ${r.missingCosts.map(esc).join(', ')}</div>`:''}</button>`};
   const one=S.focus&&S.focus.kind==='recipe'?d.recipes.filter(r=>String(r.id)===String(S.focus.key)):null;
-  const sec=(t,list,style)=>{if(one)list=list.filter(r=>one.includes(r));if(!list.length)return '';const pg=paginate('rec-'+t,list,9,String(list.length));return `<div class="menu-h"><h2>${t}</h2><span>${list.length}</span></div><div class="menu-grid" style="margin-bottom:0">${pg.rows.map(r=>card(r,style)).join('')}</div>${pg.html}<div style="height:26px"></div>`};
+  const sec=(t,list,style)=>{if(one)list=list.filter(r=>one.includes(r));if(!list.length)return '';const pg=paginate('rec-'+t,list,fitSize(250,18,3),String(list.length));return `<div class="menu-h"><h2>${t}</h2><span>${list.length}</span></div><div class="menu-grid" style="margin-bottom:0">${pg.rows.map(r=>card(r,style)).join('')}</div>${pg.html}<div style="height:26px"></div>`};
   const draw=()=>{body.innerHTML=sec('Dishes',d.recipes.filter(r=>r.kind==='dish'),'')+sec('Mocktails & coolers',d.recipes.filter(r=>r.kind==='beverage'),'glass')+sec('Preps',d.recipes.filter(r=>r.kind==='prep'),'jar')||'<div class="panel empty"><b>No recipes yet</b>Add the first dish with New recipe.</div>';
   body.querySelectorAll('[data-rid]').forEach(b=>b.onclick=()=>showRecipe(+b.dataset.rid));wirePager(body,draw)};draw();
 };
@@ -163,7 +163,7 @@ VIEWS.suppliers=async function(){
   const d=await load(body,'/plugin/cm/suppliers/');if(!d)return;
   const ring=(v,label,good)=>`<div><div class="ring ${v==null?'none':good(v)?'':'bad'}" style="--p:${v??0}"><b>${v==null?'—':v+'%'}</b></div><small>${label}</small></div>`;
   const SUPS=focusIs('supplier')?d.suppliers.filter(s=>s.name===S.focus.key):d.suppliers,RETS=focusIs('supplier')?d.returns.filter(r=>r.supplier===S.focus.key):d.returns;
-  const draw=()=>{const pg=paginate('sup',SUPS,9,JSON.stringify([SUPS.length,S.focus]));
+  const draw=()=>{const pg=paginate('sup',SUPS,fitSize(300,18,3),JSON.stringify([SUPS.length,S.focus]));
   body.innerHTML=`<div class="bizcards">${pg.rows.map(s=>{const miss=[s.onTimePct!=null&&s.onTimePct<90,s.fillPct!=null&&s.fillPct<95,s.rejectPct!=null&&100-s.rejectPct*10<80].filter(Boolean).length;
     return `<article class="biz edge edge-${miss>=2?'bad':miss===1?'warn':'ok'}"><div class="biz-h">${s.image?`<img class="mono photo" data-auth-src="${esc(s.image)}" alt="">`:`<span class="mono">${esc(initials(s.name))}</span>`}<div><h3>${esc(s.name)}</h3><small>${s.items.length} item${s.items.length===1?'':'s'} · ${s.openOrders} open order${s.openOrders===1?'':'s'} · ${s.receipts} deliver${s.receipts===1?'y':'ies'}</small></div></div>
     <div class="rings">${ring(s.onTimePct,'On time',v=>v>=90)}${ring(s.fillPct,'In full',v=>v>=95)}${ring(s.rejectPct==null?null:Math.max(0,100-s.rejectPct*10),'Quality',v=>v>=80)}</div>
@@ -220,7 +220,7 @@ VIEWS.reports=async function(){
 const baseSetup=VIEWS.setup;
 VIEWS.setup=async function(){
   await baseSetup();
-  $$('#v-setup .panel').forEach((pnl,i)=>pageDom(pnl.querySelector('tbody'),'tr','setup-'+i,8));
+  $$('#v-setup .panel').forEach((pnl,i)=>pageDom(pnl.querySelector('tbody'),'tr','setup-'+i,12));
   const f=$('#impFile');if(!f)return;
   const zone=document.createElement('label');zone.className='dropzone';zone.innerHTML='<b>Drop your spreadsheet here</b><span class="muted">or click to choose a CSV file. You\'ll see a preview before anything is saved.</span>';
   f.before(zone);zone.appendChild(f);f.style.display='none';

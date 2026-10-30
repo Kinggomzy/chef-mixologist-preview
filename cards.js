@@ -10,7 +10,7 @@ function renderInwardDockets(){
   if(!box){box=Object.assign(document.createElement('div'),{id:'dockets',className:'dockets'});box.style.padding='16px 18px 20px';wrap.after(box)}
   const list=POS.filter(p=>!S.focus||(S.focus.kind==='supplier'?p.sup===S.focus.key:S.focus.kind==='po'?p.po===S.focus.key:true));
   if(!list.length){box.innerHTML=`<p class="muted">${S.focus?'No open purchase orders for this.':'No open purchase orders. Raise one from Replenishment.'}</p>`;return}
-  const pgD=paginate('dockets',list,9,JSON.stringify([list.length,S.focus]));
+  const pgD=paginate('dockets',list,fitSize(270,18,3,36),JSON.stringify([list.length,S.focus]));
   box.innerHTML=pgD.rows.map(p=>{
     const lines=Object.entries(p.lines),tot=lines.reduce((a,[s,q])=>a+q*(bySku[s]?bySku[s].cost:0),0);
     return `<article class="docket edge edge-${p.late?'bad':p.day===0?'warn':'info'}" style="--hole:var(--surface)" aria-label="Purchase order ${esc(p.po)}">

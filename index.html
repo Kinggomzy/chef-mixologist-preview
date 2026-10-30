@@ -372,13 +372,13 @@ body.d-open .drawer{transform:none}
       <section class="view" id="v-replenish">
         <div class="page-head"><div><h1>Replenishment</h1><p>Items at or below their reorder point, grouped by supplier. Quantities top stock back up to the maximum level.</p></div>
           <div class="seg" role="group" aria-label="Service level"><button data-sl="1.28">90% service</button><button data-sl="1.65" aria-pressed="true">95% service</button><button data-sl="2.33">99% service</button></div></div>
-        <details class="formula-wrap" open><summary>How the quantities are worked out</summary>
+        <div id="repl"></div>
+        <details class="formula-wrap"><summary>How the quantities are worked out</summary>
         <div class="formula">
           <div><b>Safety stock</b><code>z × σ daily use × √lead time</code><br>Buffer against busy days and late deliveries.</div>
           <div><b>Reorder point</b><code>avg daily use × lead time + safety stock</code><br>Order when on hand plus on order falls to this.</div>
           <div><b>Order quantity</b><code>max level − (on hand + on order)</code><br>Max level covers lead time plus a 7-day review cycle, rounded up to the supplier's pack size.</div>
         </div></details>
-        <div id="repl"></div>
       </section>
 
       <!-- MOVEMENTS -->

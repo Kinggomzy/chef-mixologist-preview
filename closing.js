@@ -12,7 +12,7 @@ VIEWS.closing=async function(){
       <h3>${esc(m.label)}</h3>
       <dl class="num"><dt>Closing stock</dt><dd>${c?inr(c.closing):'—'}</dd><dt>Used</dt><dd>${c?inr(c.usage):'—'}</dd></dl>
       <small>${c?`Closed by ${esc(c.closedBy)} · ${new Date(c.closedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}`:m.current?'Closes after the month ends':esc(m.why||'Not closed yet')}</small></button>`};
-  const pgM=paginate('mclose',d.months,10,String(d.months.length));
+  const pgM=paginate('mclose',d.months,fitSize(190,14,3),String(d.months.length));
   body.innerHTML=`<div class="mcloses">${pgM.rows.map(card).join('')}</div>${pgM.html}<div id="closeDetail" style="margin-top:22px"></div>
     ${d.reopened.length?panel('Reopened closes','Kept for the record',table(['Month','>Closing stock','Reopened by','Reason'],d.reopened.map(p=>`<tr><td>${esc(p.label)}</td><td class="r num">${inr(p.closing)}</td><td>${esc(p.reopenedBy)} · ${new Date(p.reopenedAt).toLocaleDateString('en-IN')}</td><td>${esc(p.reopenReason)}</td></tr>`))):''}`;
   body.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{CLOSE_SEL=b.dataset.m;showMonth(d)});

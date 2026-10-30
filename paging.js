@@ -12,6 +12,13 @@ function paginate(key,list,size,sig=''){
   const from=(st.p-1)*size;
   return {rows:list.slice(from,from+size),offset:from,html:pages>1?pagerHtml(key,st.p,pages,list.length,from,size):''};
 }
+/* page size for a card grid: whole rows of cards, so a page never ends on a half-empty row.
+   minCard and gap match the grid's CSS; `pad` is the horizontal padding around the grid. */
+function fitSize(minCard,gap,rows,pad=0){
+  const w=(document.querySelector('.view.on')||document.body).clientWidth-pad;
+  const cols=Math.max(1,Math.floor((w+gap)/(minCard+gap)));
+  return Math.ceil(Math.max(cols*rows,12)/cols)*cols;  // at least a dozen cards, in whole rows
+}
 function pagerHtml(key,p,pages,total,from,size){
   const nums=[...new Set([1,p-1,p,p+1,pages])].filter(n=>n>=1&&n<=pages).sort((a,b)=>a-b);
   let prev=0,btns='';
