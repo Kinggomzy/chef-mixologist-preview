@@ -1112,3 +1112,14 @@ label{align-self:stretch}
   .page-head .head-acts > .search:focus-within svg{color:var(--text-3);stroke:var(--text-3)}
   .page-head .head-acts > .search:focus-within input{position:static;opacity:1;flex:1;height:100%;padding:0 0 0 2px;cursor:text}
 }
+
+/* Hamburger layouts: item count on the left, then sort, filter, cards and table as icons on one row */
+@media (max-width:860px){
+  .toolbar:has(> .fm-btns){flex-wrap:nowrap;gap:8px}
+  .toolbar:has(> .fm-btns) > .result-count{margin-right:auto;white-space:nowrap}
+  .toolbar:has(> .fm-btns) > .grow{display:none}
+  .toolbar > .fm-btns{margin-left:0}
+  .toolbar > .seg[aria-label=Layout]{flex:none;margin-left:0}
+  .seg[aria-label=Layout] button{font-size:0;gap:0;padding:0;width:34px;height:32px;display:inline-grid;place-items:center}
+  .seg[aria-label=Layout] button svg{width:16px;height:16px;margin:0}
+}
