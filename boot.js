@@ -23,6 +23,7 @@
     (RAW.prep.batches || []).forEach(function (b, i) { b.id = b.id || 500 + i; });
     (RAW.suppliers.returns || []).forEach(function (r, i) { r.id = r.id || 600 + i; });
     Object.keys(RAW.wastage || {}).forEach(function (k) { ((RAW.wastage[k] || {}).entries || []).forEach(function (e, i) { e.id = e.id || 700 + i; }); });
+    (RAW.roles.roles || []).forEach(function (r) { r.locked = r.name === 'Owner / Admin'; });
     DB = clone(RAW); });
   // the static preview has no offline helper
   try { if (navigator.serviceWorker) { navigator.serviceWorker.register = function () { return Promise.resolve(); }; navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }); } } catch (e) {}
@@ -133,7 +134,7 @@
       case (m = path.match(/^people\/(\d+)\/access\/$/)) !== null: {
         var s = DB.team.staff.find(function (x) { return x.id === +m[1]; }) || { roles: [] }, from = {};
         DB.roles.roles.forEach(function (r) { if (s.roles.indexOf(r.name) >= 0) Object.keys(r.grid).forEach(function (k) { from[k] = r.grid[k]; }); });
-        return [200, { overrides: {}, fromRoles: from }];
+        return [200, { overrides: (DB.personAccess || {})[m[1]] || {}, fromRoles: from }];
       }
     }
     return [404, { detail: 'Not found in the preview: ' + path }];
@@ -411,6 +412,15 @@
     if ((m = path.match(/^roles\/(\d+)\/$/))) { var ro = DB.roles.roles.find(function (x) { return x.id === +m[1]; }); if (method === 'PATCH' && ro && b.grid) ro.grid = b.grid; if (method === 'DELETE') DB.roles.roles = DB.roles.roles.filter(function (x) { return x.id !== +m[1]; }); return [200, {}]; }
     if (path === 'access-requests/' && method === 'POST') { DB['access-requests'].requests.unshift({ id: 50 + DB['access-requests'].requests.length, who: OWNER, userId: 2, area: b.area, areaLabel: b.area, action: b.action || 'read', reach: 'all', hours: +b.hours || 2, reason: b.reason || '', status: 'pending', created: isoNow(), decidedBy: null, note: '', expires: null }); return [201, {}]; }
     if ((m = path.match(/^access-requests\/(\d+)\/(approve|reject|cancel)\/$/))) { var ar = DB['access-requests'].requests.find(function (x) { return x.id === +m[1]; }); if (ar) { ar.status = m[2] === 'approve' ? 'approved' : m[2] === 'reject' ? 'rejected' : 'cancelled'; ar.decidedBy = OWNER; ar.note = b.note || ''; } return [200, {}]; }
+    if ((m = path.match(/^roles\/(\d+)\/$/))) {
+      var rl = DB.roles.roles.find(function (r) { return r.id === +m[1]; });
+      if (!rl) return err(404, 'role', 'Unknown role');
+      if (method === 'DELETE') { if (rl.system) return err(400, 'role', 'Built-in roles cannot be deleted'); DB.roles.roles = DB.roles.roles.filter(function (r) { return r.id !== rl.id; }); return [204, null]; }
+      if (b.grid && rl.locked) return err(400, 'role', 'The Owner / Admin role always has full access');
+      if (b.grid) rl.grid = b.grid; if (b.description !== undefined) rl.description = b.description; if (b.name && !rl.system) rl.name = b.name;
+      audit('changed access for the ' + rl.name + ' role', 'access'); return [200, { id: rl.id }];
+    }
+    if ((m = path.match(/^people\/(\d+)\/access\/$/)) && method === 'PUT') { DB.personAccess = DB.personAccess || {}; DB.personAccess[m[1]] = b.overrides || {}; audit("changed one person's access", 'access'); return [200, {}]; }
     if ((m = path.match(/^people\/(\d+)\/access\/$/))) return [200, {}];
     // ----- masters
     if ((m = path.match(/^supplier\/(\d+)?\/?$/))) {

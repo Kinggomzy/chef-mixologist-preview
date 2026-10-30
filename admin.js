@@ -142,7 +142,7 @@ async function renderNotifications(){
   const tone={high:'bad',normal:'info'};
   const draw=()=>{const pg=paginate('notes',d.rows,15,NOTE_SHOW+d.rows.length);
     const days=[...new Set(pg.rows.map(n=>new Date(n.at).toDateString()))];
-    body.innerHTML=(d.rows.length?days.map(day=>`<section class="feed-day"><h3>${new Date(day).toDateString()===new Date().toDateString()?'Today':new Date(day).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'})}</h3><div class="feed">${pg.rows.filter(n=>new Date(n.at).toDateString()===day).map(n=>`<div class="feed-row ${n.read?'':'unread'}" data-n="${n.id}" data-link="${esc(n.link)}" tabindex="0"><span class="bubble ${tone[n.priority]||'info'}">${n.priority==='high'?'!':'•'}</span><div><b>${esc(n.title)}</b><small>${new Date(n.at).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})}${n.body?' · '+esc(n.body):''}</small></div>${n.read?'':'<span class="sticker copper">New</span>'}</div>`).join('')}</div></section>`).join(''):`<div class="panel empty"><b>${NOTE_SHOW==='unread'?'No unread alerts':'No alerts yet'}</b>You'll see stock, delivery and account alerts here.</div>`)+pg.html;
+    body.innerHTML=(d.rows.length?days.map(day=>`<section class="feed-day"><h3>${new Date(day).toDateString()===new Date().toDateString()?'Today':new Date(day).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'})}</h3><div class="feed">${pg.rows.filter(n=>new Date(n.at).toDateString()===day).map(n=>`<div class="feed-row ${n.read?'':'unread'}" data-n="${n.id}" data-link="${esc(n.link)}" tabindex="0"><span class="bubble ${tone[n.priority]||'info'}">${n.priority==='high'?'!':'•'}</span><div><b>${esc(n.title)}</b><small>${new Date(n.at).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})}${n.body?' · '+esc(n.body):''}</small></div>${n.read?'':'<span class="unread-dot" role="img" aria-label="Unread" title="Unread"></span>'}</div>`).join('')}</div></section>`).join(''):`<div class="panel empty"><b>${NOTE_SHOW==='unread'?'No unread alerts':'No alerts yet'}</b>You'll see stock, delivery and account alerts here.</div>`)+pg.html;
     body.querySelectorAll('[data-n]').forEach(r=>r.onclick=async()=>{await api(CM+'notifications/',{method:'POST',json:{ids:[+r.dataset.n]}}).catch(()=>{});pollBell();const l=r.dataset.link;if(l&&VIEWS[l])go(l);else renderNotifications()});
     wirePager(body,draw)};
   draw();
@@ -161,7 +161,7 @@ async function renderPrefs(){
   const ps=await pushState();
   const groups=[...new Set(d.prefs.map(p=>p.group))];
   body.innerHTML=panel('Browser notifications',`${d.push.devices} device${d.push.devices===1?'':'s'} turned on for your account`,`
-    <p class="muted" style="margin-top:0">Get an alert on this device even when the app is closed. Alerts show only a title, never prices, suppliers or quantities.</p>
+    <p class="muted" style="margin:0 0 14px">Get an alert on this device even when the app is closed. Alerts show only a title, never prices, suppliers or quantities.</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap">${!d.push.enabled?'<span class="muted">Browser notifications are not set up on the server yet.</span>':!ps.supported?'<span class="muted">This browser does not support notifications. On iPhone, install the app to the home screen first.</span>':
       ps.sub?`${btn('Turn off on this device','id="pushOff"')}${btn('Send a test','id="pushTest"')}`:`<button class="btn btn-primary" id="pushOn">Turn on for this device</button>`}
       ${ps.permission==='denied'?'<span class="muted">Notifications are blocked for this site in your browser settings.</span>':''}</div>`)+
@@ -238,43 +238,48 @@ let ROLES=null,ROLE_SEL=null;
 function gridTable(areas,cell,editable,extraCol){
   const groups=[...new Set(areas.map(a=>a.group))];
   return `<div class="tablewrap"><table class="t grid"><thead><tr><th>Access</th>${ACT.map(a=>`<th class="c">${ACT_LABEL[a]}</th>`).join('')}<th>Reach</th>${extraCol?'<th></th>':''}</tr></thead><tbody>
-    ${groups.map(g=>`<tr class="grp"><td colspan="${8}">${esc(g)}</td></tr>`+areas.filter(a=>a.group===g).map(a=>`<tr><td><b>${esc(a.label)}</b>${a.risk!=='standard'?` <span class="risk ${a.risk}">${a.risk==='critical'?'Critical':'Sensitive'}</span>`:''}</td>
+    ${groups.map(g=>`<tr class="grp"><td colspan="${8}"><span class="grp-l">${esc(g)}</span></td></tr>`+areas.filter(a=>a.group===g).map(a=>`<tr><td><b>${esc(a.label)}</b>${a.risk!=='standard'?` <span class="risk ${a.risk}">${a.risk==='critical'?'Critical':'Sensitive'}</span>`:''}</td>
       ${ACT.map(x=>`<td class="c">${a.actions.includes(x)?cell(a,x):'<span class="muted">–</span>'}</td>`).join('')}
       <td>${a.reach?reachCell(a,editable):'<span class="muted">All areas</span>'}</td></tr>`).join('')).join('')}</tbody></table></div>`;
 }
 let reachCell=()=>'';
 async function renderPermissions(){
-  const body=view('permissions','Staff roles & access','What each role can do. Built-in roles are fixed; create a custom role or change one person\'s access for anything different.',API.can.roles?'<button class="btn btn-primary" id="newRole">New custom role</button>':'');
+  const body=view('permissions','Staff roles & access','What each role can do. Tick or untick to give or take away access for a whole role, or open a person in Staff & teams to change just their access.',API.can.roles?'<button class="btn btn-primary" id="newRole">New custom role</button>':'');
   const d=await load(body,CM+'roles/');if(!d)return;ROLES=d;
   if(!ROLE_SEL||!d.roles.some(r=>r.id===ROLE_SEL))ROLE_SEL=d.roles[0]?.id;
   if($('#newRole'))$('#newRole').onclick=()=>formModal('New custom role','Start from an existing role and adjust',`<label>Role name<input name="name" required maxlength="150"></label>
     <label>Description<input name="description" maxlength="200"></label><label>Copy access from<select name="copyFrom"><option value="">Nothing (start empty)</option>${d.roles.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select></label>`,'Create role',async(f,close)=>{
     const r=await api(CM+'roles/',{method:'POST',json:{name:f.get('name'),description:f.get('description'),copyFrom:+f.get('copyFrom')||null}});close();ROLE_SEL=r.id;renderPermissions()});
-  const role=d.roles.find(r=>r.id===ROLE_SEL),edit=!role.system&&API.can.roles;
+  const role=d.roles.find(r=>r.id===ROLE_SEL),edit=!role.locked&&API.can.roles;
   const grid={...role.grid};
   reachCell=(a,editable)=>{const keys=a.actions.map(x=>`${a.key}.${x}`).filter(k=>grid[k]);const cur=keys.length?grid[keys[0]]:'own';
     return editable?`<select data-reach="${a.key}" ${keys.length?'':'disabled'}><option value="own" ${cur==='own'?'selected':''}>Own areas</option><option value="all" ${cur==='all'?'selected':''}>All areas</option></select>`:`<span>${keys.length?(cur==='all'?'All areas':'Own areas'):'—'}</span>`};
   body.innerHTML=`<div class="panel" style="margin-bottom:16px"><div class="panel-b"><div class="role-chips">${d.roles.map(r=>`<button class="chip" data-role="${r.id}" aria-pressed="${r.id===ROLE_SEL}">${esc(r.name)}<em>${r.members}</em></button>`).join('')}</div>
-    <p style="margin:12px 0 0"><b>${esc(role.name)}:</b> ${esc(role.description||'Custom role')}${role.system?' <span class="sticker soft">Built-in</span>':''}</p></div></div>
+    <label class="field role-select"><select id="roleSel" aria-label="Role">${d.roles.map(r=>`<option value="${r.id}" ${r.id===ROLE_SEL?'selected':''}>${esc(r.name)} (${r.members})</option>`).join('')}</select></label>
+    <p style="margin:12px 0 0"><b>${esc(role.name)}:</b> ${esc(role.description||'Custom role')}${role.system?' <span class="sticker soft">Built-in</span>':''}${role.locked?' <span class="sticker soft">Always full access</span>':''}</p></div></div>
     <div class="panel">${gridTable(d.areas,(a,x)=>`<input type="checkbox" data-cell="${a.key}.${x}" ${grid[`${a.key}.${x}`]?'checked':''} ${edit?'':'disabled'} aria-label="${esc(a.label)} ${x}">`,edit)}
-    ${edit?`<div class="panel-b" style="display:flex;gap:8px;justify-content:flex-end">${btn('Delete role','id="delRole" style="color:var(--rust-ink)"')}<button class="btn btn-primary" id="saveRole">Save access</button></div>`:''}</div>`;
+    ${edit?`<div class="panel-b" style="display:flex;gap:8px;justify-content:flex-end">${role.system?'':btn('Delete role','id="delRole" style="color:var(--rust-ink)"')}<button class="btn btn-primary" id="saveRole">Save access</button></div>`:''}</div>`;
   body.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{ROLE_SEL=+b.dataset.role;renderPermissions()});
+  const rs=$('#roleSel');if(rs)rs.onchange=()=>{ROLE_SEL=+rs.value;renderPermissions()};
   if(!edit)return;
   body.querySelectorAll('[data-cell]').forEach(c=>c.onchange=()=>{const a=c.dataset.cell.split('.')[0],area=d.areas.find(x=>x.key===a);
     if(c.checked)grid[c.dataset.cell]=area.reach?(body.querySelector(`[data-reach="${a}"]`)?.value||'own'):'all';else delete grid[c.dataset.cell];
     const sel=body.querySelector(`[data-reach="${a}"]`);if(sel)sel.disabled=!area.actions.some(x=>grid[`${a}.${x}`])});
   body.querySelectorAll('[data-reach]').forEach(s=>s.onchange=()=>{Object.keys(grid).filter(k=>k.startsWith(s.dataset.reach+'.')).forEach(k=>grid[k]=s.value)});
   $('#saveRole').onclick=async()=>{try{await api(CM+`roles/${role.id}/`,{method:'PATCH',json:{grid}});toast('Access saved');renderPermissions()}catch(e){fail(e)}};
-  $('#delRole').onclick=()=>confirmModal(`Delete ${esc(role.name)}?`,'Only possible when nobody has this role.','Delete',async()=>{await api(CM+`roles/${role.id}/`,{method:'DELETE'});ROLE_SEL=null;toast('Role deleted');renderPermissions()});
+  if($('#delRole'))$('#delRole').onclick=()=>confirmModal(`Delete ${esc(role.name)}?`,'Only possible when nobody has this role.','Delete',async()=>{await api(CM+`roles/${role.id}/`,{method:'DELETE'});ROLE_SEL=null;toast('Role deleted');renderPermissions()});
 }
 async function personAccess(s){
   const [d,ro]=await Promise.all([api(CM+`people/${s.id}/access/`),ROLES?Promise.resolve(ROLES):api(CM+'roles/')]).catch(e=>{fail(e);return[]});if(!d)return;
   const ov={...d.overrides};
   const cell=(a,x)=>{const k=`${a.key}.${x}`,o=ov[k],fromRole=d.fromRoles[k];
-    return `<select data-ov="${k}" class="ov ${o?o.effect:''}"><option value="">${fromRole?'✓ role':'– role'}</option><option value="grant" ${o?.effect==='grant'?'selected':''}>Allow</option><option value="deny" ${o?.effect==='deny'?'selected':''}>Block</option></select>`};
+    const reach=a.reach?(o?.reach==='own'?'own':'all'):'all';
+    return `<select data-ov="${k}" class="ov ${o?o.effect:''}" aria-label="${esc(a.label)} ${x}"><option value="">${fromRole?'✓ role':'– role'}</option>
+      ${a.reach?`<option value="grant:own" ${o?.effect==='grant'&&reach==='own'?'selected':''}>Allow: own areas</option><option value="grant:all" ${o?.effect==='grant'&&reach==='all'?'selected':''}>Allow: all areas</option>`:`<option value="grant:all" ${o?.effect==='grant'?'selected':''}>Allow</option>`}
+      <option value="deny" ${o?.effect==='deny'?'selected':''}>Block</option></select>`};
   reachCell=()=>'<span class="muted">From role</span>';
   formModal(`Access for ${esc(s.name)}`,'Changes here apply to this person only, on top of their roles',gridTable(ro.areas,cell,false),'Save access',async(f,close)=>{
-    $$('#modal-box [data-ov]').forEach(sel=>{if(sel.value)ov[sel.dataset.ov]={effect:sel.value,reach:'all'};else delete ov[sel.dataset.ov]});
+    $$('#modal-box [data-ov]').forEach(sel=>{if(sel.value){const [effect,reach]=sel.value.split(':');ov[sel.dataset.ov]={effect,reach:reach||'all'}}else delete ov[sel.dataset.ov]});
     await api(CM+`people/${s.id}/access/`,{method:'PUT',json:{overrides:ov}});close();toast('Access saved')});
   $('#modal-box').classList.add('wide');
 }

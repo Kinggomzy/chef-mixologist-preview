@@ -1396,3 +1396,35 @@ select,textarea,input:not([type=checkbox]):not([type=radio]):not([type=range]):n
   .pl-bar .field{grid-column:1/-1}
   .pl-bar .btn,.pl-bar label.btn{padding-left:10px;padding-right:10px;white-space:nowrap}
 }
+
+/* Hamburger layouts: the top bar runs edge to edge at the very top of the screen; the breathing room is inside it */
+@media (max-width:860px){
+  .side{top:0;left:0;right:0;height:68px;margin:0;border-radius:0;padding:14px 14px 8px}
+  .side.open{bottom:0;right:auto;height:auto;padding:18px 14px 14px}
+  .main{padding-top:68px}
+}
+
+/* Unread notifications: a small blinking red dot instead of a "New" label */
+.unread-dot{width:10px;height:10px;border-radius:50%;background:#D12B3F;flex:none;justify-self:end;align-self:center;box-shadow:0 0 0 3px rgba(209,43,63,.18);animation:unreadBlink 1.4s ease-in-out infinite}
+@keyframes unreadBlink{0%,100%{opacity:1}50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.unread-dot{animation:none}}
+
+/* Access grid (roles and permissions): it scrolls sideways on small screens instead of squeezing, and its headings stay whole */
+.tablewrap:has(> .t.grid){overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tablewrap .t.grid{width:auto;min-width:100%}
+.tablewrap .t.grid th,.tablewrap .t.grid td{white-space:nowrap;overflow-wrap:normal;word-break:normal;hyphens:manual}
+.tablewrap .t.grid th.c,.tablewrap .t.grid td.c{min-width:64px;width:auto;padding-left:8px;padding-right:8px;font-size:var(--fs-xs)}
+.tablewrap .t.grid td:first-child,.tablewrap .t.grid th:first-child{position:sticky;left:0;z-index:2;background:var(--surface);min-width:170px;white-space:normal;box-shadow:1px 0 0 var(--line)}
+.tablewrap .t.grid tr.grp td:first-child{background:var(--surface-2)}
+@media (max-width:860px){.tablewrap .t.grid{min-width:560px}}
+.tablewrap .t.grid tr.grp td:first-child{position:static;box-shadow:none}
+.t.grid .grp-l{position:sticky;left:12px;display:inline-block}
+
+/* Roles: a dropdown on small screens, the chips on wide ones */
+.role-select{display:none}
+@media (max-width:860px){
+  .role-chips{display:none}
+  .role-select{display:flex;width:100%;box-sizing:border-box}
+  .role-select select{width:100%;flex:1 1 auto}
+}
+@media (max-width:860px){.side,.side.open{border-radius:0}}
