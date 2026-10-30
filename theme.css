@@ -1132,3 +1132,10 @@ label{align-self:stretch}
   .toolbar > .fm-btns{margin-left:auto}
   .toolbar > .result-count ~ .fm-btns{margin-left:0}
 }
+/* Menu drawer: the whole drawer scrolls, so My profile and Sign out come last instead of floating at the bottom */
+@media (max-width:860px){
+  .side.open{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+  .side.open .menu{flex:none;overflow:visible;min-height:auto}
+  .side.open .side-foot{margin-top:6px;flex:none}
+  .side.open .side-out{flex:none}
+}
