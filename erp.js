@@ -228,7 +228,7 @@ async function renderEvents(){
     <div class="panel ev-reg"><div class="panel-h"><h2>Excise register</h2><p>${e.notes?esc(e.notes):'Issued, returned and consumed for this licence'}</p></div><div class="panel-b">
     ${table(['Liquor','>Issued','>Returned','>Consumed','>Pegs (30 ml)',...(API.can.pricing?['>Value']:[])],e.register.map(l=>`<tr><td>${esc(l.item)}</td><td class="r num">${num(l.issued)}</td><td class="r num">${num(l.returned)}</td><td class="r num"><b>${num(l.consumed)}</b> ${esc(l.unit)}</td><td class="r num">${num(l.pegs)}</td>${API.can.pricing?`<td class="r num">${l.value==null?'—':inr(l.value)}</td>`:''}</tr>`),'No liquor issued yet')}
     </div></div></div>`;
-  body.innerHTML=`${d.events.map(ev).join('')||'<div class="panel empty"><b>No events yet</b>Create one when a one-day licence is granted.</div>'}<div style="max-width:560px">${panel('Event liquor store','Locked, managers only',stock)}</div>`;
+  body.innerHTML=`${d.events.map(ev).join('')||'<div class="panel empty"><b>No events yet</b>Create one when a one-day licence is granted.</div>'}<div>${panel('Event liquor store','Locked, managers only',stock)}</div>`;
   const liquorOpts=d.stock.map(s=>`<option value="${s.id}">${esc(s.name)} · ${num(s.onHand)} ${esc(s.unit)} in store</option>`).join('');
   body.querySelectorAll('[data-ev]').forEach(b=>b.onclick=async()=>{const id=b.dataset.id,act=b.dataset.ev;
     if(act==='open'||act==='close'){try{await api(`/plugin/cm/events/${id}/${act}/`,{method:'POST',json:{}});toast(act==='open'?'Service opened':'Event closed — register is final');renderEvents()}catch(e){fail(e)}return}
@@ -271,23 +271,20 @@ function importSales(d){
 }
 
 /* ================= module 7: owner & partner report ================= */
-let REPORT_PERIOD='month';
+let REPORT_PERIOD='month',REPORTD=null;
 async function renderReports(){
   const body=view('reports','Reports and Analytics','Sales, food cost, margin, waste and supplier prices. Food cost uses recipe cost of what was sold; actual usage shows what really left the stores.',
     `<span class="seg">${[['month','This month'],['last_month','Last month'],['quarter','Quarter']].map(([k,l])=>`<button data-rp="${k}" aria-pressed="${REPORT_PERIOD===k}">${l}</button>`).join('')}</span>`);
   $$('[data-rp]').forEach(b=>b.onclick=()=>{REPORT_PERIOD=b.dataset.rp;renderReports()});
   const r=await load(body,`/plugin/cm/reports/overview/?period=${REPORT_PERIOD}`);if(!r)return;
   const fcOver=r.foodCostPct!=null&&r.foodCostPct>r.targetFoodCostPct;
-  const max=Math.max(...r.weeks.map(w=>Math.max(w.sales,w.spend)),1),W=560,H=200,bw=30,x=i=>40+i*((W-60)/r.weeks.length),y=v=>H-24-(v/max)*(H-40);
-  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Weekly sales and ingredient spend">`;
-  r.weeks.forEach((w,i)=>{svg+=`<rect x="${x(i)}" y="${y(w.sales)}" width="${bw}" height="${H-24-y(w.sales)}" rx="5" style="fill:var(--night)"><title>Week of ${w.label}: sales ${inr(w.sales)}</title></rect><rect x="${x(i)+bw+4}" y="${y(w.spend)}" width="${bw}" height="${H-24-y(w.spend)}" rx="5" style="fill:var(--turmeric)"><title>Week of ${w.label}: spend ${inr(w.spend)}</title></rect><text x="${x(i)+bw}" y="${H-6}" text-anchor="middle" font-size="11" style="fill:var(--text-3)">${w.label}</text>`});
-  svg+='</svg><div class="legend"><span><i style="background:var(--night);height:10px;width:10px"></i>Sales</span><span><i style="background:var(--turmeric);height:10px;width:10px"></i>Ingredient spend</span></div>';
+  REPORTD=r;
   body.innerHTML=`<div class="panel" style="margin-bottom:16px"><div class="panel-b"><p style="font-size:17px;margin:0">${r.foodCostPct==null?'No sales imported for this period yet.':`Food cost is <b>${r.foodCostPct}%</b> ${fcOver?'— over':'— within'} the ${r.targetFoodCostPct}% target.`}${r.priceAlerts.length?` ${esc(r.priceAlerts[0].name)} is ${r.priceAlerts[0].change>0?'up':'down'} ${Math.abs(r.priceAlerts[0].change)}% at ${esc(r.priceAlerts[0].supplier)}.`:''}</p></div></div>
    <div class="kpis bento b9">${kpi('Sales',inrK(r.sales),r.salesChange==null?'No earlier period to compare':signed(r.salesChange)+' vs previous period')}${kpi('Food cost (recipes)',pct(r.foodCostPct),`target ${r.targetFoodCostPct}%`,fcOver?'var(--melon-ink)':'var(--lime-ink)')}${kpi('Actual usage',pct(r.actualFoodCostPct),`${inrK(r.actualUsageValue)} left the stores`,'var(--turmeric-ink)')}
      ${kpi('Gross margin',pct(r.grossMarginPct),r.grossMarginChange==null?'':`${r.grossMarginChange>0?'+':''}${r.grossMarginChange} pts`)}${kpi('Guests',num(r.covers),signed(r.coversChange))}${kpi('Average bill',r.avgBill==null?'—':inr(r.avgBill),signed(r.avgBillChange))}
      ${kpi('Ingredient spend',inrK(r.spend),signed(r.spendChange,false),'var(--turmeric)')}${kpi('Waste',inrK(r.waste||0),'this period','var(--melon-ink)')}${kpi('Stock on hand',inrK(r.stockValue),'at current prices','var(--night-3)')}</div>
    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:16px">
-    ${panel('Sales vs ingredient spend','Weekly',`<div class="chart">${svg}</div>`)}
+    ${panel('Sales vs ingredient spend','Weekly, click a week for detail',`<div class="chart" id="weeksChart"></div>`)}
     ${panel('Where waste happened','Top items',table(['Item','>Value'],r.wasteTop.map(w=>`<tr><td>${xlItemName(w.item)}</td><td class="r num">${inr(w.value)}</td></tr>`),'No waste recorded'))}
     ${panel('Supplier price changes','5% or more since the last order',table(['Item','Supplier','>Change'],r.priceAlerts.map(a=>`<tr><td>${xlItemName(a.name)}</td><td>${xl('supplier',a.supplier)}</td><td class="r">${signed(a.change,false)}</td></tr>`),'No big price moves'))}
    </div>

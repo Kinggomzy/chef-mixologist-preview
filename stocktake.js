@@ -29,11 +29,13 @@ VIEWS.stocktake=async function(){
     <small class="num">${t.counted} of ${t.total} counted${t.blind?' · blind':''}</small>
     <b class="take-v num">${t.status==='posted'&&money&&t.valueDiff!=null?signedInr(t.valueDiff):''}</b></button>`;
   const open=d.takes.filter(t=>['counting','review'].includes(t.status)),done=d.takes.filter(t=>!['counting','review'].includes(t.status));
-  body.innerHTML=(open.length?`<div class="menu-h"><h2>In progress</h2><span>${open.length}</span></div><div class="takes">${open.map(card).join('')}</div>`:
+  const pgT=paginate('take-open',open,6,String(open.length)),pgF=paginate('take-done',done,6,String(done.length));
+  body.innerHTML=(open.length?`<div class="menu-h"><h2>In progress</h2><span>${open.length}</span></div><div class="takes">${pgT.rows.map(card).join('')}</div>${pgT.html}`:
       `<div class="panel empty"><b>No stock-take in progress</b>${d.canStart.length?'Start one for a storage area to count everything kept there.':'Your role can view stock-takes but not start one.'}</div>`)+
-    (done.length?`<div class="menu-h" style="margin-top:22px"><h2>Finished</h2><span>${done.length}</span></div><div class="takes">${done.slice(0,12).map(card).join('')}</div>`:'')+
+    (done.length?`<div class="menu-h" style="margin-top:22px"><h2>Finished</h2><span>${done.length}</span></div><div class="takes">${pgF.rows.map(card).join('')}</div>${pgF.html}`:'')+
     '<div id="stDiff" style="margin-top:22px"></div>';
   body.querySelectorAll('[data-take]').forEach(b=>b.onclick=()=>{TAKE=+b.dataset.take;VIEWS.stocktake()});
+  wirePager(body,()=>VIEWS.stocktake());
   renderDifferences();
 };
 

@@ -948,3 +948,150 @@ label{align-self:stretch}
 .fm-group .field select{width:100%}
 .fm-group .chips{display:flex;flex-wrap:wrap;gap:8px}
 .fm-f{display:flex;justify-content:space-between;gap:10px;padding:14px 20px 18px}
+
+/* Overview: both columns end level, no empty space under the shorter one */
+.grid-ov{align-items:stretch}
+.grid-ov > .stack{display:flex;flex-direction:column}
+.grid-ov > .stack > .panel:last-child{flex:1}
+
+/* Replenishment lines: the quantity stepper sits centred in its own column, level with the middle of the row */
+.basket li{grid-template-columns:22px 40px minmax(0,1fr) 112px}
+.basket li > .stepper{justify-self:center;align-self:center}
+
+/* Sort and filter icons always sit at the right end of the toolbar */
+.toolbar > .fm-btns{margin-left:auto}
+.toolbar > .seg{margin-left:0}
+.toolbar > .fm-btns + .seg{margin-left:4px}
+.ck-hit{fill:transparent;cursor:pointer;outline:none}
+.ck-hit:hover,.ck-hit:focus-visible{fill:rgba(180,66,14,.09)}
+.ck-hit.sel{fill:rgba(180,66,14,.16)}
+.ck-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:8px}
+.ck-bar .seg{margin-right:auto}
+.ck-key{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:var(--fs-xs);color:var(--text-2);cursor:pointer}
+.ck-key i{width:10px;height:10px;border-radius:3px;background:var(--c)}
+.ck-key[aria-pressed=false]{opacity:.5;text-decoration:line-through}
+.ck-key:focus-visible{outline:2px solid var(--copper);outline-offset:1px}
+.ck-sum{font-size:var(--fs-sm);color:var(--text-2);margin:0 0 6px}
+.ck-detail{margin-top:10px;padding:12px 14px;border-radius:12px;background:var(--surface-2);display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;font-size:var(--fs-sm)}
+.ck-detail b{font-family:var(--font-display);font-size:var(--fs-md)}
+.ck-detail .btn{margin-left:auto}
+#ckTip{position:fixed;z-index:210;max-width:240px;padding:8px 11px;border-radius:10px;background:var(--espresso);color:var(--on-dark);font-size:var(--fs-xs);line-height:1.45;box-shadow:var(--lift);pointer-events:none;opacity:0;transition:opacity .1s}
+#ckTip.on{opacity:1}
+#ckTip .muted{color:var(--on-dark-2)}
+#health [data-hst]{cursor:pointer}
+#health [data-hst]:hover{filter:brightness(1.1)}
+
+/* Phones and small tablets: the top bar keeps search, Reorder and Receive; notifications and the profile live in the menu drawer */
+.side-out{display:none}
+@media (max-width:860px){
+  .topbar .site{display:none!important}
+  .side.open .side-out:not([hidden]){display:block;all:unset;box-sizing:border-box;display:block;text-align:center;padding:10px;border-radius:12px;cursor:pointer;color:var(--on-dark-2);box-shadow:var(--hairline);font-weight:var(--fw-medium)}
+  .side.open .side-out[hidden]{display:none}
+  .topbar{display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:10px}
+  /* search collapses to one button on the left of Reorder; it opens full width when tapped */
+  .topbar .search{order:0;flex:none;width:42px;height:42px;max-width:none;padding:0;margin:0;background:var(--surface);box-shadow:var(--lift-sm);border-radius:14px;display:grid;place-items:center;cursor:pointer;position:relative}
+  .topbar .search svg{pointer-events:none}
+  .topbar .search kbd{display:none}
+  .topbar .search input{position:absolute;inset:0;width:100%;height:100%;opacity:0;padding:0;cursor:pointer}
+  .topbar .search:focus-within{position:fixed;z-index:45;left:12px;right:12px;top:68px;width:auto;height:48px;margin:0;display:flex;align-items:center;gap:10px;padding:0 14px;box-shadow:var(--lift);cursor:text;background:var(--surface)}
+  .topbar .search:focus-within input{position:static;opacity:1;flex:1;height:100%;cursor:text}
+  /* the banner keeps its look but shrinks to a heading with its action button */
+  .page-head{padding:16px 18px;min-height:0;margin-bottom:14px;align-items:center!important}
+  .page-head p{display:none}
+  .page-head h1{font-size:var(--fs-xl)}
+  .page-head::after{opacity:.35}
+}
+@media (max-width:860px){.topbar .search svg{position:static!important;flex:none;margin:0}.topbar .search:focus-within input{padding:0 0 0 2px}}
+
+/* One row on phones and small tablets: heading, its action, then search, Reorder and Receive goods */
+@media (max-width:860px){
+  .page-head{position:relative;z-index:5;flex-wrap:wrap;gap:10px 12px}
+  .page-head > div:first-child{flex:1 1 auto;min-width:0}
+  .page-head > .head-acts{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;margin-left:auto}
+  .page-head .topbar{position:static;display:contents;padding:0;background:none;box-shadow:none}
+  .page-head .topbar > *{flex:none}
+  .page-head .topbar .search{margin:0}
+  .page-head .topbar .btn{white-space:nowrap}
+  .page-head .topbar .wide-only{display:none}
+}
+@media (min-width:600px) and (max-width:860px){
+  .page-head .topbar .wide-only{display:inline}
+}
+@media (max-width:860px){
+  .page-head .topbar .search{background:transparent;box-shadow:none;border:1px solid rgba(230,207,143,.5);color:var(--on-dark)}
+  .page-head .topbar .search:focus-within{background:var(--surface);color:var(--text);border-color:transparent;box-shadow:var(--lift)}
+}
+@media (max-width:860px){.page-head .topbar .search:not(:focus-within) svg{color:var(--on-dark);stroke:var(--on-dark)}}
+/* Heading row on small screens: every button has the same height and the same gold border */
+@media (max-width:860px){
+  .page-head .btn,.page-head .topbar .search:not(:focus-within){box-sizing:border-box;height:40px;min-height:40px;padding-top:0;padding-bottom:0;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(230,207,143,.5)!important}
+  .page-head .topbar .search:not(:focus-within){width:40px;padding:0}
+}
+
+/* Profile and other two-column admin pages: cards in a row share one height; role tags start on their own line */
+.admin-grid{align-items:stretch}
+.admin-grid > .panel{height:100%}
+.role-tags{display:flex;flex-wrap:wrap;gap:6px}
+
+/* Phones: search, Reorder and Receive goods sit in the menu drawer, not on the page */
+@media (max-width:600px){
+  .side:not(.open) > .topbar{display:none}
+  .side > .topbar{display:grid;gap:8px;padding:0;background:none;box-shadow:none;position:static}
+  .side > .topbar .search{position:relative;order:0;width:100%;height:42px;margin:0;padding:0 12px;display:flex;align-items:center;gap:8px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);box-shadow:none;color:var(--on-dark)}
+  .side > .topbar .search svg{position:static!important;color:var(--on-dark-2);stroke:var(--on-dark-2)}
+  .side > .topbar .search input{position:static;opacity:1;width:100%;height:100%;padding:0 0 0 2px;border:0;background:none;box-shadow:none;color:var(--on-dark);cursor:text}
+  .side > .topbar .search input::placeholder{color:var(--on-dark-2)}
+  .side > .topbar .search:focus-within{position:relative;left:auto;right:auto;top:auto;height:42px;width:100%;background:rgba(255,255,255,.12);border-color:var(--gold);box-shadow:none;color:var(--on-dark)}
+  .side > .topbar .search kbd{display:none}
+  .side > .topbar .btn{display:flex;width:100%;height:42px;justify-content:center;align-items:center}
+  .side > .topbar .btn-line{background:transparent;color:var(--on-dark);border:1px solid rgba(230,207,143,.5)}
+  .side > .topbar .wide-only{display:inline}
+  .side > .topbar .site{display:none!important}
+}
+@media (max-width:600px){.side > .topbar{width:100%;margin:0;justify-content:stretch;justify-items:stretch;flex:none;box-sizing:border-box}}
+
+/* Icon-only heading buttons (hamburger layouts) */
+@media (max-width:860px){.page-head .btn.btn-ico{width:40px;padding:0;gap:0}.page-head .btn.btn-ico svg{flex:none}}
+
+/* Install page: the single heading carries the app icon */
+.page-head h1 .ph-logo{width:44px;height:44px;border-radius:12px;vertical-align:middle;margin-right:14px;background:rgba(255,255,255,.08);padding:4px;box-sizing:border-box}
+
+/* Multi-line fields (addresses) look like every other field, and grow with the text */
+.calc textarea,.two textarea,#mform textarea,label > textarea{width:100%;box-sizing:border-box;min-height:84px;padding:9px 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:14px;font-weight:var(--fw-bold);line-height:1.45;resize:vertical}
+.calc textarea::placeholder,#mform textarea::placeholder{color:var(--text-3);font-weight:var(--fw-medium)}
+.calc textarea:focus,#mform textarea:focus{outline:2px solid var(--copper);outline-offset:1px}
+.calc textarea:disabled{opacity:.7}
+
+/* Address form: two full-width lines, then city, state, PIN code and country */
+.addr-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.addr-grid > label{display:grid;gap:4px;min-width:0}
+.addr-grid > .addr-wide{grid-column:1/-1}
+@media (max-width:760px){.addr-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.addr-grid input{width:100%;min-width:0;box-sizing:border-box}
+
+/* Row actions as icons on small screens */
+@media (max-width:860px){
+  .btn.btn-row-ico{width:34px;height:34px;min-width:34px;padding:0;display:inline-grid;place-items:center;border-radius:10px}
+  .btn.btn-row-ico.is-delete{color:var(--rust-ink);border-color:color-mix(in srgb,var(--rust) 55%,transparent)}
+  td.r .btn-row-ico + .btn-row-ico{margin-left:4px}
+}
+
+/* Audit history: entries grouped by day, in columns on wide screens */
+.audit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:10px;align-items:start}
+.audit-grid .audit-row{min-width:0}
+.audit-grid .audit-row summary > div{min-width:0;overflow-wrap:anywhere}
+.audit-grid .audit-d{padding-left:66px}
+@media (max-width:480px){.audit-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Six contact fields in a 3 x 2 grid */
+.two.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:900px){.two.three{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){.two.three{grid-template-columns:1fr}}
+
+/* Quantity + unit pairs in table rows have one fixed width, so rows line up whatever the unit (L, kg, pcs) */
+@media (min-width:861px){
+  td .qty-unit{display:inline-flex;align-items:center;gap:6px;flex:none}
+  td .qty-unit > input{width:76px;min-width:76px;flex:none;box-sizing:border-box}
+  td .qty-unit > .unit-sel,td .qty-unit > select{width:76px;min-width:76px;max-width:76px;flex:none;box-sizing:border-box}
+  .recv-t .qty-unit .qty-in{width:76px}
+}

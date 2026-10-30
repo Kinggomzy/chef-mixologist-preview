@@ -23,9 +23,11 @@ VIEWS.approvals=async function(){
     <h3 title="${esc(a.summary)}">${esc(a.summary)}</h3><div class="val num">${a.value==null?'':inr(a.value)}</div>
     <small>Asked by ${esc(a.requestedBy)} · ${new Date(a.createdAt).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}${a.decidedBy?` · ${a.status==='approved'?'approved':'turned down'} by ${esc(a.decidedBy)}`:''}${a.reason?` · ${esc(a.reason)}`:''}${a.result?` · ${esc(a.result)}`:''}</small>
     ${a.status==='pending'&&d.canApprove&&a.requestedById!==PROFILE?.id?`<div class="appr-act"><button class="btn btn-sm btn-primary" data-ok="${a.id}">Approve</button><button class="btn btn-sm btn-line" data-no="${a.id}">Reject</button></div>`:'<span></span>'}</article>`;
+  const pgP=paginate('appr-pending',d.pending,6,String(d.pending.length)),pgD=paginate('appr-recent',d.recent,6,String(d.recent.length));
   body.innerHTML=`<div class="panel" style="margin-bottom:16px"><div class="panel-b"><p style="margin:0">${none?'No approval limits are set, so nothing waits here. Set them in Organisation settings.':`Waiting for approval: ${esc(limitTxt)}.`}</p></div></div>`+
-    (d.pending.length?`<div class="menu-h"><h2>Waiting</h2><span>${d.pending.length}</span></div><div class="reqs">${d.pending.map(card).join('')}</div>`:'<div class="panel empty"><b>Nothing waiting</b>Changes over a limit appear here.</div>')+
-    (d.recent.length?`<div class="menu-h" style="margin-top:22px"><h2>Decided</h2><span>${d.recent.length}</span></div><div class="reqs">${d.recent.map(card).join('')}</div>`:'');
+    (d.pending.length?`<div class="menu-h"><h2>Waiting</h2><span>${d.pending.length}</span></div><div class="reqs">${pgP.rows.map(card).join('')}</div>${pgP.html}`:'<div class="panel empty"><b>Nothing waiting</b>Changes over a limit appear here.</div>')+
+    (d.recent.length?`<div class="menu-h" style="margin-top:22px"><h2>Decided</h2><span>${d.recent.length}</span></div><div class="reqs">${pgD.rows.map(card).join('')}</div>${pgD.html}`:'');
+  wirePager(body,()=>VIEWS.approvals());
   body.querySelectorAll('[data-ok]').forEach(b=>b.onclick=async()=>{b.disabled=true;
     try{const a=await api(`/plugin/cm/approvals/${b.dataset.ok}/approve/`,{method:'POST',json:{}});toast(`Approved${a.result?` · ${esc(a.result)} raised`:''}`);await reload();VIEWS.approvals()}catch(e){fail(e);b.disabled=false}});
   body.querySelectorAll('[data-no]').forEach(b=>b.onclick=()=>formModal('Reject this change?','The person who asked is told why',

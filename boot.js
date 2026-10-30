@@ -360,7 +360,7 @@
     if (path === 'org/' && method === 'PATCH') {
       var o = DB.org;
       if (b.theme) { o.theme = { theme: b.theme, primary: b.themePrimary || '', accent: b.themeAccent || '' }; DB.branding.theme = o.theme; }
-      ['name', 'outlet', 'tagline', 'address', 'phone', 'email', 'website', 'gstin', 'fssai', 'timezone', 'currency', 'mfaPolicy', 'costingMethod'].forEach(function (k) { if (b[k] !== undefined) o[k] = b[k]; });
+      ['name', 'outlet', 'tagline', 'address', 'address2', 'city', 'state', 'pin', 'country', 'phone', 'email', 'website', 'gstin', 'fssai', 'timezone', 'currency', 'mfaPolicy', 'costingMethod'].forEach(function (k) { if (b[k] !== undefined) o[k] = b[k]; });
       ['foodCostTarget', 'serviceLevel', 'orderCost', 'holdingRate'].forEach(function (k) { if (b[k] !== undefined) o[k] = +b[k]; });
       ['limitWastage', 'limitPo', 'limitCountPct', 'limitCountValue'].forEach(function (k) { if (b[k] !== undefined) o.limits[k] = b[k] === '' || b[k] == null ? null : +b[k]; });
       if (b.whatsappTarget) { o.whatsappTarget = b.whatsappTarget; inv().meta.whatsapp.target = b.whatsappTarget; }
@@ -394,7 +394,7 @@
     if ((m = path.match(/^supplier\/(\d+)?\/?$/))) {
       var sup2 = m[1] ? DB.setup.suppliers.find(function (x) { return x.id === +m[1]; }) : null;
       if (!sup2) { sup2 = { id: 200 + DB.setup.suppliers.length, image: null, active: true, items: 0, email: '', gstin: '', fssai: '', address: '', notes: '', contact: '', phone: '', whatsapp: '' }; DB.setup.suppliers.push(sup2); inv().meta.suppliers.push({ id: sup2.id, name: b.name, whatsapp: '' }); }
-      Object.assign(sup2, { name: b.name, contact: b.contact, phone: b.phone, email: b.email, gstin: b.gstin, fssai: b.fssai, address: b.address, notes: b.notes, whatsapp: String(b.whatsapp || '').replace(/\D/g, '').replace(/^(\d{10})$/, '91$1') });
+      Object.assign(sup2, { name: b.name, contact: b.contact, phone: b.phone, email: b.email, gstin: b.gstin, fssai: b.fssai, address: b.address, address2: b.address2, city: b.city, state: b.state, pin: b.pin, country: b.country, notes: b.notes, whatsapp: String(b.whatsapp || '').replace(/\D/g, '').replace(/^(\d{10})$/, '91$1') });
       var ms = inv().meta.suppliers.find(function (x) { return x.id === sup2.id; }); if (ms) { ms.name = b.name; ms.whatsapp = sup2.whatsapp; }
       return [method === 'POST' ? 201 : 200, { id: sup2.id }];
     }

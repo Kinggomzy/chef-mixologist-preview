@@ -78,7 +78,8 @@ function renderShellUser(){
   menu.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
   $('#signOut').onclick=async()=>{try{await api(CM+'auth/logout/',{method:'POST',json:{}})}catch(e){}clearToken();location.hash='';location.reload()};
   $('#sideFoot').innerHTML=`<span class="avatar">${esc(ini)}</span><div><b>My profile</b><small>${esc(nm)} · ${esc(p.roles.join(', ')||'No role')}</small></div>`;
-  $('#sideFoot').onclick=()=>go('profile');
+  $('#sideFoot').onclick=()=>{go('profile');setNav(false)};
+  const so=$('#sideOut');if(so){so.hidden=false;so.onclick=()=>$('#signOut').click()}
 }
 let bellTimer=null;
 async function pollBell(){
@@ -98,7 +99,7 @@ async function renderProfile(){
    ${panel('Personal details','Your username and roles are managed by an owner',`<form id="pf" class="calc" style="display:grid;gap:12px">
      <div class="two"><label>First name<input name="firstName" value="${esc(p.firstName)}" maxlength="150"></label><label>Last name<input name="lastName" value="${esc(p.lastName)}" maxlength="150"></label></div>
      <div class="two"><label>Phone<input name="phone" value="${esc(p.phone)}" maxlength="30"></label><label>Job title<input name="jobTitle" value="${esc(p.jobTitle)}" maxlength="60"></label></div>
-     <p class="muted" style="margin:0">${esc(p.username)}${p.email?` · ${esc(p.email)}`:''} · ${p.roles.map(r=>`<span class="sticker soft">${esc(r)}</span>`).join(' ')}</p>
+     <p class="muted" style="margin:0">${esc(p.username)}${p.email?` · ${esc(p.email)}`:''}</p><div class="role-tags">${p.roles.map(r=>`<span class="sticker soft">${esc(r)}</span>`).join('')}</div>
      <div><button class="btn btn-primary">Save changes</button></div></form>`)}
    ${panel('Account security',`Last sign-in ${ago(p.lastSignIn)}`,`<div style="display:grid;gap:14px">
      <div class="row-between"><div><b>Two-step verification</b><br><small class="muted">${p.mfa.required?'Required for your role':'Recommended'}</small></div>${p.mfa.enrolled?'<span class="sticker lime">On</span>':'<span class="sticker turmeric">Not set up</span>'}</div>
@@ -316,13 +317,20 @@ async function renderAudit(){
   body.innerHTML=`<div class="toolbar"><label class="field" style="flex:1;max-width:420px">Search<input id="aq" value="${esc(AUD.q)}" placeholder="A person, or something like “signed in”" style="border:0;background:none;height:100%;flex:1"></label>
     <label class="field" data-filter>Type<select id="ac"><option value="all">All events</option>${d.categories.map(([k,l])=>`<option value="${k}" ${AUD.category===k?'selected':''}>${esc(l)}</option>`).join('')}</select></label>
     <label class="field" data-filter>Show<select id="ap"><option value="">Everything</option><option value="1" ${AUD.problems?'selected':''}>Only refusals and failures</option></select></label></div>
-    <div class="feed">${d.rows.map(r=>`<details class="audit-row"><summary><span class="bubble ${r.outcome==='done'?'info':'bad'}">${esc((r.who||'?').slice(0,1))}</span><div><b>${esc(r.who)}</b> ${esc(r.summary)}${r.target?` <span class="muted">#${esc(r.target)}</span>`:''}<small>${fmtDate(r.at)}</small></div><span class="sticker ${outcome[r.outcome][0]}">${outcome[r.outcome][1]}</span></summary>
-      <dl class="audit-d"><dt>When</dt><dd>${fmtDate(r.at)}</dd><dt>From</dt><dd>${esc(r.ip||'—')}</dd><dt>Device</dt><dd>${esc(r.device||'—')}</dd>${Object.entries(r.details||{}).map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(typeof v==='object'?JSON.stringify(v):v)}</dd>`).join('')}</dl></details>`).join('')||'<div class="panel empty"><b>Nothing found</b>Try another search or filter.</div>'}</div>
+    ${d.rows.length?auditDays(d.rows,r=>`<details class="audit-row"><summary><span class="bubble ${r.outcome==='done'?'info':'bad'}">${esc((r.who||'?').slice(0,1))}</span><div><b>${esc(r.who)}</b> ${esc(r.summary)}${r.target?` <span class="muted">#${esc(r.target)}</span>`:''}<small>${new Date(r.at).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})}${r.device?` · ${esc(r.device)}`:''}</small></div><span class="sticker ${outcome[r.outcome][0]}">${outcome[r.outcome][1]}</span></summary>
+      <dl class="audit-d"><dt>When</dt><dd>${fmtDate(r.at)}</dd><dt>From</dt><dd>${esc(r.ip||'—')}</dd><dt>Device</dt><dd>${esc(r.device||'—')}</dd>${Object.entries(r.details||{}).map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(typeof v==='object'?JSON.stringify(v):v)}</dd>`).join('')}</dl></details>`):'<div class="panel empty"><b>Nothing found</b>Try another search or filter.</div>'}
     ${pages>1?pagerHtml('audit',AUD.page,pages,d.total,(AUD.page-1)*d.size,d.size):''}`;
   let t;$('#aq').oninput=e=>{clearTimeout(t);t=setTimeout(()=>{AUD.q=e.target.value;AUD.page=1;renderAudit().then(()=>{const n=$('#aq');n.focus();n.setSelectionRange(n.value.length,n.value.length)})},350)};
   $('#ac').onchange=e=>{AUD.category=e.target.value;AUD.page=1;renderAudit()};
   $('#ap').onchange=e=>{AUD.problems=!!e.target.value;AUD.page=1;renderAudit()};
   body.querySelectorAll('[data-pg]').forEach(b=>b.onclick=()=>{AUD.page=+b.dataset.pg.split(':')[1];renderAudit();window.scrollTo({top:0,behavior:'smooth'})});
+}
+
+/* audit entries grouped by day, in as many columns as the screen allows */
+function auditDays(rows,card){
+  const key=r=>new Date(r.at).toDateString(),today=new Date().toDateString(),yest=new Date(Date.now()-864e5).toDateString();
+  const days=[];rows.forEach(r=>{const k=key(r);let g=days.find(x=>x.k===k);if(!g)days.push(g={k,rows:[]});g.rows.push(r)});
+  return days.map(g=>`<section class="feed-day"><h3>${g.k===today?'Today':g.k===yest?'Yesterday':new Date(g.rows[0].at).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})} <span class="muted" style="font-weight:400">· ${g.rows.length}</span></h3><div class="audit-grid">${g.rows.map(card).join('')}</div></section>`).join('');
 }
 
 /* ================= Organisation settings ================= */
@@ -334,8 +342,8 @@ async function renderOrg(){
    <div class="admin-grid flow">
    ${panel('Restaurant details','Shown in the app and on the sign-in screen',`<form id="orgF" class="calc" style="display:grid;gap:12px"><div class="two">
      <label>Restaurant name<input name="name" value="${esc(o.name)}" ${dis} required maxlength="100"></label><label>Outlet<input name="outlet" value="${esc(o.outlet)}" ${dis} maxlength="100"></label></div>
-     <label>Tagline<input name="tagline" value="${esc(o.tagline)}" ${dis} maxlength="150"></label><label>Address<textarea name="address" rows="2" ${dis} maxlength="300">${esc(o.address)}</textarea></label>
-     <div class="two"><label>Phone<input name="phone" value="${esc(o.phone)}" ${dis}></label><label>Email<input name="email" type="email" value="${esc(o.email)}" ${dis}></label>
+     <label>Tagline<input name="tagline" value="${esc(o.tagline)}" ${dis} maxlength="150"></label>${addressFields(o,dis)}
+     <div class="two three"><label>Phone<input name="phone" value="${esc(o.phone)}" ${dis}></label><label>Email<input name="email" type="email" value="${esc(o.email)}" ${dis}></label>
      <label>GSTIN<input name="gstin" value="${esc(o.gstin)}" ${dis} maxlength="15" placeholder="19ABCDE1234F1Z5"></label><label>FSSAI licence<input name="fssai" value="${esc(o.fssai)}" ${dis} maxlength="20"></label>
      <label>Website<input name="website" value="${esc(o.website)}" ${dis}></label><label>Timezone<input name="timezone" value="${esc(o.timezone)}" ${dis}></label></div>
      ${can?'<div><button class="btn btn-primary">Save details</button></div>':''}</form>`)}
@@ -403,11 +411,10 @@ window.addEventListener('appinstalled',()=>{INSTALL_EVT=null;toast('App installe
 function renderInstall(){
   const installed=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
-  const body=view('install','Install the app','Open Chef & Mixologist from your phone\'s home screen or your computer\'s dock, in its own window.');
+  const msg=installed?'Everything is set up.':ios?'On iPhone or iPad: tap the Share button, then “Add to Home Screen”.':INSTALL_EVT?'One tap adds it to this device.':'Use your browser\'s menu and choose “Install app” or “Add to Home screen”.';
+  const body=view('install',`<img class="ph-logo" src="brand/icon-192.png" alt="">${installed?'You are using the installed app':'Chef &amp; Mixologist on this device'}`,msg,!installed&&INSTALL_EVT?'<button class="btn btn-primary" id="doInstall">Install app</button>':'');
   const sw='serviceWorker' in navigator&&navigator.serviceWorker.controller;
-  body.innerHTML=`<div class="install-hero"><img src="brand/icon-192.png" alt=""><div><h2>${installed?'You are using the installed app':'Chef & Mixologist on this device'}</h2><p>${installed?'Everything is set up.':ios?'On iPhone or iPad: tap the Share button, then “Add to Home Screen”.':INSTALL_EVT?'One tap adds it to this device.':'Use your browser\'s menu and choose “Install app” or “Add to Home screen”.'}</p></div>
-    ${!installed&&INSTALL_EVT?'<button class="btn btn-primary" id="doInstall">Install app</button>':''}</div>
-    <div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin:16px 0">
+  body.innerHTML=`<div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin:16px 0">
       <div class="tile ${sw?'good':'warn'}"><span class="lbl">Offline page</span><span class="val" style="font-size:var(--fs-lg)">${sw?'Active':'Starting…'}</span><span class="sub">Opens even on a weak connection</span></div>
       <div class="tile ${installed?'good':'info'}"><span class="lbl">This device</span><span class="val" style="font-size:var(--fs-lg)">${installed?'Installed':'In the browser'}</span><span class="sub">${installed?'Running in its own window':'Install for quicker access'}</span></div>
       <div class="tile info"><span class="lbl">Alerts</span><span class="val" style="font-size:var(--fs-lg)">${'Notification' in window?({granted:'Allowed',denied:'Blocked',default:'Not set'})[Notification.permission]:'Not supported'}</span><span class="sub"><a href="#prefs">Notification preferences</a></span></div></div>

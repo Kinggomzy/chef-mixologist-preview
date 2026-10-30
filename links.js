@@ -5,7 +5,7 @@
    Loaded last, after every screen renderer. */
 
 /* ---------- writing links ---------- */
-const XL_KIND={supplier:'Supplier',item:'Item',po:'Purchase order',recipe:'Recipe',location:'Storage area',category:'Category',person:'Person'};
+const XL_KIND={supplier:'Supplier',item:'Item',po:'Purchase order',recipe:'Recipe',location:'Storage area',category:'Category',person:'Person',day:'Day'};
 function xl(kind,key,label){
   const text=label==null?key:label;
   if(key==null||key===''||!xlCan(kind,key))return esc(String(text??''));
@@ -190,3 +190,18 @@ document.addEventListener('focusout',hideTip);
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.info-tip');if(b){e.preventDefault();e.stopPropagation();tipBox.classList.contains('on')&&tipBox.textContent===b.dataset.tip?hideTip():showTip(b)}else hideTip()},true);
 addEventListener('scroll',hideTip,true);
 tipify();tipifyForms();
+
+
+/* ---------- one address form for the restaurant and every supplier ---------- */
+const IN_STATES=['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh','Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry'];
+function addressFields(a={},dis=''){
+  const v=k=>esc(a[k]||'');
+  return `<div class="addr-grid" style="grid-column:1/-1">
+    <label class="addr-wide">Address line 1<input name="address" value="${v('address')}" ${dis} maxlength="300" autocomplete="address-line1" placeholder="House or plot number, street"></label>
+    <label class="addr-wide">Address line 2<input name="address2" value="${v('address2')}" ${dis} maxlength="200" autocomplete="address-line2" placeholder="Area, landmark (optional)"></label>
+    <label>City<input name="city" value="${v('city')}" ${dis} maxlength="80" autocomplete="address-level2"></label>
+    <label>State<input name="state" value="${v('state')}" ${dis} maxlength="80" list="inStates" autocomplete="address-level1"></label>
+    <label>PIN code<input name="pin" value="${v('pin')}" ${dis} maxlength="12" inputmode="numeric" autocomplete="postal-code" placeholder="700089"></label>
+    <label>Country<input name="country" value="${esc(a.country==null?'India':a.country)}" ${dis} maxlength="80" autocomplete="country-name"></label>
+    <datalist id="inStates">${IN_STATES.map(s=>`<option value="${esc(s)}">`).join('')}</datalist></div>`;
+}

@@ -21,9 +21,11 @@ VIEWS.requests=async function(){
       <ul>${r.lines.slice(0,3).map(l=>`<li><span>${esc(l.name)}</span><b class="num">${reqQty(l.requested,l.unit)}</b></li>`).join('')}</ul>
       <small class="req-more">${r.lines.length>3?`+${r.lines.length-3} more · `:''}asked by ${esc(r.requestedBy)}</small>
       <div class="take-bar"><i style="width:${r.lines.length?done/r.lines.length*100:0}%"></i></div></button>`};
-  body.innerHTML=(d.open.length?`<div class="menu-h"><h2>Waiting</h2><span>${d.open.length}</span></div><div class="reqs">${d.open.map(card).join('')}</div>`
+  const pgO=paginate('req-open',d.open,6,String(d.open.length)),pgR=paginate('req-recent',d.recent,6,String(d.recent.length));
+  body.innerHTML=(d.open.length?`<div class="menu-h"><h2>Waiting</h2><span>${d.open.length}</span></div><div class="reqs">${pgO.rows.map(card).join('')}</div>${pgO.html}`
       :`<div class="panel empty"><b>No requests waiting</b>${d.canAsk?'Ask the store for what the kitchen or bar needs with New request.':'New requests from the kitchen and bar appear here.'}</div>`)+
-    (d.recent.length?`<div class="menu-h" style="margin-top:22px"><h2>Last 14 days</h2><span>${d.recent.length}</span></div><div class="reqs">${d.recent.map(card).join('')}</div>`:'');
+    (d.recent.length?`<div class="menu-h" style="margin-top:22px"><h2>Last 14 days</h2><span>${d.recent.length}</span></div><div class="reqs">${pgR.rows.map(card).join('')}</div>${pgR.html}`:'');
+  wirePager(body,()=>VIEWS.requests());
   const all=[...d.open,...d.recent];
   body.querySelectorAll('[data-req]').forEach(b=>b.onclick=()=>openRequest(all.find(r=>r.id===+b.dataset.req),d));
 };

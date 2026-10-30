@@ -47,8 +47,8 @@ function supplierForm(s){
     <label>Phone<input name="phone" maxlength="50" value="${esc(s.phone||'')}"></label><label>WhatsApp number<input name="whatsapp" maxlength="20" inputmode="tel" value="${esc(s.whatsapp||'')}" placeholder="Same as phone if a mobile"></label>
     <label>Email<input name="email" type="email" value="${esc(s.email||'')}"></label>
     <label>GSTIN<input name="gstin" maxlength="15" value="${esc(s.gstin||'')}" placeholder="19ABCDE1234F1Z5"></label><label>FSSAI licence<input name="fssai" maxlength="20" value="${esc(s.fssai||'')}"></label></div>
-    <label>Address<input name="address" maxlength="300" value="${esc(s.address||'')}"></label><label>Notes<input name="notes" maxlength="250" value="${esc(s.notes||'')}"></label>`,'Save',async(f,close)=>{
-    const body=Object.fromEntries(['name','contact','phone','whatsapp','email','gstin','fssai','address','notes'].map(k=>[k,f.get(k)]));
+    ${addressFields(s)}<label>Notes<input name="notes" maxlength="250" value="${esc(s.notes||'')}"></label>`,'Save',async(f,close)=>{
+    const body=Object.fromEntries(['name','contact','phone','whatsapp','email','gstin','fssai','address','address2','city','state','pin','country','notes'].map(k=>[k,f.get(k)]));
     await api(s.id?`/plugin/cm/supplier/${s.id}/`:'/plugin/cm/supplier/',{method:s.id?'PATCH':'POST',json:body});close();toast('Supplier saved');renderSetup();reload()});
   if(s.id)wirePhotoBlock(`/plugin/cm/supplier/${s.id}/photo/`,()=>{SUP_CACHE=null});
 }

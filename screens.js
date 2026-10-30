@@ -62,7 +62,7 @@ VIEWS.replenish=function(){
       <div><b>${xl('item',x.sku,x.name)}</b><small>${fq(x.onHand)} on hand${c.inc.q?`, ${fq(c.inc.q)} on order`:''} · pack ${x.pack} ${esc(x.unit)}</small><div style="margin-top:4px">${sticker(c.st)}</div>
         ${API.can.pricing?`<label class="price-q">₹<input class="price-in" type="number" min="0" step="0.01" value="${x.listPrice??''}" placeholder="price" aria-label="Price per ${esc(x.unit)} for ${esc(x.name)}"><span>/ ${esc(x.unit)}</span></label>`:''}</div>
       <span class="stepper"><button type="button" data-step="-1" aria-label="Fewer">−</button><input class="qty-in" type="number" min="0" step="${x.pack}" value="${c.sugg}" aria-label="Order quantity in ${esc(x.unit)}"><button type="button" data-step="1" aria-label="More">+</button></span></li>`).join('')}</ul>
-    <div class="basket-f"><div><span class="total num" data-tot></span><small>Order value</small></div><span class="basket-acts"><button class="btn btn-wa" data-wa title="Records the order and opens WhatsApp to ${esc(sup)} with the items typed out">${WA_ICON}Order on WhatsApp</button><button class="btn btn-primary" data-raise>Raise purchase order</button></span></div></article>`}).join('')}</div>`;
+    <div class="basket-f"><div><span class="total num" data-tot></span><small>Order value</small></div><span class="basket-acts"><button class="btn btn-wa" data-wa aria-label="Order on WhatsApp" title="Order on WhatsApp: records the order and opens WhatsApp to ${esc(sup)} with the items typed out">${WA_ICON}Order</button><button class="btn btn-primary" data-raise>Raise purchase order</button></span></div></article>`}).join('')}</div>`;
   out.querySelectorAll('.basket').forEach(b=>{
     const upd=()=>{let t=0;b.querySelectorAll('li').forEach(li=>{const on=li.querySelector('.check').checked;li.classList.toggle('off',!on);const pi=li.querySelector('.price-in');if(on)t+=(+li.querySelector('.qty-in').value||0)*(pi&&pi.value!==''?+pi.value:+li.dataset.cost)});b.querySelector('[data-tot]').textContent=inr(t)};
     b.querySelectorAll('input').forEach(i=>i.oninput=upd);
@@ -93,11 +93,11 @@ VIEWS.moves=function(){
   const types=['All','Receipt','Issue to kitchen','Issue to beverage','Transfer','Wastage','Adjustment','Sale','Prep'];
   // chip counts follow the search and any person / item / order filter, so they match the list below
   const F0=S.focus,q0=S.q.toLowerCase(),scoped=moves.filter(m=>(!q0||`${m.x.name} ${m.x.sku} ${m.ref} ${m.user}`.toLowerCase().includes(q0))&&
-    (!F0||(F0.kind==='person'?m.user===F0.key:F0.kind==='item'?m.x.sku===F0.key:F0.kind==='po'?(m.ref||'').includes(F0.key):true)));
+    (!F0||(F0.kind==='person'?m.user===F0.key:F0.kind==='item'?m.x.sku===F0.key:F0.kind==='po'?(m.ref||'').includes(F0.key):F0.kind==='day'?String(m.d)===String(F0.key):true)));
   $('#mv-types').innerHTML=types.map(t=>`<button class="chip" data-mv="${t}" aria-pressed="${S.mv===t}">${t}<em>${t==='All'?scoped.length:scoped.filter(m=>m.t===t).length}</em></button>`).join('');
   $$('[data-mv]').forEach(b=>b.onclick=()=>{S.mv=b.dataset.mv;VIEWS.moves()});
   const F=S.focus,q=S.q.toLowerCase(),L=moves.filter(m=>(S.mv==='All'||m.t===S.mv)&&(!q||`${m.x.name} ${m.x.sku} ${m.ref} ${m.user}`.toLowerCase().includes(q))&&
-    (!F||(F.kind==='person'?m.user===F.key:F.kind==='item'?m.x.sku===F.key:F.kind==='po'?(m.ref||'').includes(F.key):true)));
+    (!F||(F.kind==='person'?m.user===F.key:F.kind==='item'?m.x.sku===F.key:F.kind==='po'?(m.ref||'').includes(F.key):F.kind==='day'?String(m.d)===String(F.key):true)));
   const panelEl=$('#moves').closest('.panel');panelEl.hidden=true;
   let box=$('#feed');if(!box){box=Object.assign(document.createElement('div'),{id:'feed'});panelEl.after(box)}
   const pg=paginate('moves',L,25,JSON.stringify([S.mv,S.q,S.focus])),days=[...new Set(pg.rows.map(m=>m.d))];
@@ -206,6 +206,7 @@ renderSales=VIEWS.sales;
 const baseReports=VIEWS.reports;
 VIEWS.reports=async function(){
   await baseReports();
+  if(typeof drawWeeks==='function'&&$('#weeksChart'))drawWeeks();
   const box=$('#v-reports .kpis');if(!box)return;
   box.className='tiles';
   // meaning per tile: sales (lead), food cost, actual usage, margin, guests, average bill, spend, waste, stock value

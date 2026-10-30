@@ -306,6 +306,7 @@ body.d-open .drawer{transform:none}
     <label class="menu-q"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="menuQ" type="search" placeholder="Search the menu" aria-label="Search the menu"></label>
     <nav class="menu" id="menu" aria-label="Sections"></nav>
     <button type="button" class="side-foot" id="sideFoot" data-signin><span class="avatar">?</span><div><b>Sign in</b><small>You are seeing sample data</small></div></button>
+    <button type="button" class="side-out" id="sideOut" hidden>Sign out</button>
   </aside>
 
   <div class="nav-scrim" id="navScrim" hidden></div>
@@ -330,10 +331,10 @@ body.d-open .drawer{transform:none}
           <div class="stack">
             <div class="panel"><div class="panel-h"><h2>Stock health</h2><p id="health-note"></p></div><div class="panel-b"><div class="health" id="health"></div><div class="health-legend" id="health-legend"></div></div></div>
             <div class="panel"><div class="panel-h"><h2>Needs action</h2><button class="btn btn-sm btn-line" data-goto="replenish">Open reorder list</button></div><div class="panel-b att" id="att"></div></div>
+            <div class="panel chart"><div class="panel-h"><h2>Receipts vs usage</h2><p>Last 14 days, ₹ thousand</p></div><div class="panel-b" id="flow"></div></div>
           </div>
           <div class="stack">
             <div class="panel"><div class="panel-h"><h2>Inbound this week</h2><p>Open purchase orders</p></div><div class="panel-b tl" id="tl"></div></div>
-            <div class="panel chart"><div class="panel-h"><h2>Receipts vs usage</h2><p>Last 14 days, ₹ thousand</p></div><div class="panel-b" id="flow"></div></div>
           </div>
         </div>
       </section>
@@ -519,27 +520,21 @@ function renderOverview(){
   $('#kpis').innerHTML=K.map(([l,v,s,c,g],i)=>`<button class="kpi" style="--k:${c}" data-k="${i}"><div class="lbl">${l}</div><div class="val num">${v}</div><div class="sub">${s}</div></button>`).join('');
   $$('#kpis .kpi').forEach(b=>b.onclick=()=>{const k=K[+b.dataset.k];go(k[4],k[5])});
   const order=['out','crit','reorder','onorder','ok','over'];
-  $('#health').innerHTML=order.map(k=>cnt(k)?`<span style="flex:${cnt(k)};background:${ST_COL[k]}" title="${ST[k][0]}: ${cnt(k)}"></span>`:'').join('');
+  $('#health').innerHTML=order.map(k=>cnt(k)?`<span style="flex:${cnt(k)};background:${ST_COL[k]}" title="${ST[k][0]}: ${cnt(k)}" data-hst="${k}" role="button" tabindex="0"></span>`:'').join('');
   $('#health-legend').innerHTML=order.map(k=>`<button data-st="${k}"><i style="background:${ST_COL[k]}"></i>${ST[k][0]} <b>${cnt(k)}</b></button>`).join('');
   $$('#health-legend button').forEach(b=>b.onclick=()=>go('items',{status:b.dataset.st}));
+  $$('#health [data-hst]').forEach(b=>{b.onclick=()=>go('items',{status:b.dataset.hst});b.onkeydown=e=>{if(e.key==='Enter')b.click()}});
   $('#health-note').textContent=`${cnt('ok')} of ${items.length} items healthy`;
   const att=C.filter(o=>['out','crit','reorder'].includes(o.c.st)||(o.c.expiry<=1&&o.x.onHand>0)).sort((a,b)=>ST[a.c.st][2]-ST[b.c.st][2]||a.c.cover-b.c.cover).slice(0,7);
   $('#att').innerHTML=att.map(({x,c})=>`<div class="att-row" data-sku="${x.sku}">${img(x)}<div><div class="att-name">${x.name}</div><small>${fq(x.onHand)} ${x.unit} on hand · reorder at ${fq(c.rop)} · ${coverTxt(c.cover)}</small></div>${tag(c.expiry<=1&&!['out','crit','reorder'].includes(c.st)?'crit':c.st).replace(c.expiry<=1&&!['out','crit','reorder'].includes(c.st)?'Below safety stock':'@@','Use within 24 h')}<div class="att-act">${c.inc.q?`<span style="color:var(--blue);font-weight:600">+${fq(c.inc.q)} ${x.unit}</span><br><small>${c.inc.po.eta}</small>`:c.sugg?`<b>Order ${fq(c.sugg)} ${x.unit}</b><br><small>${x.sup}</small>`:''}</div></div>`).join('');
   $$('#att .att-row').forEach(r=>r.onclick=()=>openItem(r.dataset.sku));
-  $('#tl').innerHTML=POS.map(p=>{const dt=new Date(TODAY.getTime()+p.day*864e5);const tot=Object.entries(p.lines).reduce((a,[s,q])=>a+q*bySku[s].cost,0);
-    return `<div class="tl-day"><div class="tl-date"><b>${dt.getDate()}</b>${p.day===0?'Today':dt.toLocaleDateString('en-IN',{weekday:'short'})}</div><div class="tl-cards"><div class="po"><div class="po-top"><div><b>${xl('supplier',p.sup)}</b><div class="muted">${xl('po',p.po)} · ${esc(p.eta)}</div></div><b class="num">${inr(tot)}</b></div><div class="po-items">${Object.entries(p.lines).map(([s,q])=>`<span>${xl('item',s,bySku[s].name.split(',')[0])} · ${q} ${bySku[s].unit}</span>`).join('')}</div></div></div></div>`}).join('');
+  const tlPg=paginate('tl',POS,7,String(POS.length));
+  $('#tl').innerHTML=tlPg.rows.map(p=>{const dt=new Date(TODAY.getTime()+p.day*864e5);const tot=Object.entries(p.lines).reduce((a,[s,q])=>a+q*bySku[s].cost,0);
+    return `<div class="tl-day"><div class="tl-date"><b>${dt.getDate()}</b>${p.day===0?'Today':dt.toLocaleDateString('en-IN',{weekday:'short'})}</div><div class="tl-cards"><div class="po"><div class="po-top"><div><b>${xl('supplier',p.sup)}</b><div class="muted">${xl('po',p.po)} · ${esc(p.eta)}</div></div><b class="num">${inr(tot)}</b></div><div class="po-items">${Object.entries(p.lines).map(([s,q])=>`<span>${xl('item',s,bySku[s].name.split(',')[0])} · ${q} ${bySku[s].unit}</span>`).join('')}</div></div></div></div>`}).join('')+tlPg.html;wirePager($('#tl'),renderOverview);
   // flow chart
   const R=rnd(3),rec=[],use=[];for(let i=0;i<14;i++){use.push(9+R()*5+(i%7>=4?4:0));rec.push(i%3===0?18+R()*10:i%3===1?6+R()*6:R()*3)}
   if(API.live){if(!FLOW){$('#flow').innerHTML='<p class="muted">Values are hidden for your role.</p>';return}rec.splice(0,14,...FLOW.in);use.splice(0,14,...FLOW.out)}
-  const top=Math.max(...rec,...use,1),step=top>40?Math.ceil(top/30)*10:top>8?10:top>2?2:0.5;
-  const W=560,H=200,pl=34,pb=24,mx=step*3,x=i=>pl+i*((W-pl-10)/13),y=v=>H-pb-(v/mx)*(H-pb-10),bw=14;
-  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Receipts and usage, last 14 days">`;
-  [0,step,step*2,step*3].forEach(v=>s+=`<line x1="${pl}" x2="${W}" y1="${y(v)}" y2="${y(v)}" style="stroke:var(--line)"/><text x="${pl-8}" y="${y(v)+4}" text-anchor="end" font-size="11" style="fill:var(--text-3)">${v}</text>`);
-  rec.forEach((v,i)=>s+=`<rect x="${x(i)-bw/2}" y="${y(v)}" width="${bw}" height="${y(0)-y(v)}" rx="3" style="fill:var(--night-3)" opacity=".85"><title>Received ₹${v.toFixed(1)}k</title></rect>`);
-  s+=`<path d="${use.map((v,i)=>(i?'L':'M')+x(i)+' '+y(v)).join(' ')}" fill="none" style="stroke:var(--turmeric-ink)" stroke-width="2.5" stroke-linejoin="round"/>`;
-  use.forEach((v,i)=>s+=`<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="#fff" style="stroke:var(--turmeric-ink)" stroke-width="2"><title>Used ₹${v.toFixed(1)}k</title></circle>`);
-  [0,7,13].forEach(i=>s+=`<text x="${x(i)}" y="${H-6}" text-anchor="middle" font-size="11" style="fill:var(--text-3)">${new Date(TODAY-(13-i)*864e5).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</text>`);
-  $('#flow').innerHTML=s+`</svg><div class="legend"><span><i style="background:var(--night-3);height:10px;width:10px"></i>Goods received</span><span><i style="background:var(--turmeric-ink)"></i>Consumed</span></div>`;
+  FLOWD={rec,use};drawFlow()
 }
 
 /* ================= items ================= */
@@ -616,6 +611,8 @@ function stockChart(x,c){
   s+=`<circle cx="${X(29)}" cy="${Y(h[29])}" r="4.5" style="fill:var(--night)" stroke="#fff" stroke-width="2"/>`;
   [0,15,29].forEach(i=>s+=`<text x="${X(i)}" y="${H-5}" text-anchor="${i===29?'end':i?'middle':'start'}" font-size="11" style="fill:var(--text-3)">${i===29?'Today':new Date(TODAY-(29-i)*864e5).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</text>`);
   s+=`<text x="${pl-6}" y="${Y(0)+4}" text-anchor="end" font-size="11" style="fill:var(--text-3)">0</text>`;
+  CK.specs.stock={tip:i=>`<b>${i===29?'Today':new Date(TODAY-(29-i)*864e5).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}</b><br>${fq(h[i])} ${esc(x.unit)} on hand<br><span class="muted">${h[i]<=c.ss?'Below safety stock':h[i]<=c.rop?'At or below reorder point':'Healthy'}</span>`};
+  s+=ckLayer('stock',30,i=>X(i)-(W-pl-8)/58,(W-pl-8)/29,H,4);
   return s+'</svg>';
 }
 function openItem(sku){
@@ -800,7 +797,7 @@ function showLogin(msg=''){
     $('#modal').classList.remove('on');await reload();toast('Signed in');
   });
 }
-let FLOW=null,META=null,DEALT=false;
+let FLOW=null,META=null,DEALT=false,FLOWD=null;
 let WASTE_REASONS=['Spoiled','Over-ripe','Spilled','Expired','Over-prepped','Damaged'];
 function needLive(perm){if(!API.live){toast('Sign in to the server to make changes');return false}if(perm&&!API.can[perm]){toast('Your role cannot do this');return false}return true}
 
@@ -883,5 +880,8 @@ document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|SELECT|TEXTAREA/
 <script src="links.js"></script>
 <script src="edges.js"></script>
 <script src="filters.js"></script>
+<script src="charts.js"></script>
+<script src="mobilebar.js"></script>
+<script src="fillrows.js"></script>
 </body>
 </html>
