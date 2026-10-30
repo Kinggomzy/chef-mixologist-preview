@@ -106,7 +106,7 @@ async function peekSupplier(name){
     (grns.length?peekSec('Recent deliveries',peekRows(grns.map(g=>`<div><span>${esc(g.grn)} · ${xl('po',g.po)}</span><span>${dayLabel(g.d)} · ${esc(g.qc)}</span></div>`))):''),
     [...(!API.live||API.can.suppliers?[['Open supplier page',()=>focusOn('suppliers','supplier',name)]]:[]),
      ['Their items',()=>focusOn('items','supplier',name,name,{cat:'All',loc:'all',status:'all'})],
-     ['Their orders and deliveries',()=>focusOn('inward','supplier',name)]]);
+     ['Their orders',()=>focusOn('inward','supplier',name)]]);
 }
 
 function peekPO(ref){

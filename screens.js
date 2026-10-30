@@ -189,13 +189,18 @@ VIEWS.suppliers=async function(){
   body.innerHTML=`<div class="bizcards">${pg.rows.map(s=>{const miss=[s.onTimePct!=null&&s.onTimePct<90,s.fillPct!=null&&s.fillPct<95,s.rejectPct!=null&&100-s.rejectPct*10<80].filter(Boolean).length;
     return `<article class="biz edge edge-${miss>=2?'bad':miss===1?'warn':'ok'}"><div class="biz-h">${s.image?`<img class="mono photo" data-auth-src="${esc(s.image)}" alt="">`:`<span class="mono">${esc(initials(s.name))}</span>`}<div><h3>${esc(s.name)}</h3><small>${s.items.length} item${s.items.length===1?'':'s'} · ${s.openOrders} open order${s.openOrders===1?'':'s'} · ${s.receipts} deliver${s.receipts===1?'y':'ies'}</small></div></div>
     <div class="biz-mid"><div class="rings">${ring(s.onTimePct,'On time',v=>v>=90)}${ring(s.fillPct,'In full',v=>v>=95)}${ring(s.rejectPct==null?null:Math.max(0,100-s.rejectPct*10),'Quality',v=>v>=80)}</div>
-    ${s.priceAlerts.length?`<div class="row biz-alerts">${s.priceAlerts.slice(0,2).map(a=>`<span class="sticker ${a.change>0?'melon':'lime'}">${xlItemName(a.name)} ${a.change>0?'+':''}${a.change}%</span>`).join('')}${s.priceAlerts.length>2?`<span class="sticker">+${s.priceAlerts.length-2} more</span>`:''}</div>`:''}</div>
+    </div>
     <div class="card-f"><button type="button" class="btn btn-sm btn-line biz-pl" data-pl="${esc(s.name)}">Price list (${s.items.length})</button>${API.live&&API.can.suppliersEdit?`<button type="button" class="btn btn-sm btn-line" data-sup-edit-id="${s.id}">Edit</button>`:''}</div></article>`}).join('')}</div>${pg.html}`+
     (RETS.length?`<div class="menu-h" style="margin-top:22px"><h2>Returns</h2></div><div class="feed">${RETS.map(r=>`<div class="feed-row" style="cursor:default"><span class="bubble bad">${esc(initials(r.supplier))}</span><div><b>${xlItemName(r.item)} · ${num(r.qty)} ${esc(r.unit)}</b><small>${esc(r.ref)} · ${xl('supplier',r.supplier)} · ${esc(r.reason)} · ${esc(r.at)}</small></div><span class="qty-pill num">${inr(r.value)}</span>${r.id?phBtn('return',r.id,r.ref):''}</div>`).join('')}</div>`:'');wirePager(body,draw);
   body.querySelectorAll('[data-sup-edit-id]').forEach(b=>b.onclick=()=>editSupplierById(+b.dataset.supEditId));
   body.querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>{const s=d.suppliers.find(x=>x.name===b.dataset.pl);if(!s)return;
-    peek(esc(s.name),['Price list',`${s.items.length} item${s.items.length===1?'':'s'}${s.priceAlerts.length?` · ${s.priceAlerts.length} price move${s.priceAlerts.length===1?'':'s'} of 5% or more`:''}`],
-      peekSec('Current prices',peekRows(s.items.map(i=>`<div>${xlItemName(i.name)}<span class="num">${i.price==null?'—':inr(i.price)}/${esc(i.unit)}</span></div>`))),
+    const money=API.can.pricing!==false,rows=[...s.items].sort((a,b)=>(b.change!=null&&b.change!==0)-(a.change!=null&&a.change!==0)||Math.abs(b.change||0)-Math.abs(a.change||0)||a.name.localeCompare(b.name));
+    const oldOf=i=>i.price!=null&&i.change!=null&&i.change!==-100?i.price/(1+i.change/100):null;
+    const moved=s.items.filter(i=>i.change).length;
+    peek(esc(s.name),['Price list',`${s.items.length} item${s.items.length===1?'':'s'}${moved?` · ${moved} price change${moved===1?'':'s'}`:''}`],
+      `<div class="tablewrap"><table class="t pl-t"><thead><tr><th>Item</th><th class="r">Current price</th><th class="r">Old price</th><th class="r">Change</th></tr></thead><tbody>${rows.map(i=>{const o=oldOf(i),ch=i.change;
+        return `<tr><td>${xlItemName(i.name)}</td><td class="r num">${i.price==null||!money?'—':inr(i.price)+'<small class="muted"> / '+esc(i.unit)+'</small>'}</td><td class="r num">${o==null||!ch||!money?'—':inr(o)}</td>
+        <td class="r num">${ch?`<span style="color:${ch>0?'var(--red)':'var(--green)'};font-weight:var(--fw-bold)">${ch>0?'+':''}${ch}%</span>`:'—'}</td></tr>`}).join('')}</tbody></table></div>`,
       [['Open supplier details',()=>peekSupplier(s.name)]])})};draw();
   if($('#newReturn'))$('#newReturn').onclick=()=>formModal('Return to supplier','From your areas, oldest lot first',`
     <label>Item<select name="item">${items.map(x=>`<option value="${x.id}">${esc(x.name)} · ${esc(x.sup)}</option>`).join('')}</select></label>
