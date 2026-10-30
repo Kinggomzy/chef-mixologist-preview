@@ -1139,3 +1139,57 @@ label{align-self:stretch}
   .side.open .side-foot{margin-top:6px;flex:none}
   .side.open .side-out{flex:none}
 }
+
+/* Pager on small screens: count and page buttons share one row, buttons shrink to fit */
+@media (max-width:860px){
+  .pager{flex-wrap:nowrap;justify-content:space-between;gap:3px;box-sizing:border-box;width:100%;max-width:calc(100vw - 72px);position:sticky;left:0}
+  .pager .pg-info{flex:1 1 auto;margin:0 4px 0 0;font-size:12px;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .pager button{flex:0 1 32px;min-width:26px;height:34px;padding:0 2px}
+  .pager .pg-gap{flex:0 0 auto;padding:0}
+}
+
+/* Small screens: tables use the section's width and wrap their text instead of scrolling sideways */
+@media (max-width:860px){
+  .tablewrap{overflow-x:visible}
+  .tablewrap table.t:not(.grid){width:100%;table-layout:auto}
+  .tablewrap table.t:not(.grid) th,.tablewrap table.t:not(.grid) td{overflow-wrap:anywhere;padding-left:6px;padding-right:6px}
+  .tablewrap table.t:not(.grid) td small{overflow-wrap:anywhere}
+  .pager{max-width:none;position:static}
+}
+@media (max-width:860px){
+  .t .pager{width:0;min-width:100%}
+  .tablewrap .t .num{white-space:normal}
+}
+@media (max-width:860px){
+  .tablewrap table.t:not(.grid) th,.tablewrap table.t:not(.grid) td{padding-left:4px;padding-right:4px;font-size:13px}
+}
+@media (max-width:860px){.tablewrap table.t:not(.grid) th{white-space:normal;overflow-wrap:break-word;word-break:normal;hyphens:auto}}
+@media (max-width:860px){.tablewrap .t.grid{width:100%}.t.grid td.c,.t.grid th.c{width:auto;padding-left:2px;padding-right:2px;font-size:11px;white-space:normal;overflow-wrap:anywhere}.t.grid td,.t.grid th{padding-left:4px;padding-right:4px}}
+@media (max-width:860px){.pager .pg-info{flex:0 0 auto}.pager button{flex:1 1 26px;max-width:34px}}
+
+/* A heading with a logo: the logo stays beside the text, so a title that wraps keeps every line on one left edge */
+.page-head h1:has(.ph-logo){display:flex;align-items:center;gap:14px}
+.page-head h1 .ph-logo{flex:none;margin-right:0}
+.page-head :has(> h1 .ph-logo) > p{margin-left:58px}
+
+/* Photos attached to records */
+.ph-btn{display:inline-flex;align-items:center;gap:5px;position:relative}
+.ph-btn .ph-n{font-size:11px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--copper);color:var(--on-dark);display:inline-grid;place-items:center}
+.ph-btn .ph-n[hidden]{display:none}
+.ph-btn.has{border-color:var(--copper-light);color:var(--copper-ink)}
+.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.ph-item{margin:0;display:grid;gap:6px;justify-items:start}
+.ph-item figcaption{font-size:var(--fs-xs);color:var(--text-3)}
+.ph-open{all:unset;cursor:zoom-in;display:block;width:100%}
+.ph-open img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--r-md);background:var(--surface-2);display:block}
+.ph-view{position:fixed;inset:0;z-index:300;background:rgba(20,10,6,.86);display:grid;place-items:center;padding:20px;cursor:zoom-out}
+.ph-view img{max-width:100%;max-height:100%;border-radius:var(--r-md);box-shadow:var(--lift)}
+img.ph-cover{object-fit:cover;display:block}
+.with-ph{display:flex;align-items:center;gap:10px}
+.with-ph > span{min-width:0}
+.row-ph{width:40px;height:40px;border-radius:10px;object-fit:cover;flex:none;background:var(--surface-2)}
+.avatar.has-photo{padding:0;overflow:hidden}
+.avatar.has-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.pass-photo{width:100%;height:120px;object-fit:cover;border-radius:var(--r-md);display:block;margin-bottom:10px}
+.pass-ph{margin:10px 0 0}
+.photo-acts [hidden],.btn[hidden]{display:none!important}

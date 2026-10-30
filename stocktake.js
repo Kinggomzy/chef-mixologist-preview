@@ -67,7 +67,7 @@ async function renderTakeSheet(id){
   if(counting&&t.canCount)acts.push('<button class="btn btn-primary" id="stSubmit">Submit for approval</button>');
   if(review&&t.canApprove)acts.push('<button class="btn btn-primary" id="stApprove">Approve and post</button><button class="btn btn-line" id="stRecount">Send back for recount</button>');
   if((counting||review)&&t.canApprove)acts.push('<button class="btn btn-line" id="stCancel">Cancel stock-take</button>');
-  $('#v-stocktake .page-head > div:last-child').innerHTML=`<button class="btn btn-line" id="stBack">All stock-takes</button>${acts.join('')}`;
+  $('#v-stocktake .page-head > div:last-child').innerHTML=`<button class="btn btn-line" id="stBack">All stock-takes</button>${phBtn('count',t.id,t.ref)}${acts.join('')}`;
   $('#stBack').onclick=()=>{TAKE=null;VIEWS.stocktake()};
   const cats=[...new Set(t.lines.map(l=>l.category))];
   const left=t.lines.filter(l=>l.counted==null).length;

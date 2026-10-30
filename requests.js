@@ -62,7 +62,7 @@ function openRequest(r,d){
         <label class="ri-done"><input type="checkbox" class="ri-short"> Close if short</label>`:`<span class="sticker ${l.status==='done'?'lime':l.status==='refused'?'melon':'turmeric'}">${esc(l.statusLabel)}</span>`}</td>
       ${issue?`<td>${open?'<button type="button" class="btn btn-sm btn-line ri-refuse">Refuse</button>':''}</td>`:''}</tr>`};
   formModal(`${esc(r.stationLabel)} · ${esc(r.ref)}`,`Asked by ${esc(r.requestedBy)} · needed ${esc(whenTxt(r.neededBy))}${r.note?` · ${esc(r.note)}`:''}`,
-    `<div class="tablewrap"><table class="t"><thead><tr><th>Item</th><th class="r">Asked</th><th class="r">Issued</th><th class="r">${issue?'Issue now':'Status'}</th>${issue?'<th></th>':''}</tr></thead>
+    `<div>${phBtn('request',r.id,r.ref)}</div><div class="tablewrap"><table class="t"><thead><tr><th>Item</th><th class="r">Asked</th><th class="r">Issued</th><th class="r">${issue?'Issue now':'Status'}</th>${issue?'<th></th>':''}</tr></thead>
       <tbody>${r.lines.map(lineRow).join('')}</tbody></table></div>
      ${issue?'<p class="muted" style="margin:0;font-size:var(--fs-xs)">Stock comes out of your areas, oldest use-by first, as an issue to this station.</p>':''}`,
     issue?'Issue stock':live&&mine?'Cancel request':'Close',async(f,close)=>{

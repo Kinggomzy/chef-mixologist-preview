@@ -209,17 +209,18 @@ function barcode(code){
 async function renderEvents(){
   const body=view('events','Event nights','Liquor is served only under a one-day licence. It stays in the locked event store until a manager issues it during the licence window.',
     '<button class="btn btn-primary" id="newEvent" hidden>+ New event</button>');
-  const d=await load(body,'/plugin/cm/events/');if(!d)return;
+  const d=await load(body,'/plugin/cm/events/');if(!d)return;await phIndex('event');
   if(d.canManage){$('#newEvent').hidden=false;$('#newEvent').onclick=newEvent}
   const stock=table(['Liquor','>In store'],d.stock.map(s=>`<tr><td>${esc(s.name)}</td><td class="r num"><b>${num(s.onHand)}</b> ${esc(s.unit)}${s.bottles!=null?` <small class="muted">(${s.bottles} btl)</small>`:''}</td></tr>`));
   const stTag={planned:'s-onorder',open:'s-ok',closed:'s-over'};
   const ev=e=>`<div class="ev-row">
     <article class="pass st-${e.status} edge edge-${{planned:'info',open:'ok',closed:'mute'}[e.status]||'mute'}" aria-label="Event pass for ${esc(e.name)}">
-      <div class="pass-band"></div>
+      <div class="pass-band"></div>${PH.idx.event?.covers?.[e.id]?`<img class="pass-photo" data-auth-src="${esc(PH.idx.event.covers[e.id])}" alt="">`:''}
       <h2>${esc(e.name)}</h2>
       <span class="status">${esc(e.statusLabel)}${e.inWindow&&e.status!=='closed'?', licence valid now':''}</span>
       <dl><dt>Date</dt><dd>${esc(e.date)}</dd><dt>Licence</dt><dd>${esc(e.licence)}</dd><dt>From</dt><dd>${esc(e.from)}</dd><dt>Until</dt><dd>${esc(e.until)}</dd>${e.guests?`<dt>Guests</dt><dd>${e.guests}</dd>`:''}</dl>
       ${barcode(e.licence)}
+      <div class="pass-ph">${phBtn('event',e.id,e.name)}</div>
       ${d.canManage&&e.status!=='closed'?`<div class="actions">
         ${e.status==='planned'?`<button class="btn btn-sm btn-primary" data-ev="open" data-id="${e.id}" ${e.inWindow?'':'disabled title="Opens only inside the licence window"'}>Open service</button>`:''}
         <button class="btn btn-sm btn-line" data-ev="receive" data-id="${e.id}">Receive liquor</button>
@@ -243,9 +244,11 @@ function newEvent(){
     <label>Event name<input name="n" required maxlength="120"></label><label>Date<input name="d" type="date" required></label>
     <label>Licence number<input name="l" required maxlength="60"></label><label>Issuing authority<input name="a" value="West Bengal Excise Directorate" maxlength="120"></label>
     <label>Licence valid from<input name="f" type="datetime-local" required></label><label>Valid until<input name="u" type="datetime-local" required></label>
-    <label>Expected guests<input name="g" type="number" min="0"></label><label>Notes<input name="no" maxlength="300"></label></div>`,'Create event',async(f,close)=>{
-    await api('/plugin/cm/events/',{method:'POST',json:{name:f.get('n'),event_date:f.get('d'),licence_number:f.get('l'),licence_authority:f.get('a'),valid_from:dt(f.get('f')),valid_until:dt(f.get('u')),expected_guests:f.get('g')||null,notes:f.get('no')}});
+    <label>Expected guests<input name="g" type="number" min="0"></label><label>Notes<input name="no" maxlength="300"></label></div>${pendingPhotoBlock()}`,'Create event',async(f,close)=>{
+    const r=await api('/plugin/cm/events/',{method:'POST',json:{name:f.get('n'),event_date:f.get('d'),licence_number:f.get('l'),licence_authority:f.get('a'),valid_from:dt(f.get('f')),valid_until:dt(f.get('u')),expected_guests:f.get('g')||null,notes:f.get('no')}});
+    if(r&&r.id)await commitPendingPhoto(`/plugin/cm/photos/event/${r.id}/`,'event');
     close();toast('Event created');renderEvents()});
+  wirePendingPhoto();
 }
 
 /* ================= module 6: sales import ================= */

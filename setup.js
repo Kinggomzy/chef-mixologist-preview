@@ -17,12 +17,13 @@ const danger='style="color:var(--red)"';
 let SETUP=null;
 async function renderSetup(){
   const body=view('setup','Setup','Suppliers, storage areas, categories and bulk item import. Archived records are kept and can be restored; delete only works for records nothing refers to yet.');
-  const d=await load(body,'/plugin/cm/setup/');if(!d)return;SETUP=d;const c=d.can;
-  const supRows=d.suppliers.filter(s=>s.active).map(s=>`<tr><td><b>${xl('supplier',s.name)}</b><br><small class="muted">${esc(s.contact)} ${esc(s.phone)} ${esc(s.email)}</small></td><td>${esc(s.gstin)||'—'}</td><td class="r num">${s.items}</td>
+  const d=await load(body,'/plugin/cm/setup/');if(!d)return;SETUP=d;const c=d.can;await Promise.all([phIndex('area'),phIndex('category')]);
+  const thumb=(u,t='')=>u?`<img class="row-ph" data-auth-src="${esc(u)}" alt="${esc(t)}">`:'';
+  const supRows=d.suppliers.filter(s=>s.active).map(s=>`<tr><td><div class="with-ph">${thumb(s.image,s.name)}<span><b>${xl('supplier',s.name)}</b><br><small class="muted">${esc(s.contact)} ${esc(s.phone)} ${esc(s.email)}</small></span></div></td><td>${esc(s.gstin)||'—'}</td><td class="r num">${s.items}</td>
     <td class="r">${c.supplier.change?btn('Edit',`data-sup-edit="${s.id}"`)+' '+btn('Archive',`data-arch="supplier:${s.id}"`):''} ${c.supplier.delete?btn('Delete',`data-del="supplier:${s.id}:${esc(s.name)}" ${danger}`):''}</td></tr>`);
-  const locRows=d.locations.filter(l=>!d.archived.locations.some(a=>a.id===l.id)).map(l=>`<tr><td><b>${xl('location',l.name)}</b></td><td>${esc(l.owner||'Anyone with stock access')}</td><td class="r num">${l.items}</td>
+  const locRows=d.locations.filter(l=>!d.archived.locations.some(a=>a.id===l.id)).map(l=>`<tr><td><div class="with-ph">${thumb(PH.idx.area?.covers?.[l.id],l.name)}<b>${xl('location',l.name)}</b></div></td><td>${esc(l.owner||'Anyone with stock access')}</td><td class="r num">${l.items}</td>
     <td class="r">${c.location.change?btn('Edit',`data-loc-edit="${l.id}"`)+' '+btn('Archive',`data-arch="location:${l.id}"`):''} ${c.location.delete?btn('Delete',`data-del="location:${l.id}:${esc(l.name)}" ${danger}`):''}</td></tr>`);
-  const catRows=d.categories.filter(k=>!d.archived.categories.some(a=>a.id===k.id)).map(k=>`<tr><td><b>${xl('category',k.name)}</b></td><td class="r num">${k.items}</td>
+  const catRows=d.categories.filter(k=>!d.archived.categories.some(a=>a.id===k.id)).map(k=>`<tr><td><div class="with-ph">${thumb(PH.idx.category?.covers?.[k.id],k.name)}<b>${xl('category',k.name)}</b></div></td><td class="r num">${k.items}</td>
     <td class="r">${c.category.change?btn('Rename',`data-cat-edit="${k.id}"`)+' '+btn('Archive',`data-arch="category:${k.id}"`):''} ${c.category.delete?btn('Delete',`data-del="category:${k.id}:${esc(k.name)}" ${danger}`):''}</td></tr>`);
   const A=d.archived,arch=[...A.items.map(i=>[`item`,i.id,`${i.name} (${i.sku})`,i.kind==='recipe'?'Recipe':'Item',i.kind==='recipe'?c.recipe:c.item]),
     ...A.suppliers.map(s=>['supplier',s.id,s.name,'Supplier',c.supplier]),...A.locations.map(l=>['location',l.id,l.name,'Storage area',c.location]),...A.categories.map(k=>['category',k.id,k.name,'Category',c.category])]
@@ -42,27 +43,29 @@ async function renderSetup(){
 }
 function supplierForm(s){
   s=s||{};
-  formModal(s.id?`Edit ${esc(s.name)}`:'Add supplier','',`${s.id?photoBlock(s.image,s.name):''}<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+  formModal(s.id?`Edit ${esc(s.name)}`:'Add supplier','',`${s.id?photoBlock(s.image,s.name):pendingPhotoBlock()}<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
     <label>Name<input name="name" required maxlength="100" value="${esc(s.name||'')}"></label><label>Contact person<input name="contact" maxlength="100" value="${esc(s.contact||'')}"></label>
     <label>Phone<input name="phone" maxlength="50" value="${esc(s.phone||'')}"></label><label>WhatsApp number<input name="whatsapp" maxlength="20" inputmode="tel" value="${esc(s.whatsapp||'')}" placeholder="Same as phone if a mobile"></label>
     <label>Email<input name="email" type="email" value="${esc(s.email||'')}"></label>
     <label>GSTIN<input name="gstin" maxlength="15" value="${esc(s.gstin||'')}" placeholder="19ABCDE1234F1Z5"></label><label>FSSAI licence<input name="fssai" maxlength="20" value="${esc(s.fssai||'')}"></label></div>
     ${addressFields(s)}<label>Notes<input name="notes" maxlength="250" value="${esc(s.notes||'')}"></label>`,'Save',async(f,close)=>{
     const body=Object.fromEntries(['name','contact','phone','whatsapp','email','gstin','fssai','address','address2','city','state','pin','country','notes'].map(k=>[k,f.get(k)]));
-    await api(s.id?`/plugin/cm/supplier/${s.id}/`:'/plugin/cm/supplier/',{method:s.id?'PATCH':'POST',json:body});close();toast('Supplier saved');renderSetup();reload()});
-  if(s.id)wirePhotoBlock(`/plugin/cm/supplier/${s.id}/photo/`,()=>{SUP_CACHE=null});
+    const r=await api(s.id?`/plugin/cm/supplier/${s.id}/`:'/plugin/cm/supplier/',{method:s.id?'PATCH':'POST',json:body});if(!s.id&&r&&r.id)await commitPendingPhoto(`/plugin/cm/supplier/${r.id}/photo/`);close();toast('Supplier saved');renderSetup();reload()});
+  if(s.id)wirePhotoBlock(`/plugin/cm/supplier/${s.id}/photo/`,()=>{SUP_CACHE=null;renderSetup()});else wirePendingPhoto();
 }
 function locationForm(l){
   l=l||{};
-  formModal(l.id?`Edit ${esc(l.name)}`:'Add storage area','Only the owning team can change stock kept here',`
+  formModal(l.id?`Edit ${esc(l.name)}`:'Add storage area','Only the owning team can change stock kept here',`${l.id?photoBlock(PH.idx.area?.covers?.[l.id],l.name):pendingPhotoBlock()}
     <label>Name<input name="name" required maxlength="100" value="${esc(l.name||'')}"></label>
     <label>Owned by<select name="owner">${SETUP.groups.map(g=>`<option value="${g.id}" ${l.ownerGroup===g.id?'selected':''}>${esc(g.name)}</option>`).join('')}</select></label>`,'Save',async(f,close)=>{
-    await api(l.id?`/plugin/cm/location/${l.id}/`:'/plugin/cm/location/',{method:l.id?'PATCH':'POST',json:{name:f.get('name'),owner_group:+f.get('owner')}});close();toast('Storage area saved');renderSetup();reload()});
+    const r=await api(l.id?`/plugin/cm/location/${l.id}/`:'/plugin/cm/location/',{method:l.id?'PATCH':'POST',json:{name:f.get('name'),owner_group:+f.get('owner')}});if(!l.id&&r&&r.id)await commitPendingPhoto(`/plugin/cm/photos/area/${r.id}/`,'area');close();toast('Storage area saved');renderSetup();reload()});
+  if(l.id)wirePhotoBlock(`/plugin/cm/photos/area/${l.id}/`,async()=>{await phIndex('area',true);renderSetup()});else wirePendingPhoto();
 }
 function categoryForm(k){
   k=k||{};
-  formModal(k.id?`Rename ${esc(k.name)}`:'Add category','',`<label>Name<input name="name" required maxlength="100" value="${esc(k.name||'')}"></label>`,'Save',async(f,close)=>{
-    await api(k.id?`/plugin/cm/category/${k.id}/`:'/plugin/cm/category/',{method:k.id?'PATCH':'POST',json:{name:f.get('name')}});close();toast('Category saved');renderSetup();reload()});
+  formModal(k.id?`Rename ${esc(k.name)}`:'Add category','',`${k.id?photoBlock(PH.idx.category?.covers?.[k.id],k.name):pendingPhotoBlock()}<label>Name<input name="name" required maxlength="100" value="${esc(k.name||'')}"></label>`,'Save',async(f,close)=>{
+    const r=await api(k.id?`/plugin/cm/category/${k.id}/`:'/plugin/cm/category/',{method:k.id?'PATCH':'POST',json:{name:f.get('name')}});if(!k.id&&r&&r.id)await commitPendingPhoto(`/plugin/cm/photos/category/${r.id}/`,'category');close();toast('Category saved');renderSetup();reload()});
+  if(k.id)wirePhotoBlock(`/plugin/cm/photos/category/${k.id}/`,async()=>{await phIndex('category',true);renderSetup()});else wirePendingPhoto();
 }
 function wireSetup(){
   wirePriceList();

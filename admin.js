@@ -66,9 +66,10 @@ function activationFromHash(){
 /* ================= top bar: bell + account menu ================= */
 function renderShellUser(){
   const p=PROFILE;if(!p)return;
+  if(!PH.idx.person&&!PH.loading.person)phIndex('person').then(renderShellUser);
   const nm=[p.firstName,p.lastName].filter(Boolean).join(' ')||p.username,ini=nm.split(/[\s.]+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');
   $('#site').innerHTML=`<button class="icon-btn bell" id="bell" aria-label="Notifications" title="Notifications"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="dot" id="bellDot" hidden></span></button>
-    <div class="acct"><button class="acct-btn" id="acctBtn" aria-haspopup="menu" aria-expanded="false"><span class="avatar">${esc(ini)}</span><span class="acct-name">${esc(nm)}</span></button>
+    <div class="acct"><button class="acct-btn" id="acctBtn" aria-haspopup="menu" aria-expanded="false">${phAvatar('person',p.id,ini)}<span class="acct-name">${esc(nm)}</span></button>
     <div class="acct-menu" id="acctMenu" role="menu" hidden><div class="acct-head"><b>${esc(nm)}</b><small>${esc(p.roles.join(', ')||'No role')}</small></div>
       <button role="menuitem" data-go="profile">My profile</button><button role="menuitem" data-go="prefs">Notification preferences</button><button role="menuitem" data-go="install">Install app</button><button role="menuitem" id="signOut">Sign out</button></div></div>`;
   $('#bell').onclick=()=>go('notifications');
@@ -77,7 +78,7 @@ function renderShellUser(){
   document.addEventListener('click',()=>{menu.hidden=true;btnEl.setAttribute('aria-expanded','false')});
   menu.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
   $('#signOut').onclick=async()=>{try{await api(CM+'auth/logout/',{method:'POST',json:{}})}catch(e){}clearToken();location.hash='';location.reload()};
-  $('#sideFoot').innerHTML=`<span class="avatar">${esc(ini)}</span><div><b>My profile</b><small>${esc(nm)} · ${esc(p.roles.join(', ')||'No role')}</small></div>`;
+  $('#sideFoot').innerHTML=`${phAvatar('person',p.id,ini)}<div><b>My profile</b><small>${esc(nm)} · ${esc(p.roles.join(', ')||'No role')}</small></div>`;
   $('#sideFoot').onclick=()=>{go('profile');setNav(false)};
   const so=$('#sideOut');if(so){so.hidden=false;so.onclick=()=>$('#signOut').click()}
 }
@@ -92,11 +93,11 @@ async function pollBell(){
 /* ================= My profile ================= */
 async function renderProfile(){
   const body=view('profile','My profile','Personal details, two-step verification and the devices you are signed in on.');
-  const p=await load(body,CM+'profile/');if(!p)return;PROFILE=p;renderShellUser();
+  const p=await load(body,CM+'profile/');if(!p)return;PROFILE=p;await phIndex('person');renderShellUser();
   const gate=p.mfa.required&&!p.mfa.enrolled;
   body.innerHTML=(gate?`<div class="panel" style="margin-bottom:16px;background:var(--gold-soft)"><div class="panel-b"><b>Two-step verification is required for your role.</b> Set it up below to use the rest of the app.</div></div>`:'')+
   `<div class="admin-grid">
-   ${panel('Personal details','Your username and roles are managed by an owner',`<form id="pf" class="calc" style="display:grid;gap:12px">
+   ${panel('Personal details','Your username and roles are managed by an owner',`<form id="pf" class="calc" style="display:grid;gap:12px">${photoBlock(PH.idx.person?.covers?.[p.id],p.username)}
      <div class="two"><label>First name<input name="firstName" value="${esc(p.firstName)}" maxlength="150"></label><label>Last name<input name="lastName" value="${esc(p.lastName)}" maxlength="150"></label></div>
      <div class="two"><label>Phone<input name="phone" value="${esc(p.phone)}" maxlength="30"></label><label>Job title<input name="jobTitle" value="${esc(p.jobTitle)}" maxlength="60"></label></div>
      <p class="muted" style="margin:0">${esc(p.username)}${p.email?` · ${esc(p.email)}`:''}</p><div class="role-tags">${p.roles.map(r=>`<span class="sticker soft">${esc(r)}</span>`).join('')}</div>
@@ -114,6 +115,7 @@ async function renderProfile(){
      ${d.current?'':btn('Sign out',`data-dev="${d.id}"`)}</div>`).join('')}</div>
      ${p.devices.length>1?`<div style="margin-top:12px">${btn('Sign out all other devices','id="devAll"')}</div>`:''}`);
   $('#pf').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);try{PROFILE=await api(CM+'profile/',{method:'PATCH',json:Object.fromEntries(f)});renderShellUser();toast('Profile saved')}catch(err){fail(err)}};
+  wirePhotoBlock(CM+`photos/person/${p.id}/`,async()=>{await phIndex('person',true);renderShellUser()},'#pf');
   $('#pw').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);try{await api(CM+'profile/password/',{method:'POST',json:Object.fromEntries(f)});e.target.reset();toast('Password changed. Other devices were signed out.');renderProfile()}catch(err){fail(err)}};
   if($('#mfaStart'))$('#mfaStart').onclick=async()=>{let s;try{s=await api(CM+'profile/mfa/setup/',{method:'POST',json:{}})}catch(e){return fail(e)}
     formModal('Set up your authenticator','Use Google Authenticator, Microsoft Authenticator or similar',`
@@ -181,14 +183,14 @@ async function renderPrefs(){
 let TEAM=null,TEAM_Q='',TEAM_STATUS='all';
 async function renderTeam(){
   const body=view('team','Staff & teams','Invite colleagues, choose their roles and manage their accounts.',API.can.staff?'<button class="btn btn-primary" id="invite">Invite a colleague</button>':'');
-  const d=await load(body,CM+'team/');if(!d)return;TEAM=d;
+  const d=await load(body,CM+'team/');if(!d)return;TEAM=d;await phIndex('person');
   if($('#invite'))$('#invite').onclick=inviteForm;
   const draw=()=>{const q=TEAM_Q.toLowerCase();
     const L=d.staff.filter(s=>(!focusIs('person')||s.name===S.focus.key||s.username===S.focus.key)&&(TEAM_STATUS==='all'||s.status===TEAM_STATUS)&&(!q||`${s.name} ${s.username} ${s.email} ${s.roles.join(' ')}`.toLowerCase().includes(q)));
     const pg=paginate('team',L,12,TEAM_Q+TEAM_STATUS);
     body.innerHTML=`<div class="toolbar"><label class="field" style="flex:1;max-width:360px">Find<input id="tq" value="${esc(TEAM_Q)}" placeholder="Name, username or role" style="border:0;background:none;height:100%;flex:1"></label>
       <label class="field" data-filter>Status<select id="ts">${[['all','Everyone'],['active','Active'],['invited','Invited'],['deactivated','Deactivated']].map(([k,l])=>`<option value="${k}" ${TEAM_STATUS===k?'selected':''}>${l}</option>`).join('')}</select></label><span class="result-count">${L.length} of ${d.staff.length}</span></div>
-      <div class="people">${pg.rows.map(s=>`<button class="person edge edge-${s.status==='active'?'ok':s.status==='invited'?'warn':'mute'}" data-u="${s.id}"><span class="avatar">${esc(s.name.split(/[\s.]+/).slice(0,2).map(w=>w[0]?.toUpperCase()||'').join(''))}</span>
+      <div class="people">${pg.rows.map(s=>`<button class="person edge edge-${s.status==='active'?'ok':s.status==='invited'?'warn':'mute'}" data-u="${s.id}">${phAvatar('person',s.id,s.name.split(/[\s.]+/).slice(0,2).map(w=>w[0]?.toUpperCase()||'').join(''))}
         <span class="person-t"><b>${esc(s.name)}</b><small>${esc(s.username)}${s.jobTitle?' · '+esc(s.jobTitle):''}</small><span class="person-roles">${s.roles.map(r=>`<span class="sticker soft">${esc(r)}</span>`).join('')}</span></span>
         <span class="person-s">${edgeTip(s.status==='active'?'Active':s.status==='invited'?'Invited':'Deactivated')}<small>${s.mfa?'2-step on':'2-step off'} · ${ago(s.lastSignIn)}</small></span></button>`).join('')||'<p class="muted">No one matches.</p>'}</div>${pg.html}`;
     const tq=$('#tq');tq.oninput=()=>{TEAM_Q=tq.value;draw();const n=$('#tq');n.focus();n.setSelectionRange(n.value.length,n.value.length)};
@@ -205,15 +207,16 @@ function showLink(title,a){
     try{await navigator.clipboard.writeText(link);toast('Link copied')}catch(e){toast('Select the link and copy it')}close()});
 }
 function inviteForm(){
-  formModal('Invite a colleague','They choose their own password from a one-time link',`<div class="two">
+  formModal('Invite a colleague','They choose their own password from a one-time link',`${pendingPhotoBlock()}<div class="two">
     <label>First name<input name="firstName" required maxlength="150"></label><label>Last name<input name="lastName" maxlength="150"></label>
     <label>Username<input name="username" placeholder="e.g. arnab.k" maxlength="150"></label><label>Phone<input name="phone" maxlength="30"></label>
     <label>Email (optional)<input name="email" type="email"></label><label>Job title<input name="jobTitle" maxlength="60" placeholder="e.g. Sous chef"></label></div>${roleChecks()}`,'Create activation link',async(f,close)=>{
     const body=Object.fromEntries([...f].filter(([k])=>k!=='roles'));body.roles=f.getAll('roles').map(Number);
-    const r=await api(CM+'team/',{method:'POST',json:body});close();renderTeam();showLink(`${esc(r.username)} invited`,r.activation)});
+    const r=await api(CM+'team/',{method:'POST',json:body});if(r.id)await commitPendingPhoto(CM+`photos/person/${r.id}/`,'person');close();renderTeam();showLink(`${esc(r.username)} invited`,r.activation)});
+  wirePendingPhoto();
 }
 function memberForm(s){
-  formModal(esc(s.name),`${esc(s.username)} · ${s.status}`,`<div class="two">
+  formModal(esc(s.name),`${esc(s.username)} · ${s.status}`,`${photoBlock(PH.idx.person?.covers?.[s.id],s.name)}<div class="two">
     <label>First name<input name="firstName" value="${esc(s.firstName)}"></label><label>Last name<input name="lastName" value="${esc(s.lastName)}"></label>
     <label>Email<input name="email" type="email" value="${esc(s.email)}"></label><label>Job title<input name="jobTitle" value="${esc(s.jobTitle)}"></label></div>
     ${roleChecks(s.roles)}
@@ -227,6 +230,7 @@ function memberForm(s){
   $('#mReset').onclick=()=>confirmModal('Reset this account?','They are signed out everywhere and must choose a new password from a new link.','Reset',async()=>{const r=await api(CM+`team/${s.id}/reset/`,{method:'POST',json:{}});renderTeam();showLink('New activation link',r.activation)});
   $('#mOut').onclick=async()=>{try{const r=await api(CM+`team/${s.id}/signout/`,{method:'POST',json:{}});toast(`${r.signedOut} device${r.signedOut===1?'':'s'} signed out`)}catch(e){fail(e)}};
   if($('#mAccess'))$('#mAccess').onclick=()=>personAccess(s);
+  wirePhotoBlock(CM+`photos/person/${s.id}/`,async()=>{await phIndex('person',true);renderTeam()});
 }
 
 /* ================= Staff roles & access ================= */

@@ -56,7 +56,7 @@
     unarchive:'<path d="M4 7h16v3H4zM6 10v9h12v-9M12 17v-5M9.5 14.5 12 12l2.5 2.5"/>',
     delete:'<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v6M14 11v6"/>',
     remove:'<path d="M6 6l12 12M18 6 6 18"/>'};
-  const rowKind=t=>{t=t.toLowerCase();return t==='restore'?'unarchive':ROW[t]?t:null};
+  const rowKind=t=>{t=t.toLowerCase();return t==='restore'?'unarchive':t==='rename'?'edit':ROW[t]?t:null};
   function iconifyRows(){
     document.querySelectorAll('.page .btn').forEach(b=>{
       if(b.closest('.page-head,.topbar'))return;

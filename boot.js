@@ -18,7 +18,12 @@
     else if (o && typeof o === 'object') { Object.keys(o).forEach(function (k) { var v = o[k]; if (typeof v === 'string' && v.indexOf('/media/') === 0) o[k] = HERE + 'media/' + v.split('/').pop(); else relink(v); }); }
     return o;
   }
-  var ready = realFetch(HERE + 'data/db.json').then(function (r) { return r.json(); }).then(function (d) { RAW = relink(d); DB = clone(RAW); });
+  var ready = realFetch(HERE + 'data/db.json').then(function (r) { return r.json(); }).then(function (d) { RAW = relink(d);
+    // records the sample data leaves unnumbered need an id to hang photos on
+    (RAW.prep.batches || []).forEach(function (b, i) { b.id = b.id || 500 + i; });
+    (RAW.suppliers.returns || []).forEach(function (r, i) { r.id = r.id || 600 + i; });
+    Object.keys(RAW.wastage || {}).forEach(function (k) { ((RAW.wastage[k] || {}).entries || []).forEach(function (e, i) { e.id = e.id || 700 + i; }); });
+    DB = clone(RAW); });
   // the static preview has no offline helper
   try { if (navigator.serviceWorker) { navigator.serviceWorker.register = function () { return Promise.resolve(); }; navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }); } } catch (e) {}
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
@@ -89,10 +94,15 @@
     return { month: month + '-01', label: new Date(month + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }), method: 'fifo', opening: 0, purchases: sum('purchases'), closing: sum('closing'), usage: sum('usage'), categories: cats, previousClosed: true, items: items.length };
   }
 
+  var PH_SINGLE = ['area', 'category', 'person', 'event'], phSeq = 1;
+  function phKind(k) { return k; }
+  function phList(k) { DB.photos = DB.photos || []; return DB.photos.filter(function (p) { return p.kind === k; }); }
   function get(path, q) {
     var m;
     switch (true) {
       case path === 'branding/': return [200, DB.branding];
+      case !!(m = path.match(/^photos\/(\w+)\/$/)): { var kk = phKind(m[1]), cv = {}, cn = {}; phList(m[1]).forEach(function (p) { cv[p.ref] = p.image; cn[p.ref] = (cn[p.ref] || 0) + 1; }); return [200, { covers: cv, counts: cn }]; }
+      case !!(m = path.match(/^photos\/(\w+)\/(\d+)\/$/)): return [200, { photos: phList(m[1]).filter(function (p) { return p.ref === +m[2]; }).map(function (p) { return { id: p.id, image: p.image, at: p.at, by: OWNER }; }).reverse(), max: 6, single: PH_SINGLE.indexOf(m[1]) >= 0, canEdit: true }];
       case path === 'profile/': return [200, DB.profile];
       case path === 'inventory/': return [200, inv()];
       case path === 'suppliers/': return [200, DB.suppliers];
@@ -272,6 +282,13 @@
       if (!old.id && b.kind !== 'prep') DB.sales.menu.push({ sku: row.sku, name: row.name, price: row.price });
       audit('changed a recipe: ' + row.name, 'kitchen'); return [m && method === 'PUT' ? 200 : 201, { id: id }];
     }
+    if ((m = path.match(/^photos\/(\w+)\/(\d+)\/$/))) {
+      DB.photos = DB.photos || [];
+      if (method === 'DELETE') { DB.photos = DB.photos.filter(function (p) { return !(p.kind === m[1] && p.ref === +m[2] && (!b || !b.id || p.id === b.id)); }); return [200, { removed: true }]; }
+      if (PH_SINGLE.indexOf(m[1]) >= 0) DB.photos = DB.photos.filter(function (p) { return !(p.kind === m[1] && p.ref === +m[2]); });
+      else if (phList(m[1]).filter(function (p) { return p.ref === +m[2]; }).length >= 6) return err(400, 'image', 'Up to 6 photos per record. Remove one first');
+      var np = { id: phSeq++, kind: m[1], ref: +m[2], image: URL.createObjectURL(b.get('image')), at: isoNow() }; DB.photos.push(np); return [200, { id: np.id, image: np.image }];
+    }
     if ((m = path.match(/^recipes\/(\d+)\/photo\/$/))) { var rc = DB.recipes.recipes.find(function (r) { return r.id === +m[1]; }); if (method === 'DELETE') { rc.image = null; return [200, { image: null }]; } rc.image = URL.createObjectURL(b.get('image')); return [200, { image: rc.image }]; }
     if ((m = path.match(/^supplier\/(\d+)\/photo\/$/))) {
       var sp = DB.setup.suppliers.find(function (r) { return r.id === +m[1]; }), sb = DB.suppliers.suppliers.find(function (r) { return r.id === +m[1]; });
@@ -381,7 +398,7 @@
     if (path === 'team/' && method === 'POST') {
       var u = (b.username || (b.firstName + '.' + (b.lastName || 'new')).toLowerCase()), sid = 100 + DB.team.staff.length;
       DB.team.staff.push({ id: sid, username: u, name: (b.firstName + ' ' + (b.lastName || '')).trim(), firstName: b.firstName, lastName: b.lastName || '', email: b.email || '', phone: b.phone || '', jobTitle: b.jobTitle || '', roles: (b.roles || []).map(function (id) { return (DB.team.roles.find(function (r) { return r.id === id; }) || {}).name; }), active: true, superuser: false, status: 'invited', mfa: false, lastSignIn: null });
-      return [201, { username: u, activation: location.href.split('#')[0] + '#activate=' + sid + '.sample-link' }];
+      return [201, { id: sid, username: u, activation: location.href.split('#')[0] + '#activate=' + sid + '.sample-link' }];
     }
     if ((m = path.match(/^team\/(\d+)\/$/)) && method === 'PATCH') { var s2 = DB.team.staff.find(function (x) { return x.id === +m[1]; }); if (s2) { Object.assign(s2, b); if (b.roles) s2.roles = b.roles.map(function (id) { return (DB.team.roles.find(function (r) { return r.id === id; }) || {}).name; }); } return [200, {}]; }
     if (path.indexOf('team/') === 0) return [200, {}];
@@ -401,8 +418,9 @@
     if ((m = path.match(/^supplier\/(\d+)\/(archive|restore)\/$/))) { var s3 = DB.setup.suppliers.find(function (x) { return x.id === +m[1]; }); if (s3) s3.active = m[2] === 'restore'; return [200, {}]; }
     if ((m = path.match(/^(location|category)\/(\d+)?\/?$/)) && (method === 'POST' || method === 'PATCH')) {
       var list = m[1] === 'location' ? DB.setup.locations : DB.setup.categories, ex = m[2] ? list.find(function (x) { return x.id === +m[2]; }) : null;
+      var nid = 300 + list.length;
       if (ex) ex.name = b.name; else { list.push(m[1] === 'location' ? { id: 300 + list.length, name: b.name, owner: 'Store / Purchasing', ownerGroup: 5, items: 0 } : { id: 300 + list.length, name: b.name, items: 0 }); inv().meta[m[1] === 'location' ? 'locations' : 'categories'].push({ id: 300 + list.length, name: b.name }); }
-      return [method === 'POST' ? 201 : 200, {}];
+      return [method === 'POST' ? 201 : 200, { id: ex ? ex.id : nid }];
     }
     if (path === 'import/items/' && method === 'POST') {
       var rows = String(b.csv || '').split('\n').filter(Boolean).slice(1).map(function (ln, n) { var c = ln.split(','); return { line: n + 2, sku: c[0] || '', name: c[1] || '', action: itemBySku((c[0] || '').toUpperCase()) ? 'Update' : 'New item', errors: c[0] && c[1] ? [] : ['SKU and name are required'] }; });
@@ -437,6 +455,7 @@
       if (i >= 0) {
         var path = p.slice(i + '/plugin/cm/'.length), body = init.body, isForm = typeof FormData !== 'undefined' && body instanceof FormData;
         if (!isForm && typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
+        if (method === 'DELETE' && u.searchParams.get('id')) body = { id: +u.searchParams.get('id') };
         res = method === 'GET' ? get(path, u.searchParams) : write(method, path, body, isForm);
       } else res = [200, {}];  // /api/part/<id>/ photo upload and the like
       var status = res[0], data = res[1];
