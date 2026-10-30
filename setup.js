@@ -117,7 +117,7 @@ openItem=function(sku){
 };
 function itemAdmin(x,what){
   const m=META;
-  if(what==='edit')return formModal(`Edit ${esc(x.name)}`,'The unit can only change while nothing is in stock',`
+  if(what==='edit'){formModal(`Edit ${esc(x.name)}`,'The unit can only change while nothing is in stock',`${photoBlock(x.img,x.name)}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
      <label>Name<input name="name" required maxlength="100" value="${esc(x.name)}"></label>
      <label>Category<select name="category">${m.categories.map(c=>`<option value="${c.id}" ${c.name===x.cat?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label>
@@ -129,6 +129,7 @@ function itemAdmin(x,what){
     const body={name:f.get('name'),category:+f.get('category'),location:+f.get('location'),supplier:+f.get('supplier'),pack:+f.get('pack')||1};
     if(f.get('unit')!==x.unit)body.unit=f.get('unit');if(f.has('cost'))body.cost=f.get('cost')||null;
     await api(`/plugin/cm/item/${x.id}/`,{method:'PATCH',json:body});close();toast('Item saved');await reload()});
+    wirePhotoBlock(`/plugin/cm/item/${x.id}/photo/`,async()=>{await reload()});return}
   if(what==='opening')return formModal(`Opening stock · ${esc(x.name)}`,`Goes into ${esc(x.loc)}`,`
     ${qtyField('Quantity',x)}<label>Lot / batch<input name="b" maxlength="100"></label><label>Use by<input name="e" type="date"></label>`,'Add stock',async(f,close)=>{
     await api(`/plugin/cm/item/${x.id}/opening-stock/`,{method:'POST',json:{quantity:f.get('q'),unit:f.get('qUnit'),batch:f.get('b'),expiry_date:f.get('e')||null}});close();toast('Stock added');await reload()});
@@ -186,7 +187,7 @@ renderEvents=async function(){
   const store=$$('#v-events > .vbody > div > .panel').pop()||$$('#v-events .panel').pop();
   store.querySelector('.panel-h').insertAdjacentHTML('beforeend',btn('+ Liquor item','id="lqAdd"','btn-primary'));
   $('#lqAdd').onclick=()=>formModal('Add event liquor','Stock is counted in mL',`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-    <label>Name<input name="n" required maxlength="100" placeholder="e.g. Single malt, 750 ml"></label><label>SKU<input name="s" required pattern="[A-Za-z0-9-]{2,20}" placeholder="LQ-605"></label>
+    <label>Name<input name="n" required maxlength="100" placeholder="e.g. Single malt, 750 ml"></label><label>SKU<input name="s" required pattern="[A-Za-z0-9\\-]{2,20}" placeholder="LQ-605"></label>
     <label>Bottle size (mL)<input name="b" type="number" min="1" value="750"></label><label>Cost per bottle (₹)<input name="c" type="number" min="0" step="0.01"></label></div>`,'Add',async(f,close)=>{
     await api('/plugin/cm/liquor-item/',{method:'POST',json:{name:f.get('n'),sku:f.get('s'),bottle_ml:f.get('b'),cost_per_bottle:f.get('c')||null}});close();toast('Liquor item added');renderEvents()});
   d.events.filter(e=>e.status==='planned').forEach(e=>{const b=$(`#v-events [data-ev="open"][data-id="${e.id}"]`);if(!b)return;

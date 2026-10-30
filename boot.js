@@ -289,6 +289,11 @@
       else if (phList(m[1]).filter(function (p) { return p.ref === +m[2]; }).length >= 6) return err(400, 'image', 'Up to 6 photos per record. Remove one first');
       var np = { id: phSeq++, kind: m[1], ref: +m[2], image: URL.createObjectURL(b.get('image')), at: isoNow() }; DB.photos.push(np); return [200, { id: np.id, image: np.image }];
     }
+    if ((m = path.match(/^item\/(\d+)\/photo\/$/))) {
+      var itp = inv().items.find(function (r) { return r.id === +m[1]; });
+      if (itp) itp.img = method === 'DELETE' ? null : URL.createObjectURL(b.get('image'));
+      return [200, { image: itp ? itp.img : null }];
+    }
     if ((m = path.match(/^recipes\/(\d+)\/photo\/$/))) { var rc = DB.recipes.recipes.find(function (r) { return r.id === +m[1]; }); if (method === 'DELETE') { rc.image = null; return [200, { image: null }]; } rc.image = URL.createObjectURL(b.get('image')); return [200, { image: rc.image }]; }
     if ((m = path.match(/^supplier\/(\d+)\/photo\/$/))) {
       var sp = DB.setup.suppliers.find(function (r) { return r.id === +m[1]; }), sb = DB.suppliers.suppliers.find(function (r) { return r.id === +m[1]; });

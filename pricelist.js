@@ -3,7 +3,7 @@
 function priceListPanel(suppliers){
   if(!API.can.suppliersEdit||!API.can.pricing)return '';
   return panel('Supplier price lists','Download the Excel template with current prices, fill in the new ones, upload it back. You see every change before it is saved.',
-   `<div class="pl-bar"><label class="field">Supplier<select id="plSup"><option value="">All suppliers</option>${suppliers.filter(s=>s.active).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></label>
+   `<div class="pl-bar"><label class="field"><select id="plSup" aria-label="Supplier"><option value="">All suppliers</option>${suppliers.filter(s=>s.active).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></label>
      <button type="button" class="btn btn-line" id="plTpl">Download Excel template</button>
      <label class="btn btn-primary">Upload filled-in file<input type="file" id="plFile" accept=".xlsx,.csv" hidden></label></div>
     <div id="plOut"></div>`);

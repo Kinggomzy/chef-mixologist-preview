@@ -40,9 +40,9 @@ async function saveReplenishment(x){
 function newItem(){
   if(!needLive('partAdd'))return;const m=META;
   const opts=l=>l.map(o=>`<option value="${o.id}">${esc(o.name)}</option>`).join('');
-  formModal('New raw material','Creates the item, its supplier link and price',`
+  formModal('New raw material','Creates the item, its supplier link and price',`${pendingPhotoBlock()}
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-    <label>Name<input name="name" required maxlength="100"></label><label>SKU<input name="sku" required pattern="[A-Za-z0-9-]{2,20}" placeholder="e.g. PR-214"></label>
+    <label>Name<input name="name" required maxlength="100"></label><label>SKU<input name="sku" required pattern="[A-Za-z0-9\\-]{2,20}" placeholder="e.g. PR-214"></label>
     <label>Category<select name="category">${opts(m.categories)}</select></label><label>Unit<select name="unit">${m.units.map(u=>`<option>${esc(u)}</option>`).join('')}</select></label>
     <label>Storage location<select name="location">${opts(m.locations)}</select></label><label>Supplier<select name="supplier">${opts(m.suppliers)}</select></label>
     <label>Cost per unit (₹)<input name="cost" type="number" min="0" step="0.01"></label><label>Supplier pack size<input name="pack" type="number" min="1" value="1"></label>
@@ -52,7 +52,9 @@ function newItem(){
     const n=k=>f.get(k)===''?null:f.get(k);
     const r=await api('/plugin/cm/item/',{method:'POST',json:{name:f.get('name'),sku:f.get('sku'),category:+f.get('category'),unit:f.get('unit'),location:+f.get('location'),
       supplier:+f.get('supplier'),cost:n('cost'),pack:+f.get('pack')||1,shelf_life_days:n('shelf'),lead_time_days:n('lead'),avg_daily_use:n('avg'),storage:f.get('storage')}});
-    close();toast(`${esc(r.sku)} created — add a photo from its card`);await reload()});
+    if(r&&r.id)await commitPendingPhoto(`/plugin/cm/item/${r.id}/photo/`);
+    close();toast(`${esc(r.sku)} created`);await reload()});
+  wirePendingPhoto();
 }
 function exportMoves(){
   const q=S.q.toLowerCase();
@@ -137,7 +139,7 @@ function editRecipe(r){
   formModal(isNew?'New recipe':`Edit ${esc(r.name)}`,'Quantities are per portion (or per batch for preps), as used after trimming',`${isNew?pendingPhotoBlock():photoBlock(r.image,r.name)}
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
     <label>Name<input name="name" required maxlength="100" value="${esc(r.name||'')}"></label>
-    ${isNew?'<label>SKU<input name="sku" required pattern="[A-Za-z0-9-]{2,20}" placeholder="e.g. MN-810"></label>':`<label>SKU<input value="${esc(r.sku)}" disabled></label>`}
+    ${isNew?'<label>SKU<input name="sku" required pattern="[A-Za-z0-9\\-]{2,20}" placeholder="e.g. MN-810"></label>':`<label>SKU<input value="${esc(r.sku)}" disabled></label>`}
     <label>Type<select name="kind">${[['dish','Dish'],['beverage','Beverage'],['prep','Prep / sub-recipe']].map(([k,l])=>`<option value="${k}" ${r.kind===k?'selected':''}>${l}</option>`).join('')}</select></label>
     <label>Menu section<select name="category">${d.categories.map(c=>`<option ${r.category===c?'selected':''}>${esc(c)}</option>`).join('')}</select></label>
     <label>Station<select name="station"><option value="kitchen" ${r.station==='kitchen'?'selected':''}>Kitchen</option><option value="beverage" ${r.station==='beverage'?'selected':''}>Beverage station</option></select></label>
@@ -265,7 +267,7 @@ function importSales(d){
   formModal('Import sales','Paste or choose the POS CSV export: columns item (menu SKU) and quantity, optional price',`
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
     <label>Business date<input name="date" type="date" required value="${TODAY.toISOString().slice(0,10)}"></label><label>Covers (guests)<input name="covers" type="number" min="0"></label>
-    <label>Source<input name="source" value="pos" pattern="[A-Za-z0-9 _.-]{1,40}" required></label><label>Reference (bill range or Z-report no.)<input name="ref" required maxlength="80"></label></div>
+    <label>Source<input name="source" value="pos" pattern="[A-Za-z0-9 _.\\-]{1,40}" required></label><label>Reference (bill range or Z-report no.)<input name="ref" required maxlength="80"></label></div>
    <label>CSV file<input type="file" accept=".csv,text/csv" id="csvFile"></label>
    <label>or paste CSV<textarea name="csv" rows="6" placeholder="item,quantity&#10;MN-801,6&#10;MK-901,9">${'item,quantity\n'}</textarea></label>
    <details><summary class="muted">Menu SKUs</summary>${d.menu.map(m=>`<div><code>${esc(m.sku)}</code> ${esc(m.name)}</div>`).join('')}</details>`,'Import',async(f,close)=>{
