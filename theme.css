@@ -1095,3 +1095,9 @@ label{align-self:stretch}
   td .qty-unit > .unit-sel,td .qty-unit > select{width:76px;min-width:76px;max-width:76px;flex:none;box-sizing:border-box}
   .recv-t .qty-unit .qty-in{width:76px}
 }
+/* Phone drawer: Reorder and Receive goods share one row; the page search is not repeated here */
+@media (max-width:600px){
+  .side > .topbar{grid-template-columns:1fr 1fr}
+  .side > .topbar .search{display:none}
+  .side > .topbar .btn{padding:0 8px;white-space:nowrap}
+}
