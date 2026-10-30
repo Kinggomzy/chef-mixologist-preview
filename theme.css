@@ -1211,3 +1211,22 @@ img.ph-cover{object-fit:cover;display:block}
 #feed .feed > .feed-row{margin:0;min-width:0}
 @media (max-width:860px){#feed .feed{grid-template-columns:minmax(0,1fr)}}
 .dockets{grid-auto-rows:auto;align-items:stretch}
+.pager{width:auto;max-width:100%}
+
+/* Setup: spreadsheet import and supplier price lists sit side by side on wide screens */
+.setup-pair{display:grid;grid-template-columns:minmax(0,1fr);gap:0 16px;align-items:stretch}
+@media (min-width:1100px){.setup-pair:has(> .panel + .panel){grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.setup-pair > .panel{display:flex;flex-direction:column}
+.setup-pair > .panel > .panel-b{flex:1}
+.imp-foot{display:flex;flex-direction:row-reverse;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.imp-foot > details{flex:1 1 220px;min-width:0}
+
+/* Tables never scroll sideways at any width: they fill the card and wrap their text and buttons */
+.tablewrap{overflow-x:visible}
+.modal-box .tablewrap{overflow-x:visible}
+.tablewrap table.t:not(.grid){width:100%;table-layout:auto}
+.tablewrap table.t:not(.grid) th,.tablewrap table.t:not(.grid) td{overflow-wrap:anywhere}
+.tablewrap table.t:not(.grid) th{white-space:normal}
+.tablewrap table.t:not(.grid) td.r{white-space:normal}
+.tablewrap table.t:not(.grid) td.r .btn{margin:2px 0}
+.tablewrap .t .num{white-space:normal}

@@ -220,7 +220,7 @@ VIEWS.reports=async function(){
 const baseSetup=VIEWS.setup;
 VIEWS.setup=async function(){
   await baseSetup();
-  $$('#v-setup .panel').forEach((pnl,i)=>pageDom(pnl.querySelector('tbody'),'tr','setup-'+i,12));
+  $$('#v-setup .panel').forEach((pnl,i)=>{if(!pnl.querySelector('#archBox'))pageDom(pnl.querySelector('tbody'),'tr','setup-'+i,12)});
   const f=$('#impFile');if(!f)return;
   const zone=document.createElement('label');zone.className='dropzone';zone.innerHTML='<b>Drop your spreadsheet here</b><span class="muted">or click to choose a CSV file. You\'ll see a preview before anything is saved.</span>';
   f.before(zone);zone.appendChild(f);f.style.display='none';

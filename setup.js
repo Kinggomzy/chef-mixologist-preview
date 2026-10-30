@@ -26,20 +26,26 @@ async function renderSetup(){
   const catRows=d.categories.filter(k=>!d.archived.categories.some(a=>a.id===k.id)).map(k=>`<tr><td><div class="with-ph">${thumb(PH.idx.category?.covers?.[k.id],k.name)}<b>${xl('category',k.name)}</b></div></td><td class="r num">${k.items}</td>
     <td class="r">${c.category.change?btn('Rename',`data-cat-edit="${k.id}"`)+' '+btn('Archive',`data-arch="category:${k.id}"`):''} ${c.category.delete?btn('Delete',`data-del="category:${k.id}:${esc(k.name)}" ${danger}`):''}</td></tr>`);
   const A=d.archived,arch=[...A.items.map(i=>[`item`,i.id,`${i.name} (${i.sku})`,i.kind==='recipe'?'Recipe':'Item',i.kind==='recipe'?c.recipe:c.item]),
-    ...A.suppliers.map(s=>['supplier',s.id,s.name,'Supplier',c.supplier]),...A.locations.map(l=>['location',l.id,l.name,'Storage area',c.location]),...A.categories.map(k=>['category',k.id,k.name,'Category',c.category])]
-    .map(([t,id,name,label,p])=>`<tr><td>${esc(name)}</td><td class="muted">${label}</td><td class="r">${p.change?btn('Restore',`data-restore="${t}:${id}"`,'btn-primary'):''} ${p.delete||(t==='item'&&c.item.delete)?btn('Delete',`data-del="${t}:${id}:${esc(name)}" ${danger}`):''}</td></tr>`);
+    ...A.suppliers.map(s=>['supplier',s.id,s.name,'Supplier',c.supplier]),...A.locations.map(l=>['location',l.id,l.name,'Storage area',c.location]),...A.categories.map(k=>['category',k.id,k.name,'Category',c.category])];
+  const archRow=([t,id,name,label,p])=>`<tr><td>${esc(name)}</td><td class="muted">${label}</td><td class="r">${p.change?btn('Restore',`data-restore="${t}:${id}"`,'btn-primary'):''} ${p.delete||(t==='item'&&c.item.delete)?btn('Delete',`data-del="${t}:${id}:${esc(name)}" ${danger}`):''}</td></tr>`;
   body.innerHTML=
     panel('Suppliers',c.supplier.add?btn('+ Add supplier','id="supAdd"','btn-primary'):'',table(['Supplier','GSTIN','>Items',''],supRows,'No suppliers yet'))+
-    `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">`+
+    `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:16px">`+
     panel('Storage areas',c.location.add?btn('+ Add area','id="locAdd"','btn-primary'):'',table(['Area','Owned by','>Lots',''],locRows))+
     panel('Item categories',c.category.add?btn('+ Add category','id="catAdd"','btn-primary'):'',table(['Category','>Items',''],catRows))+`</div>`+
-    (c.item.add?panel('Import items from a spreadsheet','Save your sheet as CSV. Existing SKUs are updated; nothing is saved if any row has an error.',
-      `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">${btn('Download template','id="impTpl"')}<input type="file" accept=".csv,text/csv" id="impFile"></div>
-       <details><summary class="muted">Columns</summary><p class="muted">${d.importColumns.map(x=>`<code>${x}</code>`).join(' ')} — required: sku, name, category, unit, location, supplier. Allergens separated by <code>;</code> (${Object.keys(META.allergens).join(', ')}). jain: yes/no. Dates YYYY-MM-DD.</p></details>
+    `<div class="setup-pair">`+(c.item.add?panel('Import items from a spreadsheet','Save your sheet as CSV. Existing SKUs are updated; nothing is saved if any row has an error.',
+      `<div style="margin-bottom:10px"><input type="file" accept=".csv,text/csv" id="impFile"></div>
+       <div class="imp-foot">${btn('Download template','id="impTpl"')}<details><summary class="muted">Columns</summary><p class="muted">${d.importColumns.map(x=>`<code>${x}</code>`).join(' ')} — required: sku, name, category, unit, location, supplier. Allergens separated by <code>;</code> (${Object.keys(META.allergens).join(', ')}). jain: yes/no. Dates YYYY-MM-DD.</p></details></div>
        <div id="impOut"></div>`):'')+
-    priceListPanel(d.suppliers)+
-    panel('Archived','Hidden from daily screens',table(['Record','Type',''],arch,'Nothing archived'));
+    priceListPanel(d.suppliers)+`</div>`+
+    panel('Archived','Hidden from daily screens',arch.length?`<div class="toolbar"><label class="field">Sort<select id="archSort" data-sort><option value="az">Name A to Z</option><option value="za">Name Z to A</option><option value="type">Type</option></select></label>
+      <label class="field" data-filter>Type<select id="archType"><option value="">All types</option>${[...new Set(arch.map(r=>r[3]))].sort().map(t=>`<option>${t}</option>`).join('')}</select></label><span class="result-count" id="archCount"></span></div><div id="archBox"></div>`:table(['Record','Type',''],[],'Nothing archived'));
   wireSetup();
+  const drawArch=()=>{const box=$('#archBox');if(!box)return;const ty=$('#archType').value,so=$('#archSort').value;
+    const L=arch.filter(r=>!ty||r[3]===ty).sort((x,y)=>so==='type'?x[3].localeCompare(y[3])||x[2].localeCompare(y[2]):so==='za'?y[2].localeCompare(x[2]):x[2].localeCompare(y[2]));
+    box.innerHTML=table(['Record','Type',''],L.map(archRow),'Nothing matches');$('#archCount').textContent=`${L.length} of ${arch.length}`;
+    wireRestoreDel(box);pageDom(box.querySelector('tbody'),'tr','setup-arch',12)};
+  if($('#archBox')){$('#archSort').onchange=drawArch;$('#archType').onchange=drawArch;drawArch()}
 }
 function supplierForm(s){
   s=s||{};
@@ -67,6 +73,12 @@ function categoryForm(k){
     const r=await api(k.id?`/plugin/cm/category/${k.id}/`:'/plugin/cm/category/',{method:k.id?'PATCH':'POST',json:{name:f.get('name')}});if(!k.id&&r&&r.id)await commitPendingPhoto(`/plugin/cm/photos/category/${r.id}/`,'category');close();toast('Category saved');renderSetup();reload()});
   if(k.id)wirePhotoBlock(`/plugin/cm/photos/category/${k.id}/`,async()=>{await phIndex('category',true);renderSetup()});else wirePendingPhoto();
 }
+function wireRestoreDel(root){
+  root.querySelectorAll('[data-restore]').forEach(b=>b.onclick=async()=>{const [t,id]=b.dataset.restore.split(':');if(await act('POST',`/plugin/cm/${t}/${id}/restore/`,{},'Restored')){renderSetup();reload()}});
+  root.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const [t,id,...n]=b.dataset.del.split(':');
+    confirmModal(`Delete ${esc(n.join(':'))}?`,'This cannot be undone. If anything still refers to it, you will be asked to archive it instead.','Delete',async()=>{
+      await api(`/plugin/cm/${t}/${id}/`,{method:'DELETE'});toast('Deleted');renderSetup();reload()})});
+}
 function wireSetup(){
   wirePriceList();
   const on=(sel,fn)=>{const el=$(sel);if(el)el.onclick=fn};
@@ -75,10 +87,7 @@ function wireSetup(){
   $$('[data-loc-edit]').forEach(b=>b.onclick=()=>locationForm(SETUP.locations.find(s=>s.id===+b.dataset.locEdit)));
   $$('[data-cat-edit]').forEach(b=>b.onclick=()=>categoryForm(SETUP.categories.find(s=>s.id===+b.dataset.catEdit)));
   $$('[data-arch]').forEach(b=>b.onclick=async()=>{const [t,id]=b.dataset.arch.split(':');if(await act('POST',`/plugin/cm/${t}/${id}/archive/`,{},'Archived')){renderSetup();reload()}});
-  $$('[data-restore]').forEach(b=>b.onclick=async()=>{const [t,id]=b.dataset.restore.split(':');if(await act('POST',`/plugin/cm/${t}/${id}/restore/`,{},'Restored')){renderSetup();reload()}});
-  $$('[data-del]').forEach(b=>b.onclick=()=>{const [t,id,...n]=b.dataset.del.split(':');
-    confirmModal(`Delete ${esc(n.join(':'))}?`,'This cannot be undone. If anything still refers to it, you will be asked to archive it instead.','Delete',async()=>{
-      await api(`/plugin/cm/${t}/${id}/`,{method:'DELETE'});toast('Deleted');renderSetup();reload()})});
+  wireRestoreDel(document);
   on('#impTpl',async()=>{const r=await act('GET','/plugin/cm/import/items/');if(!r)return;
     const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([r.template],{type:'text/csv'})),download:'items-template.csv'});a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)});
   const f=$('#impFile');if(f)f.onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>2e6)return toast('File is too large');previewImport(await file.text())};
