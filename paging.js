@@ -30,12 +30,13 @@ function wirePager(root,rerender){
 function pageDom(container,rowSel,key,size){
   if(!container)return;
   const rows=[...container.querySelectorAll(rowSel)];
-  const old=container.parentElement.querySelector(`.pager[data-for="${key}"]`);if(old)old.remove();
+  const anchor=container.closest('table')||container;  // the pager sits after the table, never inside it
+  const old=anchor.parentElement.querySelector(`.pager[data-for="${key}"]`);if(old)old.remove();
   if(rows.length<=size)return;
   const draw=()=>{const pg=paginate(key,rows,size,String(rows.length));rows.forEach((r,i)=>r.hidden=i<pg.offset||i>=pg.offset+size);
-    const ex=container.parentElement.querySelector(`.pager[data-for="${key}"]`);if(ex)ex.remove();
-    container.insertAdjacentHTML('afterend',pg.html.replace('<nav class="pager"',`<nav class="pager" data-for="${key}"`));
-    wirePager(container.parentElement.querySelector(`.pager[data-for="${key}"]`),draw)};
+    const ex=anchor.parentElement.querySelector(`.pager[data-for="${key}"]`);if(ex)ex.remove();
+    anchor.insertAdjacentHTML('afterend',pg.html.replace('<nav class="pager"',`<nav class="pager" data-for="${key}"`));
+    wirePager(anchor.parentElement.querySelector(`.pager[data-for="${key}"]`),draw)};
   draw();
 }
 
