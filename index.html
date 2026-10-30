@@ -872,7 +872,6 @@ async function raisePO(panel,btn){
 function render(){renderMenu();$$('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+S.view));
   (VIEWS[S.view]||renderOverview)()}
 const VIEWS={overview:renderOverview,items:renderItems,inward:renderInward,replenish:renderRepl,moves:renderMoves};
-$('#q').addEventListener('input',e=>{if(!['items','moves','inward'].includes(S.view)){S.q='';return}S.q=e.target.value;render()});
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();$('#q').focus()}if(e.key==='Escape'){closeItem();$('#modal').classList.remove('on')}});
 </script>
 <script src="erp.js"></script>

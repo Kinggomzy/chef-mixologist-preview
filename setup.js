@@ -15,37 +15,65 @@ const danger='style="color:var(--red)"';
 
 /* ================= Setup screen ================= */
 let SETUP=null;
+const SETUP_UI={sup:{q:'',sort:'az',flt:''},loc:{q:'',sort:'az',flt:''},cat:{q:'',sort:'az',flt:''}};
 async function renderSetup(){
   const body=view('setup','Setup','Suppliers, storage areas, categories and bulk item import. Archived records are kept and can be restored; delete only works for records nothing refers to yet.');
   const d=await load(body,'/plugin/cm/setup/');if(!d)return;SETUP=d;const c=d.can;await Promise.all([phIndex('area'),phIndex('category')]);
   const thumb=(u,t='')=>u?`<img class="row-ph" data-auth-src="${esc(u)}" alt="${esc(t)}">`:'';
-  const supRows=d.suppliers.filter(s=>s.active).map(s=>`<tr><td><div class="with-ph">${thumb(s.image,s.name)}<span><b>${xl('supplier',s.name)}</b><br><small class="muted">${esc(s.contact)} ${esc(s.phone)} ${esc(s.email)}</small>${s.gstin?`<small class="gst-inline muted">GSTIN ${esc(s.gstin)}</small>`:''}</span></div></td><td class="gst">${esc(s.gstin)||'—'}</td><td class="r num">${s.items}</td>
-    <td class="r">${c.supplier.change?btn('Edit',`data-sup-edit="${s.id}"`)+' '+btn('Archive',`data-arch="supplier:${s.id}"`):''} ${c.supplier.delete?btn('Delete',`data-del="supplier:${s.id}:${esc(s.name)}" ${danger}`):''}</td></tr>`);
-  const locRows=d.locations.filter(l=>!d.archived.locations.some(a=>a.id===l.id)).map(l=>`<tr><td><div class="with-ph">${thumb(PH.idx.area?.covers?.[l.id],l.name)}<b>${xl('location',l.name)}</b></div></td><td>${esc(l.owner||'Anyone with stock access')}</td><td class="r num">${l.items}</td>
-    <td class="r">${c.location.change?btn('Edit',`data-loc-edit="${l.id}"`)+' '+btn('Archive',`data-arch="location:${l.id}"`):''} ${c.location.delete?btn('Delete',`data-del="location:${l.id}:${esc(l.name)}" ${danger}`):''}</td></tr>`);
-  const catRows=d.categories.filter(k=>!d.archived.categories.some(a=>a.id===k.id)).map(k=>`<tr><td><div class="with-ph">${thumb(PH.idx.category?.covers?.[k.id],k.name)}<b>${xl('category',k.name)}</b></div></td><td class="r num">${k.items}</td>
-    <td class="r">${c.category.change?btn('Rename',`data-cat-edit="${k.id}"`)+' '+btn('Archive',`data-arch="category:${k.id}"`):''} ${c.category.delete?btn('Delete',`data-del="category:${k.id}:${esc(k.name)}" ${danger}`):''}</td></tr>`);
+  const supRow=s=>`<tr><td><div class="with-ph">${thumb(s.image,s.name)}<span><b>${xl('supplier',s.name)}</b><br><small class="muted">${esc(s.contact)} ${esc(s.phone)} ${esc(s.email)}</small>${s.gstin?`<small class="gst-inline muted">GSTIN ${esc(s.gstin)}</small>`:''}</span></div></td><td class="gst">${esc(s.gstin)||'—'}</td><td class="r num">${s.items}</td>
+    <td class="r">${c.supplier.change?btn('Edit',`data-sup-edit="${s.id}"`)+' '+btn('Archive',`data-arch="supplier:${s.id}"`):''} ${c.supplier.delete?btn('Delete',`data-del="supplier:${s.id}:${esc(s.name)}" ${danger}`):''}</td></tr>`;
+  const supAll=d.suppliers.filter(s=>s.active),locAll=d.locations.filter(l=>!d.archived.locations.some(a=>a.id===l.id)),catAll=d.categories.filter(k=>!d.archived.categories.some(a=>a.id===k.id));
+  const locRow=l=>`<tr><td><div class="with-ph">${thumb(PH.idx.area?.covers?.[l.id],l.name)}<b>${xl('location',l.name)}</b></div></td><td>${esc(l.owner||'Anyone with stock access')}</td><td class="r num">${l.items}</td>
+    <td class="r">${c.location.change?btn('Edit',`data-loc-edit="${l.id}"`)+' '+btn('Archive',`data-arch="location:${l.id}"`):''} ${c.location.delete?btn('Delete',`data-del="location:${l.id}:${esc(l.name)}" ${danger}`):''}</td></tr>`;
+  const catRow=k=>`<tr><td><div class="with-ph">${thumb(PH.idx.category?.covers?.[k.id],k.name)}<b>${xl('category',k.name)}</b></div></td><td class="r num">${k.items}</td>
+    <td class="r">${c.category.change?btn('Rename',`data-cat-edit="${k.id}"`)+' '+btn('Archive',`data-arch="category:${k.id}"`):''} ${c.category.delete?btn('Delete',`data-del="category:${k.id}:${esc(k.name)}" ${danger}`):''}</td></tr>`;
+  const ownerOf=l=>l.owner||'Anyone with stock access';
+  const SECS={
+    sup:{all:supAll,row:supRow,head:['Supplier','GSTIN','>Items',''],noun:'supplier',hint:'Search suppliers',text:s=>`${s.name} ${s.contact||''} ${s.phone||''} ${s.email||''} ${s.gstin||''}`,
+      sorts:[['az','Name A to Z'],['za','Name Z to A'],['most','Most items'],['least','Fewest items']],fl:'GSTIN',opts:[['yes','Has GSTIN'],['no','No GSTIN']],pass:(s,v)=>v==='yes'?!!s.gstin:!s.gstin,n:s=>s.items},
+    loc:{all:locAll,row:locRow,head:['Area','Owned by','>Lots',''],noun:'area',hint:'Search storage areas',text:l=>`${l.name} ${ownerOf(l)}`,
+      sorts:[['az','Name A to Z'],['za','Name Z to A'],['most','Most lots'],['least','Fewest lots']],fl:'Owned by',opts:[...new Set(locAll.map(ownerOf))].sort().map(o=>[o,o]),pass:(l,v)=>ownerOf(l)===v,n:l=>l.items},
+    cat:{all:catAll,row:catRow,head:['Category','>Items',''],noun:'category',hint:'Search categories',text:k=>k.name,
+      sorts:[['az','Name A to Z'],['za','Name Z to A'],['most','Most items'],['least','Fewest items']],fl:'Contents',opts:[['has','Has items'],['empty','Empty']],pass:(k,v)=>v==='has'?k.items>0:!k.items,n:k=>k.items}};
+  /* search, sort and filter for one section; the table redraws, the controls stay put */
+  const secTools=k=>{const m=SECS[k],u=SETUP_UI[k];return `<div class="toolbar"><span class="result-count" id="${k}Count"></span>
+    <label class="field">Search<input id="${k}Q" value="${esc(u.q)}" placeholder="${m.hint}" autocomplete="off"></label>
+    <label class="field">Sort<select id="${k}Sort" data-sort>${m.sorts.map(([v,l])=>`<option value="${v}" ${u.sort===v?'selected':''}>${l}</option>`).join('')}</select></label>
+    <label class="field" data-filter>${m.fl}<select id="${k}Flt"><option value="">All</option>${m.opts.map(([v,l])=>`<option value="${esc(v)}" ${u.flt===v?'selected':''}>${esc(l)}</option>`).join('')}</select></label></div><div id="${k}Box"></div>`};
+  const drawSec=k=>{const m=SECS[k],u=SETUP_UI[k],box=$('#'+k+'Box');if(!box)return;
+    const q=u.q.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    const L=m.all.filter(r=>(!u.flt||m.pass(r,u.flt))&&q.every(w=>m.text(r).toLowerCase().includes(w)))
+      .sort((a,b)=>u.sort==='za'?b.name.localeCompare(a.name):u.sort==='most'?m.n(b)-m.n(a)||a.name.localeCompare(b.name):u.sort==='least'?m.n(a)-m.n(b)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
+    box.innerHTML=table(m.head,L.map(m.row),m.all.length?`No ${m.noun} matches`:`No ${m.noun}s yet`);
+    const cnt=$('#'+k+'Count');if(cnt)cnt.textContent=`${L.length} of ${m.all.length}`;
+    box.querySelectorAll('[data-sup-edit]').forEach(b=>b.onclick=()=>supplierForm(SETUP.suppliers.find(s=>s.id===+b.dataset.supEdit)));
+    box.querySelectorAll('[data-loc-edit]').forEach(b=>b.onclick=()=>locationForm(SETUP.locations.find(s=>s.id===+b.dataset.locEdit)));
+    box.querySelectorAll('[data-cat-edit]').forEach(b=>b.onclick=()=>categoryForm(SETUP.categories.find(s=>s.id===+b.dataset.catEdit)));
+    box.querySelectorAll('[data-arch]').forEach(b=>b.onclick=async()=>{const [t,id]=b.dataset.arch.split(':');if(await act('POST',`/plugin/cm/${t}/${id}/archive/`,{},'Archived')){renderSetup();reload()}});
+    wireRestoreDel(box)};
   const A=d.archived,arch=[...A.items.map(i=>[`item`,i.id,`${i.name} (${i.sku})`,i.kind==='recipe'?'Recipe':'Item',i.kind==='recipe'?c.recipe:c.item]),
     ...A.suppliers.map(s=>['supplier',s.id,s.name,'Supplier',c.supplier]),...A.locations.map(l=>['location',l.id,l.name,'Storage area',c.location]),...A.categories.map(k=>['category',k.id,k.name,'Category',c.category])];
   const archRow=([t,id,name,label,p])=>`<tr><td>${esc(name)}</td><td class="muted">${label}</td><td class="r">${p.change?btn('Restore',`data-restore="${t}:${id}"`,'btn-primary'):''} ${p.delete||(t==='item'&&c.item.delete)?btn('Delete',`data-del="${t}:${id}:${esc(name)}" ${danger}`):''}</td></tr>`;
   body.innerHTML=
-    panel('Suppliers',c.supplier.add?btn('+ Add supplier','id="supAdd"','btn-primary'):'',table(['Supplier','GSTIN','>Items',''],supRows,'No suppliers yet'))+
+    panel('Suppliers',c.supplier.add?btn('+ Add supplier','id="supAdd"','btn-primary'):'',secTools('sup'))+
     `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr));gap:16px">`+
-    panel('Storage areas',c.location.add?btn('+ Add area','id="locAdd"','btn-primary'):'',table(['Area','Owned by','>Lots',''],locRows))+
-    panel('Item categories',c.category.add?btn('+ Add category','id="catAdd"','btn-primary'):'',table(['Category','>Items',''],catRows))+`</div>`+
+    panel('Storage areas',c.location.add?btn('+ Add area','id="locAdd"','btn-primary'):'',secTools('loc'))+
+    panel('Item categories',c.category.add?btn('+ Add category','id="catAdd"','btn-primary'):'',secTools('cat'))+`</div>`+
     `<div class="setup-pair">`+(c.item.add?panel('Import items from a spreadsheet','Save your sheet as CSV. Existing SKUs are updated; nothing is saved if any row has an error.',
       `<div style="margin-bottom:10px"><input type="file" accept=".csv,text/csv" id="impFile"></div>
        <div class="imp-foot">${btn('Download template','id="impTpl"')}<details><summary class="muted">Columns</summary><p class="muted">${d.importColumns.map(x=>`<code>${x}</code>`).join(' ')} — required: sku, name, category, unit, location, supplier. Allergens separated by <code>;</code> (${Object.keys(META.allergens).join(', ')}). jain: yes/no. Dates YYYY-MM-DD.</p></details></div>
        <div id="impOut"></div>`):'')+
     priceListPanel(d.suppliers)+`</div>`+
-    panel('Archived','Hidden from daily screens',arch.length?`<div class="toolbar"><label class="field">Sort<select id="archSort" data-sort><option value="az">Name A to Z</option><option value="za">Name Z to A</option><option value="type">Type</option></select></label>
+    panel('Archived','Hidden from daily screens',arch.length?`<div class="toolbar"><label class="field">Search<input id="archQ" placeholder="Search archived records" autocomplete="off"></label><label class="field">Sort<select id="archSort" data-sort><option value="az">Name A to Z</option><option value="za">Name Z to A</option><option value="type">Type</option></select></label>
       <label class="field" data-filter>Type<select id="archType"><option value="">All types</option>${[...new Set(arch.map(r=>r[3]))].sort().map(t=>`<option>${t}</option>`).join('')}</select></label><span class="result-count" id="archCount"></span></div><div id="archBox"></div>`:table(['Record','Type',''],[],'Nothing archived'));
   wireSetup();
-  const drawArch=()=>{const box=$('#archBox');if(!box)return;const ty=$('#archType').value,so=$('#archSort').value;
-    const L=arch.filter(r=>!ty||r[3]===ty).sort((x,y)=>so==='type'?x[3].localeCompare(y[3])||x[2].localeCompare(y[2]):so==='za'?y[2].localeCompare(x[2]):x[2].localeCompare(y[2]));
+  ['sup','loc','cat'].forEach(k=>{drawSec(k);const u=SETUP_UI[k];
+    $('#'+k+'Q').oninput=e=>{u.q=e.target.value;drawSec(k)};$('#'+k+'Sort').onchange=e=>{u.sort=e.target.value;drawSec(k)};$('#'+k+'Flt').onchange=e=>{u.flt=e.target.value;drawSec(k)}});
+  const drawArch=()=>{const box=$('#archBox');if(!box)return;const ty=$('#archType').value,so=$('#archSort').value,aq=($('#archQ').value||'').toLowerCase().trim().split(/\s+/).filter(Boolean);
+    const L=arch.filter(r=>(!ty||r[3]===ty)&&aq.every(w=>`${r[2]} ${r[3]}`.toLowerCase().includes(w))).sort((x,y)=>so==='type'?x[3].localeCompare(y[3])||x[2].localeCompare(y[2]):so==='za'?y[2].localeCompare(x[2]):x[2].localeCompare(y[2]));
     box.innerHTML=table(['Record','Type',''],L.map(archRow),'Nothing matches');$('#archCount').textContent=`${L.length} of ${arch.length}`;
     wireRestoreDel(box);pageDom(box.querySelector('tbody'),'tr','setup-arch',12)};
-  if($('#archBox')){$('#archSort').onchange=drawArch;$('#archType').onchange=drawArch;drawArch()}
+  if($('#archBox')){$('#archQ').oninput=drawArch;$('#archSort').onchange=drawArch;$('#archType').onchange=drawArch;drawArch()}
 }
 /* a supplier can be edited from Setup or from the Suppliers page: redraw whichever one is showing */
 function afterSupplier(){SUP_CACHE=null;if(S.view==='suppliers'&&VIEWS.suppliers)VIEWS.suppliers();else renderSetup()}

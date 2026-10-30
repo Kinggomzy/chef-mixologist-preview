@@ -28,13 +28,14 @@ function fmLabel(f){
 
 /* a search box for the page itself (desktop): filters this page's list as you type */
 const PG_SEARCHES=[];
+let PG_KEEP=null;
 function pageSearch(view,generic){
   const l=document.createElement('label');l.className='pg-search';
   l.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" autocomplete="off" aria-label="Search this page" placeholder="'+(PG_HINT[view]||({items:'Search raw materials',moves:'Search movements'})[view])+'"><button type="button" class="pg-x" aria-label="Clear search" hidden>×</button>';
   const inp=l.querySelector('input'),x=l.querySelector('.pg-x');
   const apply=v=>{S.q=v;x.hidden=!v;if(generic)pgRedrawAll();else if(VIEWS[view])VIEWS[view]();else render()};
   inp.value=S.q||'';x.hidden=!inp.value;
-  inp.addEventListener('input',()=>apply(inp.value));
+  inp.addEventListener('input',()=>{PG_KEEP={view,pos:inp.selectionStart,at:Date.now()};apply(inp.value)});
   inp.addEventListener('keydown',e=>{if(e.key==='Escape'&&inp.value){e.stopPropagation();inp.value='';apply('')}});
   x.onclick=()=>{inp.value='';apply('');inp.focus()};
   PG_SEARCHES.push({view,inp,x});
@@ -43,9 +44,9 @@ function pageSearch(view,generic){
 /* ---------- page search for the other list pages ----------
    One search row under the heading. Every paginated list on the page is filtered by the words typed: paginate() does the
    narrowing, and each list's own redraw (registered when its pager is wired) is called so nothing reloads or loses focus. */
-const PG_PAGES=['inward','requests','approvals','stocktake','recipes','suppliers','sales','access','notifications'];
+const PG_PAGES=['inward','events','requests','approvals','stocktake','recipes','suppliers','sales','access','notifications'];
 const PG_AWARE=new Set(['items','moves','dockets','grn']);   // these lists already read S.q themselves
-const PG_HINT={inward:'Search orders and deliveries',requests:'Search requests',approvals:'Search approvals',stocktake:'Search stock-takes',recipes:'Search dishes and recipes',suppliers:'Search suppliers',sales:'Search sales imports',access:'Search access requests',notifications:'Search notifications'};
+const PG_HINT={events:'Search event nights',inward:'Search orders and deliveries',requests:'Search requests',approvals:'Search approvals',stocktake:'Search stock-takes',recipes:'Search dishes and recipes',suppliers:'Search suppliers',sales:'Search sales imports',access:'Search access requests',notifications:'Search notifications'};
 const PG_REDRAW=[];
 const pgText=new WeakMap();
 function pgTextOf(it,depth=0){
@@ -77,13 +78,16 @@ function pgRedrawAll(){
   const v=document.querySelector('.view.on');
   PG_REDRAW.filter(r=>v&&v.contains(r.root)).forEach(r=>r.rerender());
 }
-{const ih=document.querySelector('#v-inward .page-head');if(ih){const row=document.createElement('div');row.className='pg-bar';row.append(pageSearch('inward',true));ih.after(row)}}
+/* the search lives in the page's toolbar row next to Sort and Filter; pages without that row get one slim row of their own */
+function barSearch(id){const row=document.createElement('div');row.className='pg-bar';row.append(pageSearch(id,true));return row}
+{const ih=document.querySelector('#v-inward .page-head');if(ih)ih.after(barSearch('inward'))}
 const viewBeforeSearch=view;
 view=function(id,...rest){
   const body=viewBeforeSearch(id,...rest);
   if(PG_PAGES.includes(id)){
-    const head=body.parentElement.querySelector('.page-head'),l=pageSearch(id,true);
-    const row=document.createElement('div');row.className='pg-bar';row.append(l);head.after(row);
+    const row=barSearch(id);body.parentElement.querySelector('.page-head').after(row);
+    // a page that redraws itself as you type gets a fresh box: give the cursor back where it was
+    if(PG_KEEP&&PG_KEEP.view===id&&Date.now()-PG_KEEP.at<1500){const inp=row.querySelector('input');inp.focus();inp.setSelectionRange(PG_KEEP.pos,PG_KEEP.pos)}
   }
   return body;
 };
@@ -103,10 +107,23 @@ function tidyBar(bar,bars=[bar]){
   const box=document.createElement('span');box.className='fm-btns';
   box.innerHTML=(sortSel?`<button type="button" class="icon-btn" data-fm="sort" aria-haspopup="menu" aria-label="Sort" title="Sort">${FI_SORT}</button>`:'')+
     (filters.length?`<button type="button" class="icon-btn" data-fm="filter" aria-haspopup="dialog" aria-label="Filters" title="Filters">${FI_FILTER}<i class="fm-badge" hidden></i></button>`:'');
-  const vid=(bar.closest('.view')||{}).id;
-  if(['v-items','v-moves'].includes(vid))box.prepend(pageSearch(vid.slice(2)));
+  let regain=null;
+  const sec=bar.closest('.view'),vid=sec&&sec.id.slice(2);
+  if(vid&&(PG_PAGES.includes(vid)||['items','moves'].includes(vid))&&!sec.querySelector('.fm-btns .pg-search')){
+    sec.querySelector(':scope > .pg-bar')?.remove();
+    const l=pageSearch(vid,PG_PAGES.includes(vid));box.prepend(l);
+    if(PG_KEEP&&PG_KEEP.view===vid&&Date.now()-PG_KEEP.at<1500)regain=l.querySelector('input');
+  }
+  /* pages that bring their own search field (audit, team) get the same box in the same place */
+  const own=bars.flatMap(b=>[...b.querySelectorAll('label.field')]).find(l=>l.querySelector('input:not([type=checkbox]):not([type=radio])')&&!l.querySelector('select'));
+  if(own){const inp=own.querySelector('input'),had=document.activeElement===inp,pos=inp.selectionStart;
+    const l=document.createElement('label');l.className='pg-search';
+    l.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+    inp.removeAttribute('style');inp.setAttribute('type','search');inp.setAttribute('aria-label','Search this page');l.append(inp);own.remove();box.prepend(l);
+    if(had)regain=Object.assign(inp,{});PG_KEEP=had?{view:'own',pos:pos??inp.value.length,at:Date.now()}:PG_KEEP}
   const seg=bar.querySelector('.seg');
   seg?seg.before(box):bar.insertBefore(box,holder);
+  if(regain){regain.focus();regain.setSelectionRange(PG_KEEP.pos,PG_KEEP.pos)}
   bars.forEach(b=>{if(b!==bar&&!b.children.length)b.hidden=true});
   const badge=box.querySelector('.fm-badge'),fbtn=box.querySelector('[data-fm=filter]'),sbtn=box.querySelector('[data-fm=sort]');
   const refresh=()=>{
@@ -156,7 +173,7 @@ function tidyAll(){
   const done=new Set();
   document.querySelectorAll('.toolbar:not([data-tidy])').forEach(b=>{
     if(done.has(b))return;
-    const scope=b.closest('.view')||b.parentElement;
+    const scope=b.closest('.panel')||b.closest('.view')||b.parentElement;
     const bars=[...scope.querySelectorAll('.toolbar:not([data-tidy])')].filter(x=>x.querySelector('[data-sort],[data-filter]'));
     bars.forEach(x=>done.add(x));done.add(b);
     if(!bars.length){b.dataset.tidy='1';return}

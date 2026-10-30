@@ -209,6 +209,7 @@ function barcode(code){
   const bars=[];[...String(code)].forEach((ch,i)=>{const n=ch.charCodeAt(0);bars.push(1+n%3,1+(n>>2)%2,2+(n+i)%3)});
   return `<div class="barcode" aria-hidden="true">${bars.slice(0,48).map((w,i)=>`<i style="width:${w}px;opacity:${i%3===1?0:1}"></i>`).join('')}</div><div class="barcode-no">${esc(code)}</div>`;
 }
+const EV={sort:'new',status:'all'};
 async function renderEvents(){
   const body=view('events','Event nights','Liquor is served only under a one-day licence. It stays in the locked event store until a manager issues it during the licence window.',
     '<button class="btn btn-primary" id="newEvent" hidden>+ New event</button>');
@@ -232,13 +233,32 @@ async function renderEvents(){
     <div class="panel ev-reg"><div class="panel-h"><h2>Excise register</h2><p>${e.notes?esc(e.notes):'Issued, returned and consumed for this licence'}</p></div><div class="panel-b">
     ${table(['Liquor','>Issued','>Returned','>Consumed','>Pegs (30 ml)',...(API.can.pricing?['>Value']:[])],e.register.map(l=>`<tr><td>${esc(l.item)}</td><td class="r num">${num(l.issued)}</td><td class="r num">${num(l.returned)}</td><td class="r num"><b>${num(l.consumed)}</b> ${esc(l.unit)}</td><td class="r num">${num(l.pegs)}</td>${API.can.pricing?`<td class="r num">${l.value==null?'—':inr(l.value)}</td>`:''}</tr>`),'No liquor issued yet')}
     </div></div></div>`;
-  body.innerHTML=`${d.events.map(ev).join('')||'<div class="panel empty"><b>No events yet</b>Create one when a one-day licence is granted.</div>'}<div>${panel('Event liquor store','Locked, managers only',stock)}</div>`;
   const liquorOpts=d.stock.map(s=>`<option value="${s.id}">${esc(s.name)} · ${num(s.onHand)} ${esc(s.unit)} in store</option>`).join('');
-  body.querySelectorAll('[data-ev]').forEach(b=>b.onclick=async()=>{const id=b.dataset.id,act=b.dataset.ev;
+  const statuses=[['all','All'],['planned','Planned'],['open','Open'],['closed','Closed']];
+  const sorts=[['new','Date, newest first'],['old','Date, oldest first'],['az','Name A to Z'],['status','Status']];
+  body.innerHTML=`<div class="toolbar"><span class="result-count" id="evCount"></span>
+    <label class="field">Sort<select id="evSort" data-sort>${sorts.map(([k,l])=>`<option value="${k}" ${EV.sort===k?'selected':''}>${l}</option>`).join('')}</select></label>
+    <div class="chips" data-filter data-label="Status">${statuses.map(([k,l])=>`<button class="chip" data-evs="${k}" aria-pressed="${EV.status===k}">${l}</button>`).join('')}</div></div>
+    <div id="evList"></div>`;
+  const rank={open:0,planned:1,closed:2};
+  const draw=()=>{
+    const q=String(S.q||'').toLowerCase().trim().split(/\s+/).filter(Boolean);
+    const L=d.events.filter(e=>(EV.status==='all'||e.status===EV.status)&&(!q.length||q.every(w=>`${e.name} ${e.licence} ${e.date} ${e.statusLabel} ${e.notes||''}`.toLowerCase().includes(w))))
+      .sort((x,y)=>EV.sort==='az'?x.name.localeCompare(y.name):EV.sort==='old'?String(x.date).localeCompare(String(y.date)):EV.sort==='status'?(rank[x.status]-rank[y.status])||String(y.date).localeCompare(String(x.date)):String(y.date).localeCompare(String(x.date)));
+    const cnt=$('#evCount');if(cnt)cnt.textContent=`${L.length} of ${d.events.length} event${d.events.length===1?'':'s'}`;
+    $('#evList').innerHTML=`${L.map(ev).join('')||`<div class="panel empty"><b>${d.events.length?'No events match':'No events yet'}</b>${d.events.length?'Try another search or status.':'Create one when a one-day licence is granted.'}</div>`}<div>${panel('Event liquor store','Locked, managers only',stock)}</div>`;
+    wireEv();
+  };
+  const wireEv=()=>{$$('#evList [data-ev]').forEach(b=>b.onclick=async()=>{const id=b.dataset.id,act=b.dataset.ev;
     if(act==='open'||act==='close'){try{await api(`/plugin/cm/events/${id}/${act}/`,{method:'POST',json:{}});toast(act==='open'?'Service opened':'Event closed — register is final');renderEvents()}catch(e){fail(e)}return}
-    formModal({receive:'Receive liquor',issue:'Issue to service',return:'Return unused'}[act],act==='receive'?'Bought under this event\'s permit':'Quantities in mL (one bottle = 750 mL)',
+    formModal({receive:'Receive liquor',issue:'Issue to service',return:'Return unused'}[act],act==='receive'?"Bought under this event's permit":'Quantities in mL (one bottle = 750 mL)',
       `<label>Liquor<select name="p">${liquorOpts}</select></label><label>Quantity (mL)<input name="q" type="number" min="1" step="1" required></label>${act==='receive'?'<label>Bill / transport pass no.<input name="ref" required maxlength="60"></label>':''}`,
       'Save',async(f,close)=>{await api(`/plugin/cm/events/${id}/${act}/`,{method:'POST',json:{part:+f.get('p'),quantity:f.get('q'),reference:f.get('ref')||''}});close();toast('Register updated');renderEvents()})});
+    if(window.phDecorate)phDecorate($('#evList'))};
+  $('#evSort').onchange=e=>{EV.sort=e.target.value;draw()};
+  $$('[data-evs]').forEach(b=>b.onclick=()=>{EV.status=b.dataset.evs;$$('[data-evs]').forEach(x=>x.setAttribute('aria-pressed',x===b));draw()});
+  if(typeof PG_REDRAW!=='undefined')PG_REDRAW.push({root:$('#evList'),rerender:draw});
+  draw();
 }
 function newEvent(){
   const dt=v=>v?new Date(v).toISOString():null;
